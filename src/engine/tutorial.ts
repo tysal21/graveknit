@@ -25,8 +25,11 @@ export function tutNext(g: Game) {
     return;
   }
   const st = currentStep(g);
-  if (st.id === "intro" || st.next) tutGo(g, g.s.tut + 1);
+  if (st.id === "intro" || st.next || killsDone(g)) tutGo(g, g.s.tut + 1);
 }
+
+/** the "Kill 3 rats" step waits for a click once the rats are dead, so there's time to read it */
+export const killsDone = (g: Game) => currentStep(g).wait === "kills" && g.s.tutKills >= TUT_KILLS;
 
 /** the player did something the current step is waiting for */
 export function tutEvent(g: Game, kind: TutWait, arg?: number) {
@@ -40,7 +43,7 @@ export function tutEvent(g: Game, kind: TutWait, arg?: number) {
 /** during the tutorial the third rat always drops a Magic hand */
 export function tutKill(g: Game) {
   g.s.tutKills++;
-  if (currentStep(g).id === "kill" && g.s.tutKills >= TUT_KILLS) {
+  if (currentStep(g).id === "kill" && g.s.tutKills === TUT_KILLS) {
     const p = makePart(g, "gnawedHand", 1, "magic");
     p.affixes = [
       { k: "mutilating", t: 5, roll: 0.6, locked: false },
@@ -50,7 +53,6 @@ export function tutKill(g: Game) {
     g.tick(`${partName(p)} dropped.`, "tc-magic");
     g.log("Your first body part: a hand the rats didn't finish.", "brag");
     g.emit({ type: "tutPartDropped", id: p.id });
-    tutGo(g, g.s.tut + 1);
   }
 }
 

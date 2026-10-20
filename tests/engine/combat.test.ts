@@ -55,3 +55,16 @@ describe("combat", () => {
     expect(g.s.stage).toBe(9);
   });
 });
+
+describe("tutorial", () => {
+  it("waits for a click after the 3 rats instead of rushing on", async () => {
+    const { tutGo, tutNext } = await import("../../src/engine/tutorial");
+    const g = new Game(null, seeded(4));
+    tutGo(g, 4); // "Kills pay out"
+    g.advance(120);
+    expect(g.s.tut).toBe(4);
+    expect(g.s.parts.filter((p) => p.base === "gnawedHand")).toHaveLength(1);
+    tutNext(g);
+    expect(g.s.tut).toBe(5);
+  });
+});

@@ -1,7 +1,7 @@
 import { useLayoutEffect } from "react";
 import { TUT_KILLS, TUT_STEPS, type PanelId, type TutStep } from "../../content/tutorial";
 import type { Game } from "../../engine/game";
-import { currentHint, currentStep, tutNext } from "../../engine/tutorial";
+import { currentHint, currentStep, killsDone, tutNext } from "../../engine/tutorial";
 import { act, useGame } from "../runtime";
 
 /** the step or tip showing right now, if any */
@@ -22,12 +22,15 @@ export function Coach({ panel }: { panel: PanelId }) {
       <span className="ct">{tutorial ? `Step ${g.s.tut} of ${TUT_STEPS}` : "Tip"}</span>
       <b className="h">{step.title}</b>
       <p>{step.text}</p>
-      {step.next ? (
-        <div className="row">
-          <button className="btn primary" id="coachBtn" onClick={() => act(tutNext)}>
-            {step.next}
-          </button>
-        </div>
+      {step.next || (tutorial && killsDone(g)) ? (
+        <>
+          {!step.next && <p className="muted">{TUT_KILLS} of {TUT_KILLS} rats. One of them left something behind.</p>}
+          <div className="row">
+            <button className="btn primary" id="coachBtn" onClick={() => act(tutNext)}>
+              {step.next ?? "See what dropped"}
+            </button>
+          </div>
+        </>
       ) : step.wait === "kills" ? (
         <p className="num muted">
           {Math.min(TUT_KILLS, g.s.tutKills)} of {TUT_KILLS} rats
@@ -43,7 +46,8 @@ export function useGlow(g: Game) {
     document.querySelectorAll(".glow").forEach((e) => e.classList.remove("glow"));
     const a = activeCoach(g);
     if (!a?.step.target) return;
-    const sel = a.step.target === "#tutItem" ? `.item[data-id="${g.s.tutPart}"]` : a.step.target;
+    const target = a.tutorial && killsDone(g) ? "#coachBtn" : a.step.target;
+    const sel = target === "#tutItem" ? `.item[data-id="${g.s.tutPart}"]` : target;
     document.querySelector(sel)?.classList.add("glow");
   });
 }

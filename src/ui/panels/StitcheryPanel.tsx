@@ -12,7 +12,6 @@ import { Info } from "../common/Info";
 import { Panel } from "../common/Panel";
 import { act, useGame } from "../runtime";
 import { isPhone, openModal, setUi, showTab, ui } from "../uiStore";
-import { PartDetail } from "./PartDetail";
 
 /** open a part in the Stitchery (from the list or the Squad panel) */
 export function selectPart(id: number) {
@@ -21,7 +20,7 @@ export function selectPart(id: number) {
     if (p) p.isNew = false;
     tutEvent(g, "select", id);
   });
-  setUi({ sel: id, dhide: false });
+  setUi({ sel: id, modal: { kind: "workbench" } });
   if (isPhone()) showTab("stitch");
 }
 
@@ -96,24 +95,32 @@ function PickBar() {
   );
 }
 
+/** the parts the list shows, in the chosen sort order (worn parts first) */
+export function sortedParts(g: Game) {
+  const base0 = calc(g, { ignoreBuffs: true });
+  const sort = g.s.opt.sort;
+  const l = filteredParts(g);
+  const gain = new Map(l.map((p) => [p.id, sort === "upgrade" ? partGain(g, p, base0) : 0]));
+  return l.sort((a, b) =>
+    +g.isWorn(b) - +g.isWorn(a) ||
+    (sort === "upgrade" ? gain.get(b.id)! - gain.get(a.id)! : sort === "ilvl" ? b.ilvl - a.ilvl : sort === "tier" ? tierPoints(b) - tierPoints(a) : 0) ||
+    b.id - a.id,
+  );
+}
+
+/** a key that changes whenever the list's contents or order could change */
+export const listKey = (g: Game) => {
+  const s = g.s;
+  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad[0].eq) + ":" + ui.up + ui.slots.join() + s.opt.sort + JSON.stringify(s.gens) + s.squad[0].infusion;
+};
+
 function StashList() {
   const g = useGame();
-  const s = g.s;
   const base0 = calc(g, { ignoreBuffs: true });
-  const sort = s.opt.sort;
   // the list only needs rebuilding when parts, filters or worn gear change
-  const key = s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad[0].eq) + ":" + ui.up + ui.slots.join() + sort + JSON.stringify(s.gens) + s.squad[0].infusion;
-  const list = useMemo(() => {
-    const l = filteredParts(g);
-    const gain = new Map(l.map((p) => [p.id, sort === "upgrade" ? partGain(g, p, base0) : 0]));
-    l.sort((a, b) =>
-      +g.isWorn(b) - +g.isWorn(a) ||
-      (sort === "upgrade" ? gain.get(b.id)! - gain.get(a.id)! : sort === "ilvl" ? b.ilvl - a.ilvl : sort === "tier" ? tierPoints(b) - tierPoints(a) : 0) ||
-      b.id - a.id,
-    );
-    return l;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  const key = listKey(g);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const list = useMemo(() => sortedParts(g), [key]);
 
   const click = (p: Part) => {
     if (ui.pick) {
@@ -151,14 +158,11 @@ function StashList() {
 export function StitcheryPanel() {
   const g = useGame();
   const lc = g.looseCount();
-  const sel = g.partById(ui.sel);
-  if (ui.sel !== null && !sel) ui.sel = null;
-  const hide = !!(sel && ui.dhide);
+  if (ui.sel !== null && !g.partById(ui.sel)) ui.sel = null;
   return (
     <Panel
       id="stitch"
       title="Stitchery"
-      className={`${hide ? "dhide" : ""} ${sel ? "hassel" : ""}`}
       small={<span className={lc >= TUNE.stashMax - 5 ? "down" : ""} data-tip="x-stash" tabIndex={0}>{lc} / {TUNE.stashMax} in stash<Info /></span>}
     >
       <Filters />
@@ -175,14 +179,7 @@ export function StitcheryPanel() {
       </div>
       <PickBar />
       <StashList />
-      {sel && (
-        <button className="dbar" id="detailBar" onClick={() => setUi({ dhide: !ui.dhide })}>
-          {hide ? <><span>▸ Show part details</span><b>{partName(sel)}</b></> : <><span>▾ Hide part details</span><span>more room for the list</span></>}
-        </button>
-      )}
-      <div id="detail">
-        {sel ? <PartDetail part={sel} /> : <p className="faint" style={{ margin: 0 }}>Pick a part to see its rolls, compare it with what you're wearing, and craft on it.</p>}
-      </div>
+      <p className="faint" style={{ margin: 0, fontSize: ".8rem" }}>Click a part to open it on the workbench: full stats, crafting and compare.</p>
     </Panel>
   );
 }

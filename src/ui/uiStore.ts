@@ -13,7 +13,8 @@ export type ModalState =
   | { kind: "renderAll" }
   | { kind: "renderPicked" }
   | { kind: "reset" }
-  | { kind: "saves" };
+  | { kind: "saves" }
+  | { kind: "workbench" };
 
 /** what's selected, filtered and open on screen. Not saved. */
 export const ui = {
@@ -25,8 +26,6 @@ export const ui = {
   slots: [] as SlotId[],
   /** Select mode: the picked part ids, or null when off */
   pick: null as number[] | null,
-  /** part details folded away */
-  dhide: false,
   /** the panel shown on phones */
   tab: "squad" as PanelId,
   modal: null as ModalState,

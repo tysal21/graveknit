@@ -23,6 +23,8 @@ onGameCreated((g) => {
     if (e.type === "tutPartDropped") setUi({ up: false, slots: [] });
     if (e.type === "tutStep") {
       const p = TUTORIAL[e.step]?.panel;
+      // the workbench covers the board, so close it once the tutorial moves past the Stitchery
+      if (p !== "stitch" && ui.modal?.kind === "workbench") setUi({ modal: null });
       if (p && isPhone()) showTab(p);
     }
     if (e.type === "offline") openModal({ kind: "offline", report: e.report });

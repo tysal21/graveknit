@@ -8,7 +8,9 @@ import type { Affix, Part } from "../../engine/state";
 import { calc } from "../../engine/stats";
 import { Modal } from "../common/Modal";
 import { act, useGame } from "../runtime";
-import { closeModal, setUi } from "../uiStore";
+import { openModal, setUi } from "../uiStore";
+
+const backToBench = () => openModal({ kind: "workbench" });
 
 function Delta({ g, from, to }: { g: Game; from: Part; to: Part }) {
   const a = calc(g, { swap: from, ignoreBuffs: true }), b = calc(g, { swap: to, ignoreBuffs: true });
@@ -95,7 +97,7 @@ export function GraftModal({ targetId }: { targetId: number }) {
     let ok = false;
     act((g) => (ok = graft(g, t, d, dA, tA)));
     if (ok) setUi({ flash: { id: t.id, f: { [tA]: "up" }, at: Date.now() } });
-    closeModal();
+    backToBench();
   };
   const dupe = d && dA !== null ? graftSlots(t, d.affixes[dA]) : [];
   return (
@@ -141,7 +143,7 @@ export function GraftModal({ targetId }: { targetId: number }) {
         <Preview g={g} t={t} donor={d} dA={dA} tA={tA} hover={hover} />
       </div>
       <div className="row">
-        <button className="btn" onClick={closeModal}>Cancel</button>
+        <button className="btn" onClick={backToBench}>Cancel</button>
         <button className="btn primary" disabled={tA === null} onClick={go}>Graft it</button>
       </div>
     </Modal>

@@ -101,7 +101,7 @@ export function PartDetail({ part: p }: { part: Part }) {
           <span className="sub">{trophy ? "Trophies are always kept" : kept ? "Safe from rendering. Click to release" : "Protect from all rendering"}</span>
         </button>
         {!worn && (
-          <button className="btn danger" disabled={kept} onClick={() => { act((g) => renderPart(g, p)); setUi({ sel: null }); }}>
+          <button className="btn danger" disabled={kept} onClick={() => { act((g) => renderPart(g, p)); setUi({ sel: null, modal: null }); }}>
             Render<span className="sub">{kept ? "Release it first" : `+${partCM(p)} Corpse Mass`}</span>
           </button>
         )}

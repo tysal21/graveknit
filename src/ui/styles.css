@@ -105,9 +105,7 @@ h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mut
 .dbar{display:flex;justify-content:space-between;gap:8px;width:100%;font:inherit;font-size:.85rem;text-align:left;color:var(--muted);background:var(--panel2);border:1px solid var(--line2);border-radius:4px;padding:6px 10px;cursor:pointer}
 .dbar:hover{border-color:var(--lantern);color:var(--bone)}
 .dbar b{color:var(--bone);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#p-stitch.dhide #detail{display:none}
-#p-stitch.dhide .stash{max-height:none}
-@media (min-width:761px){#p-stitch{height:calc(100vh - 110px)} #p-stitch .stash{flex:1 1 0;min-height:12rem;max-height:none} #p-stitch>*:not(.stash):not(#detail){flex-shrink:0} #p-stitch.hassel:not(.dhide) .stash{flex:11 1 0} #p-stitch.hassel:not(.dhide) #detail{flex:9 1 0;min-height:0;overflow:auto;padding-right:2px}}
+@media (min-width:761px){#p-stitch{height:calc(100vh - 110px)} #p-stitch .stash{flex:1 1 0;min-height:12rem;max-height:none} #p-stitch>*:not(.stash){flex-shrink:0}}
 .stash{display:flex;flex-direction:column;gap:3px;max-height:15rem;min-height:6.5rem;overflow:auto;padding-right:2px}
 .item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;border:1px solid var(--line);border-left-width:3px;border-radius:4px;padding:4px 8px;background:var(--panel2);text-align:left;width:100%}
 .item.sel{border-color:var(--lantern);border-left-color:inherit}
@@ -197,7 +195,6 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
   .tabs button.on{color:var(--lantern);background:var(--panel2)}
   .tabs button .dot{position:absolute;top:4px;right:18%;width:7px;height:7px;border-radius:50%;background:var(--lantern)}
   .stash{max-height:none}
-  #detailBar,#detail{order:1} .filters,.pickbar{order:2} .stash{order:3}
   .pills{flex-wrap:nowrap;overflow-x:auto;order:3;flex-basis:100%;scrollbar-width:none}
   .brand{font-size:1.25rem}
   .foes .row{flex-wrap:wrap}
@@ -207,3 +204,8 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 /* added in the real game */
 .savebox{width:100%;min-height:7rem;font-family:var(--mono);font-size:.75rem;background:var(--panel2);color:var(--bone);border:1px solid var(--line2);border-radius:4px;padding:6px;resize:vertical;word-break:break-all}
 .note-ok{color:var(--good)} .note-bad{color:var(--blood)}
+.modal.bench{max-width:44rem}
+.benchnav{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.benchnav .pos{font-size:.8rem;color:var(--muted)}
+.modal.bench .craft{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.modal.bench .craft{grid-template-columns:repeat(2,minmax(0,1fr))} .scrim{padding:8px} .modal{max-height:94vh}}

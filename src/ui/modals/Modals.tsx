@@ -13,6 +13,7 @@ import { act, startGame, useGame } from "../runtime";
 import { filteredParts } from "../panels/StitcheryPanel";
 import { closeModal, setUi, ui } from "../uiStore";
 import { GraftModal } from "./GraftModal";
+import { Workbench } from "./Workbench";
 
 export function IntroModal() {
   return (
@@ -174,6 +175,7 @@ export function ModalLayer() {
     case "renderPicked": return <RenderPickedModal />;
     case "reset": return <ResetModal />;
     case "saves": return <SavesModal />;
+    case "workbench": return <Workbench />;
   }
   return null;
 }

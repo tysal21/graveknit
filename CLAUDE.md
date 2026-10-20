@@ -1,0 +1,47 @@
+# Graveknit
+
+A browser idle/ARPG necromancy game. You stitch undead Abominations from the parts of what you kill, then chase perfect rolls. Built solo by Tyler, who is new to coding: **explain changes in plain language and give step-by-step instructions** whenever Tyler has to do something.
+
+Design sources (in the Graveknit Claude project): *Graveknit Design Doc v2*, *Graveknit: open questions answered* (Thrall auras, the 48-node skill web), Balance Bench v2, and the Act 1 prototype. Phase 3 plan: Acts 1 to 5 + Death + skill web + Veil Depths, saves in the browser. Phase 4 (later) adds accounts and server-side rolls with Supabase.
+
+## Commands
+
+- `npm install` once, after cloning.
+- `npm run dev` starts the game at http://localhost:5173 and reloads on every change.
+- `npm test` runs every automatic check (engine rules, saves, balance bots). Run it before every commit.
+- `npm run bots` runs only the balance bots and prints how long the first boss kill takes.
+- `npm run build` type-checks and builds the site into `dist/`.
+
+Pushing to `main` publishes the game to GitHub Pages automatically (`.github/workflows/deploy.yml`). Every push and pull request runs the checks (`.github/workflows/ci.yml`).
+
+## How the code is organised
+
+- `src/content/` is the game's data: balance numbers (`tune.ts`), affixes, abilities, generators, Rituals, the tutorial, and one file per act (`act1.ts`...). Register new acts in `acts.ts`. **Every balance number lives in exactly one place.**
+- `src/engine/` is the game rules, with no screen code. Everything takes a `Game` (`game.ts`) holding the saved `GameState` (`state.ts`) plus the live fight. Randomness goes through `g.rng` so tests can use a seed, and so the rules can move to a server in Phase 4.
+- `src/ui/` is the screen (React). `runtime.ts` runs the game loop and saves; `uiStore.ts` holds what's selected and open; `panels/` has Squad, Crypt, Stitchery and Graveyard; `common/Tips.tsx` has every info blip.
+- `tests/` has engine checks and `tests/bots/` the balance bots.
+
+## Saves
+
+Saved to localStorage under `graveknit-save` every 5 seconds and when the tab closes. Players can Export/Import their save as text (`GK1:...`). **When you change the shape of `GameState`, bump `SAVE_VERSION` in `state.ts` and add a migration step in `save.ts`.** Never break old saves. `repair()` fixes broken data on load.
+
+## Tyler's decisions (fixed rules, don't undo without asking)
+
+- **Tutorial:** the game starts paused. 11 steps teach one panel at a time; untaught panels stay greyed out; Skip is always visible; later systems get one-time tip cards (Infusion, new generators, first boss). Every new system in later acts gets a tip card too.
+- **Info blips:** every currency, Squad stat, Infusion, the Bone Altar and the stash count has an ⓘ showing where its number comes from, source by source, updating live. New numbers in later acts get one too.
+- **Crypt Warden:** 20× trash HP (not 12×), hits at 0.5× a trash hit every 2 s, 30 s enrage.
+- **Warden option B:** the lantern blast can't be blocked on the first fight. Ward (Lantern Core trophy) and Phase (Wraith Core) drop only from the Warden. The lesson and the live warning tell you to bring enough Max HP. **No Wraith Core from Town Watchmen.**
+- **Auto abilities:** fire when ready; on trash, Ward and Phase only fire below 60% HP.
+- **Stash:** 60 unworn parts (worn don't count). When full, the **oldest** unkept part is rendered into Corpse Mass, logged at most once a minute. If everything is kept, the new drop is left behind. Trophies are always kept and always get in.
+- **Stitchery tools:** Keep, Render Commons, Render all (follows filters, confirm box), filters that combine (Upgrades + slots), Sort (Newest, Upgrades first, Item level, Best rolls), folding part details, tall list by default, hover stat cards (desktop), Select mode (Keep/Unkeep/Render many), upgrade value on each row, graft preview in green/red. **No auto-render loot filter.** Smarter clean-up and a bigger stash may come later as skill web unlocks.
+- **Bone Altar:** bonus = 25% × log10(1 + given ÷ 500); the button sacrifices half your Corpse Mass. Show the before/after preview under the button and DPS before/after in the log. **No in-fight Altar chip.** Don't make it stronger.
+- **Affix tiers:** T5 at item level 1, T4 at 3, T3 at 8, T2 at 20, T1 at 35. Roll odds 45/30/15/7/3.
+- **Notoriety:** each level ×1.25 enemy HP and damage (stacking), +10% drops, +2 item level.
+- Drop rates don't get stingier over time.
+
+## Style
+
+- Plain, dry, darkly funny flavor text; grim when the story moves.
+- Desktop-first (second monitor), phone-friendly (panels become bottom tabs at 760px and below).
+- No images needed: dark grimoire look, rarity colours (Common grey, Magic blue, Rare yellow, Trophy orange).
+- Keep code readable for a beginner: small functions, short comments that say *why*.

@@ -4,7 +4,7 @@ import { TUNE } from "../content/tune";
 import type { Game } from "./game";
 import { RARITY_INTEGRITY } from "../content/tune";
 import { essPerKill } from "./combat";
-import { affixScore, allowedTiers, partScore, rarityClass, rollAffixes, rollRoll } from "./parts";
+import { affixScore, allowedTiers, isMaxRoll, partScore, rarityClass, rollAffixes, rollRoll } from "./parts";
 import type { Affix, Part } from "./state";
 import { tutEvent } from "./tutorial";
 
@@ -30,10 +30,13 @@ function bragRoll(g: Game, p: Part, before: Affix[]) {
   }
 }
 
-/** a Perfect roll (top 10% of its range) is rare enough to shout about, once per new one */
+/** shout about a new Perfect roll (the exact top number) or Exquisite one (top 10% of the range) */
 function bragPerfect(g: Game, p: Part, a: Affix, before: Affix[]) {
   const was = before.find((b) => b.k === a.k && b.t === a.t);
-  if (a.roll >= 0.9 && !(was && was.roll >= 0.9)) g.log(`Perfect roll! Tier ${a.t} ${affixShortName(a.k)} at the top of its range on a ${BASES[p.base].name}.`, "brag");
+  const name = `Tier ${a.t} ${affixShortName(a.k)}`;
+  if (isMaxRoll(a, p.ilvl)) {
+    if (!(was && isMaxRoll(was, p.ilvl))) g.log(`PERFECT ROLL! ${name} hit the highest number it can roll, on a ${BASES[p.base].name}.`, "perfect");
+  } else if (a.roll >= 0.9 && !(was && was.roll >= 0.9)) g.log(`Exquisite roll: ${name} near the top of its range on a ${BASES[p.base].name}.`, "brag");
 }
 
 export const canCraft = (p: Part) => p.rarity !== "common";

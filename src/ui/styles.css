@@ -249,7 +249,11 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .q-fair{color:var(--faint)}
 .q-fine{color:var(--muted)}
 .q-pristine{color:var(--good)}
-.q-perfect{color:var(--t1);text-shadow:0 0 6px rgba(240,199,90,.6)}
+.q-exquisite{color:var(--t1)}
+/* Perfect: the exact top number a tier can roll, so it shimmers */
+.q-perfect{color:#fff3c4;font-weight:700;text-shadow:0 0 6px rgba(240,199,90,.9),0 0 14px rgba(240,199,90,.6);animation:perfectGlow 2s ease-in-out infinite}
+@keyframes perfectGlow{50%{text-shadow:0 0 2px rgba(240,199,90,.5)}}
+.log p.perfect{border-left-color:var(--t1);color:#fff3c4;font-weight:600;text-shadow:0 0 6px rgba(240,199,90,.5)}
 /* a Rare drop: gold edge and a short glow so it stands out from boss toasts */
 .toast.rare{border-left-color:var(--rare);animation:toastIn .25s ease-out,rareGlow 1.6s ease-out}
 @keyframes rareGlow{0%{box-shadow:0 0 0 rgba(220,197,92,0)}20%{box-shadow:0 0 18px rgba(220,197,92,.55)}100%{box-shadow:0 0 0 rgba(220,197,92,0)}}

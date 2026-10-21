@@ -33,12 +33,16 @@ export function tierRange(k: string, t: number): [number, number] {
 /** where a roll lands in its range, 0 to 1: the average of two dice, so the middle is common and the ends are rare */
 export const rollRoll = (rng: Rng) => (rng() + rng()) / 2;
 
-/** a word for how good a roll is within its tier */
-export function rollQuality(roll: number): { label: string; cls: string } {
-  if (roll >= 0.9) return { label: "Perfect", cls: "q-perfect" };
-  if (roll >= 0.75) return { label: "Pristine", cls: "q-pristine" };
-  if (roll >= 0.4) return { label: "Fine", cls: "q-fine" };
-  if (roll >= 0.1) return { label: "Fair", cls: "q-fair" };
+/** true when the roll shows the very highest number its tier can give at this item level */
+export const isMaxRoll = (a: Affix, ilvl: number) => affixValue(a, ilvl) >= affixValue({ ...a, roll: 1 }, ilvl);
+
+/** a word for how good a roll is within its tier; Perfect is only the exact top number */
+export function rollQuality(a: Affix, ilvl: number): { label: string; cls: string } {
+  if (isMaxRoll(a, ilvl)) return { label: "Perfect", cls: "q-perfect" };
+  if (a.roll >= 0.9) return { label: "Exquisite", cls: "q-exquisite" };
+  if (a.roll >= 0.75) return { label: "Pristine", cls: "q-pristine" };
+  if (a.roll >= 0.4) return { label: "Fine", cls: "q-fine" };
+  if (a.roll >= 0.1) return { label: "Fair", cls: "q-fair" };
   return { label: "Botched", cls: "q-botched" };
 }
 

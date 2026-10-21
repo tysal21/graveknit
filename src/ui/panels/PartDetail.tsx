@@ -63,7 +63,7 @@ export function PartDetail({ part: p }: { part: Part }) {
             <div key={i} className={`af ${fl[i] ? "flash-" + fl[i] : ""}`}>
               <span className={`tb t${a.t}`}>T{a.t}</span>
               <span>
-                {AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a.roll).cls}`}>{rollQuality(a.roll).label}</span>{" "}
+                {AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a, p.ilvl).cls}`}>{rollQuality(a, p.ilvl).label}</span>{" "}
                 <span className="rng">{AFFIX[a.k].name} · {affixRange(a, p.ilvl)}</span>
               </span>
               <button className={`lockb ${a.locked ? "on" : ""}`} disabled={!a.locked && s.thread < 1} title={a.locked ? "Unlock" : "Lock with a Spectral Thread"} onClick={() => act((g) => toggleLock(g, p, i))}>

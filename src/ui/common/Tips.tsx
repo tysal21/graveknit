@@ -101,7 +101,7 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
         p.affixes.map((a, i) => (
           <div className="afl" key={i}>
             <span className={`tb t${a.t}`}>T{a.t}</span>
-            <span>{AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a.roll).cls}`}>{rollQuality(a.roll).label}</span></span>
+            <span>{AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a, p.ilvl).cls}`}>{rollQuality(a, p.ilvl).label}</span></span>
           </div>
         ))
       ) : (

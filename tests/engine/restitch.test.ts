@@ -70,3 +70,14 @@ describe("affix rolls", () => {
     expect(great2).toBeGreaterThan(poor1);
   });
 });
+
+describe("roll quality words", () => {
+  it("only calls the exact top number Perfect", async () => {
+    const { rollQuality } = await import("../../src/engine/parts");
+    const a = { k: "mutilating", t: 1, roll: 1, locked: false };
+    expect(rollQuality(a, 40).label).toBe("Perfect");
+    expect(rollQuality({ ...a, roll: 0.93 }, 40).label).toBe("Exquisite");
+    expect(rollQuality({ ...a, roll: 0.8 }, 40).label).toBe("Pristine");
+    expect(rollQuality({ ...a, roll: 0.05 }, 40).label).toBe("Botched");
+  });
+});

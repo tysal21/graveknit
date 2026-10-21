@@ -46,7 +46,7 @@ export interface BossRecord {
 export interface LogEntry {
   t: number;
   text: string;
-  cls: "" | "story" | "brag" | "bad";
+  cls: "" | "story" | "brag" | "bad" | "perfect";
 }
 
 export interface RitualState {

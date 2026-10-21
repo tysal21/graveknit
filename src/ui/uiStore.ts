@@ -24,6 +24,8 @@ export const ui = {
   up: false,
   /** filter: these slots (none = all) */
   slots: [] as SlotId[],
+  /** search box text: every word must match the part */
+  search: "",
   /** Select mode: the picked part ids, or null when off */
   pick: null as number[] | null,
   /** the panel shown on phones */

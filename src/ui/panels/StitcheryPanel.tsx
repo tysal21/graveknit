@@ -3,7 +3,10 @@ import { BASES } from "../../content/acts";
 import { SLOTS, slotName, type SlotId } from "../../content/slots";
 import { TUNE } from "../../content/tune";
 import type { Game } from "../../engine/game";
-import { isKept, partName, rarityClass } from "../../engine/parts";
+import { affixValue, isKept, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { AFFIX } from "../../content/affixes";
+import { ABILITY } from "../../content/abilities";
+import { IMPLICIT_TEXT } from "../../content/stats";
 import { renderCommons, setKept } from "../../engine/stash";
 import type { Part, SortId } from "../../engine/state";
 import { calc, partGain, type Stats } from "../../engine/stats";
@@ -24,9 +27,28 @@ export function selectPart(id: number) {
   if (isPhone()) showTab("stitch");
 }
 
+/** everything a search can match: name, slot, rarity, affixes and their stats, ability, "kept" */
+function searchText(p: Part) {
+  const b = BASES[p.base];
+  const bits = [partName(p), b.name, slotName(b.slot), rarityLabel(p), `i${p.ilvl}`];
+  for (const a of p.affixes) bits.push(AFFIX[a.k].name, AFFIX[a.k].fmt(affixValue(a, p.ilvl)), `T${a.t}`);
+  for (const [st, f] of b.imp) bits.push(IMPLICIT_TEXT[st](f(p.ilvl)));
+  if (b.ab) bits.push(ABILITY[b.ab].name);
+  if (isKept(p)) bits.push("kept");
+  return bits.join(" ").toLowerCase();
+}
+
+export function matchesSearch(p: Part, q: string) {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return true;
+  const text = searchText(p);
+  return words.every((w) => text.includes(w));
+}
+
 /** does a part pass the current filters? */
 export function shownByFilters(g: Game, p: Part, base0: Stats) {
   const slotOk = !ui.slots.length || ui.slots.includes(BASES[p.base].slot);
+  if (!slotOk || !matchesSearch(p, ui.search)) return false;
   const upOk = !ui.up || (!g.isWorn(p) && partGain(g, p, base0) > 0.005);
   return slotOk && upOk;
 }
@@ -111,7 +133,7 @@ export function sortedParts(g: Game) {
 /** a key that changes whenever the list's contents or order could change */
 export const listKey = (g: Game) => {
   const s = g.s;
-  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad[0].eq) + ":" + ui.up + ui.slots.join() + s.opt.sort + JSON.stringify(s.gens) + s.squad[0].infusion;
+  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad[0].eq) + ":" + ui.up + ui.slots.join() + ui.search + s.opt.sort + JSON.stringify(s.gens) + s.squad[0].infusion;
 };
 
 function StashList() {
@@ -176,6 +198,15 @@ export function StitcheryPanel() {
             <option value="tier">Best rolls</option>
           </select>
         </label>
+        <input
+          type="search"
+          className="search"
+          placeholder="Search parts…"
+          aria-label="Search parts"
+          title="Matches names, slots, rarity, stats, tiers and abilities. Try: frenzy, rare, T3, skull, bury"
+          value={ui.search}
+          onChange={(e) => setUi({ search: e.target.value })}
+        />
       </div>
       <PickBar />
       <StashList />

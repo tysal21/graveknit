@@ -103,8 +103,9 @@ function RenderConfirm({ title, list, what, onDone }: { title: string; list: Ret
 
 export function RenderAllModal() {
   const g = useGame();
-  const where = (ui.up ? " upgrade" : "") + (ui.slots.length ? " " + ui.slots.map(slotName).join(" or ") : "");
-  return <RenderConfirm title={`Render all${where} parts?`} list={filteredParts(g)} what="parts" onDone={() => { if (!g.partById(ui.sel)) setUi({ sel: null }); }} />;
+  const where = (ui.up ? " upgrade" : "") + (ui.slots.length ? " " + ui.slots.map(slotName).join(" or ") : "") ;
+  const match = ui.search.trim() ? ` matching "${ui.search.trim()}"` : "";
+  return <RenderConfirm title={`Render all${where} parts${match}?`} list={filteredParts(g)} what="parts" onDone={() => { if (!g.partById(ui.sel)) setUi({ sel: null }); }} />;
 }
 
 export function RenderPickedModal() {

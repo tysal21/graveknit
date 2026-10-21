@@ -209,3 +209,5 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .benchnav .pos{font-size:.8rem;color:var(--muted)}
 .modal.bench .craft{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:760px){.modal.bench .craft{grid-template-columns:repeat(2,minmax(0,1fr))} .scrim{padding:8px} .modal{max-height:94vh}}
+.search{font:inherit;font-size:.85rem;background:var(--panel2);color:var(--bone);border:1px solid var(--line2);border-radius:4px;padding:3px 8px;flex:1;min-width:8rem}
+.search::placeholder{color:var(--faint)}

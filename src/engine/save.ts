@@ -1,4 +1,4 @@
-import { BASES } from "../content/acts";
+import { BASES, isBossStage } from "../content/acts";
 import type { Game } from "./game";
 import { rollAffixes } from "./parts";
 import { SAVE_VERSION, type GameState } from "./state";
@@ -44,6 +44,11 @@ export function repair(g: Game) {
   }
   for (const a of s.squad) for (const slot in a.eq) if (!g.partById(a.eq[slot as keyof typeof a.eq])) delete a.eq[slot as keyof typeof a.eq];
   for (const k of ["cm", "ess", "marrow", "dust", "thread", "altar"] as const) if (!Number.isFinite(s[k])) s[k] = 0;
+  // you can only stand on a stage with normal enemies: never a boss stage, never past your best
+  if (!Number.isFinite(s.maxStage) || s.maxStage < 1) s.maxStage = 1;
+  if (!Number.isFinite(s.stage) || s.stage < 1) s.stage = 1;
+  if (s.stage > s.maxStage) s.stage = s.maxStage;
+  while (s.stage > 1 && isBossStage(s.stage)) s.stage--;
   g.refresh();
 }
 

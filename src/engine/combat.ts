@@ -75,7 +75,19 @@ export function newPlayer(g: Game) {
   g.pl = { hp: g.c.maxHp, atk: g.s.squad.map(() => 0), hasteUntil: 0, wardUntil: 0, ward: 0, phaseUntil: 0, cd: {} };
 }
 
+/** the stage you fall back to after a loss: one lower, stepping over boss stages (they have no normal enemies) */
+export function stageBelow(stage: number) {
+  let s = Math.max(1, stage - 1);
+  while (s > 1 && isBossStage(s)) s--;
+  return s;
+}
+
+/** a stage you can farm: never a boss stage, never past the furthest you've reached */
+export const safeStage = (stage: number) => (isBossStage(stage) ? stageBelow(stage) : Math.max(1, stage));
+
 export function spawnTrash(g: Game) {
+  // a boss stage has no normal enemies; this once crashed the game after dying on Stage 11
+  if (isBossStage(g.s.stage)) g.s.stage = stageBelow(g.s.stage);
   const s = g.s.stage;
   // the stage's last kill, the first time through, is its guardian
   const st = g.s;
@@ -329,16 +341,17 @@ function onDefeat(g: Game, enraged: boolean) {
     s.bossRetryAt = s.clock + TUNE.bossRetryLoss;
   } else if (f.kind === "guardian") {
     const gd = guardianFor(f.gStage!)!;
-    g.log(`${gd.defeat} Back to Stage ${Math.max(1, s.stage - 1)}. Infuse, or stitch on a better part, then try again.`, "bad");
-    s.stage = Math.max(1, s.stage - 1);
+    s.stage = stageBelow(s.stage);
+    g.log(`${gd.defeat} Back to Stage ${s.stage}. Infuse, or stitch on a better part, then try again.`, "bad");
     if (!s.seen.hGuard && !s.hint) {
       s.seen.hGuard = 1;
       s.hint = "guard";
     }
   } else {
     const line = DEATH_LINES[Math.floor(g.rng() * DEATH_LINES.length)];
-    g.log(line + (s.stage > 1 ? ` Back to Stage ${s.stage - 1}.` : ""), "bad");
-    s.stage = Math.max(1, s.stage - 1);
+    const back = stageBelow(s.stage);
+    g.log(line + (back < s.stage ? ` Back to Stage ${back}.` : ""), "bad");
+    s.stage = back;
   }
   s.kills = 0;
   newPlayer(g);

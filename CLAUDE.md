@@ -37,6 +37,7 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - **Bone Altar:** bonus = 25% × log10(1 + given ÷ 500); the button sacrifices half your Corpse Mass. Show the before/after preview under the button and DPS before/after in the log. **No in-fight Altar chip.** Don't make it stronger.
 - **Affix tiers:** T5 at item level 1, T4 at 3, T3 at 8, T2 at 20, T1 at 35. Roll odds 45/30/15/7/3.
 - **Notoriety:** each level ×1.25 enemy HP and damage (stacking), +10% drops, +2 item level.
+- **Boss victory:** a SLAIN stamp, then a loot pop-up (parts open on the Workbench, Thrall banner) on first kills and new Thralls. Repeat kills get a corner toast unless "Victory pop-up every kill" is on. Every future boss uses this.
 - Drop rates don't get stingier over time.
 
 ## Style

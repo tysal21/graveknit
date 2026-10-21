@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Graveknit</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>☠</text></svg>" />
+    <script>
+      // After an update, a browser can hold on to the old page, which points at files that no longer exist.
+      // If one of the game's own files fails to load, reload once with a fresh copy instead of showing a black screen.
+      window.addEventListener("error", function (e) {
+        var el = e.target;
+        if (!el || (el.tagName !== "SCRIPT" && el.tagName !== "LINK")) return;
+        if ((el.src || el.href || "").indexOf("/assets/") < 0) return;
+        try { if (sessionStorage.getItem("gk-reloaded")) return; sessionStorage.setItem("gk-reloaded", "1"); } catch (_) { return; }
+        location.replace(location.pathname + "?v=" + Date.now());
+      }, true);
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" />
   </head>

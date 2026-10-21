@@ -81,6 +81,8 @@ export function importSave(text: string): GameState | null {
 export function loadFromBrowser(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
+    // a spare copy of the save as it was before this visit, in case an update goes wrong
+    if (raw) localStorage.setItem(SAVE_KEY + "-backup", raw);
     return raw ? deserialize(raw) : null;
   } catch {
     return null;

@@ -6,7 +6,7 @@ import type { Game } from "./game";
 import { makePart } from "./parts";
 import { pickWeighted } from "./rng";
 import { makeRoom } from "./stash";
-import { calc } from "./stats";
+import { calc, squadBonus, squadDps } from "./stats";
 
 export interface OfflineReport {
   sec: number;
@@ -30,7 +30,8 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
   const capped = seconds >= TUNE.offlineCapH * 3600;
   const sec = Math.min(seconds, TUNE.offlineCapH * 3600);
   const rate = TUNE.offlineRate;
-  const c = calc(g, { ignoreBuffs: true });
+  const cs = g.s.squad.map((_, i) => calc(g, { abom: i, ignoreBuffs: true }));
+  const dps = squadDps(cs);
   const stage = isBossStage(s.stage) ? s.stage - 1 : s.stage;
   const act = actForStage(stage);
   const w = act.stageFoes[stage];
@@ -40,10 +41,10 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
     tot += w[k];
   }
   avgHp /= tot;
-  const kills = Math.floor((sec / (avgHp / c.dps + 0.3)) * rate);
-  const ess = kills * essPerKill(stage) * (1 + c.ess / 100);
+  const kills = Math.floor((sec / (avgHp / dps + 0.3)) * rate);
+  const ess = kills * essPerKill(stage) * (1 + squadBonus(g, "ess", cs) / 100);
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
-  const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(kills * TUNE.partChance * (1 + c.drop / 100)));
+  const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(kills * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
   const dust = Math.round(kills * TUNE.dustChance);
   const marrow = Math.round(kills * TUNE.marrowChance);
   s.ess += ess;

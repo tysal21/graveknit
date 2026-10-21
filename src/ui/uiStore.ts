@@ -33,6 +33,8 @@ export const ui = {
   search: "",
   /** Select mode: the picked part ids, or null when off */
   pick: null as number[] | null,
+  /** which Abomination the Squad panel shows, and the one the Stitchery compares and stitches onto */
+  abom: 0,
   /** the panel shown on phones */
   tab: "squad" as PanelId,
   modal: null as ModalState,
@@ -43,6 +45,9 @@ export const ui = {
   /** small corner notes for repeat boss kills; click one to see the full loot */
   toasts: [] as { at: number; win: BossWin }[],
 };
+
+/** the selected Abomination, kept in range if the squad changed (an import, a wipe) */
+export const selAbom = (squadSize: number) => Math.min(ui.abom, squadSize - 1);
 
 export function setUi(patch: Partial<typeof ui>) {
   Object.assign(ui, patch);

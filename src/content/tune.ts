@@ -15,6 +15,9 @@ export const TUNE = {
   blastMult: 3.5, healPct: 0.15, weakBonus: 0.5, stunBonus: 0.5,
   telegraphSecs: 3, weakSecs: 4, bossRetryWin: 5, bossRetryLoss: 120,
 
+  // stage guardians: their big hit is this many of their normal hits; they pay this many kills' worth of Essence
+  guardianBlastMult: 2.5, guardianEssMult: 10,
+
   // Soul Essence per kill = essBase × essGrow^(stage-1)
   essBase: 2, essGrow: 1.15, bossEssMult: 15, bossCm: 200,
 
@@ -44,6 +47,9 @@ export const TUNE = {
   // Graveyard
   costGrow: 1.15, altarK: 0.25, altarScale: 500, altarMinCm: 20, cmPerKill: 0.5,
   autoRitualPower: 0.6,
+
+  // the stage you must reach to open each squad slot (slot 1 is yours from the start)
+  squadSlots: [1, 20, 40],
 
   // starting reagents
   start: { cm: 15, marrow: 5, dust: 10, thread: 1 },

@@ -7,6 +7,7 @@ export type StatId =
   | "as"       // attack speed %
   | "poison"   // poison per second
   | "hpFlat"   // max HP
+  | "hpPct"    // % max HP
   | "ess"      // % Soul Essence
   | "drop";    // % part drop chance
 
@@ -19,6 +20,7 @@ export const IMPLICIT_TEXT: Record<StatId, (v: number) => string> = {
   as: (v) => `+${v}% attack speed`,
   poison: (v) => `+${v} poison per second`,
   hpFlat: (v) => `+${v} max HP`,
+  hpPct: (v) => `+${v}% max HP`,
   ess: (v) => `+${v}% Soul Essence`,
   drop: (v) => `+${v}% part drop chance`,
 };

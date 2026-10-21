@@ -8,7 +8,7 @@ import { calc } from "../../engine/stats";
 import { Modal } from "../common/Modal";
 import { Delta, selectPart } from "../panels/StitcheryPanel";
 import { useGame } from "../runtime";
-import { closeModal, setUi, ui } from "../uiStore";
+import { closeModal, selAbom, setUi, ui } from "../uiStore";
 
 /** first kills and new Thralls always get the big pop-up; repeat kills only if you ask for it */
 export const wantsPopup = (g: Game, w: BossWin) => w.first || w.thrall || g.s.opt.bossPop;
@@ -16,7 +16,7 @@ export const wantsPopup = (g: Game, w: BossWin) => w.first || w.thrall || g.s.op
 /** the loot list: reagents, then each part (click one to open it on the Workbench) */
 function Loot({ win }: { win: BossWin }) {
   const g = useGame();
-  const base0 = calc(g, { ignoreBuffs: true });
+  const base0 = calc(g, { abom: selAbom(g.s.squad.length), ignoreBuffs: true });
   return (
     <div className="loot">
       <div className="reag">

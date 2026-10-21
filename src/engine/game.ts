@@ -7,7 +7,7 @@ import { stepCombat, type Foe, type Player } from "./combat";
 import { makePart } from "./parts";
 import type { Rng } from "./rng";
 import { SAVE_VERSION, type GameState, type LogEntry, type Part } from "./state";
-import { calc, type Stats } from "./stats";
+import { calc, squadBonus, squadDps, type Stats } from "./stats";
 import type { OfflineReport } from "./offline";
 
 export interface TickerLine {
@@ -52,8 +52,10 @@ export class Game {
   foe: Foe | null = null;
   /** the Vanguard's fight state: HP, cooldowns, buffs */
   pl: Player | null = null;
-  /** stats cached for the current step */
+  /** the Vanguard's stats, cached for the current step */
   c!: Stats;
+  /** every squad member's stats (cs[0] is the Vanguard, same as c) */
+  cs: Stats[] = [];
   ticker: TickerLine[] = [];
   /** full-stash clean-up, summarised in the log at most once a minute */
   trim = { n: 0, cm: 0, lost: 0, at: 0 };
@@ -129,7 +131,8 @@ export class Game {
   }
   /** recompute cached stats after anything that changes them */
   refresh() {
-    this.c = calc(this);
+    this.cs = this.s.squad.map((_, i) => calc(this, { abom: i }));
+    this.c = this.cs[0];
     if (this.pl && this.pl.hp > this.c.maxHp) this.pl.hp = this.c.maxHp;
   }
 
@@ -164,7 +167,16 @@ export class Game {
     }
   }
 
-  abilities(): AbilityId[] {
-    return this.c.abilities;
+  /** every ability in the squad, with who owns it (cooldowns are per Abomination) */
+  abilities(): { abom: number; id: AbilityId }[] {
+    return this.cs.flatMap((c, abom) => c.abilities.map((id) => ({ abom, id })));
+  }
+  /** the whole squad's damage per second */
+  dps() {
+    return squadDps(this.cs);
+  }
+  /** Soul Essence or drop bonus, added up over the squad */
+  bonus(st: "ess" | "drop") {
+    return squadBonus(this, st);
   }
 }

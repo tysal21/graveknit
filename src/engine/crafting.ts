@@ -81,7 +81,10 @@ export function toggleLock(g: Game, p: Part, i: number) {
 }
 
 export function equip(g: Game, p: Part, abom = 0) {
-  g.s.squad[abom].eq[BASES[p.base].slot] = p.id;
+  const slot = BASES[p.base].slot;
+  // a part can only be worn by one Abomination: take it off whoever had it
+  for (const a of g.s.squad) if (a.eq[slot] === p.id) delete a.eq[slot];
+  g.s.squad[abom].eq[slot] = p.id;
   p.isNew = false;
   g.refresh();
   tutEvent(g, "equip");

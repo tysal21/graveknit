@@ -14,7 +14,7 @@ import { tutEvent } from "../../engine/tutorial";
 import { Info } from "../common/Info";
 import { Panel } from "../common/Panel";
 import { act, useGame } from "../runtime";
-import { isPhone, openModal, setUi, showTab, ui } from "../uiStore";
+import { isPhone, openModal, selAbom, setUi, showTab, ui } from "../uiStore";
 
 /** open a part in the Stitchery (from the list or the Squad panel) */
 export function selectPart(id: number) {
@@ -49,18 +49,18 @@ export function matchesSearch(p: Part, q: string) {
 export function shownByFilters(g: Game, p: Part, base0: Stats) {
   const slotOk = !ui.slots.length || ui.slots.includes(BASES[p.base].slot);
   if (!slotOk || !matchesSearch(p, ui.search)) return false;
-  const upOk = !ui.up || (!g.isWorn(p) && partGain(g, p, base0) > 0.005);
+  const upOk = !ui.up || (!g.isWorn(p) && partGain(g, p, base0, selAbom(g.s.squad.length)) > 0.005);
   return slotOk && upOk;
 }
 
 export function filteredParts(g: Game) {
-  const base0 = calc(g, { ignoreBuffs: true });
+  const base0 = calc(g, { abom: selAbom(g.s.squad.length), ignoreBuffs: true });
   return g.s.parts.filter((p) => shownByFilters(g, p, base0));
 }
 
 export function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
   if (g.isWorn(p)) return <span className="muted">worn</span>;
-  const b = calc(g, { swap: p, ignoreBuffs: true });
+  const b = calc(g, { abom: selAbom(g.s.squad.length), swap: p, ignoreBuffs: true });
   const d = (b.dps - base0.dps) / base0.dps, h = (b.maxHp - base0.maxHp) / base0.maxHp;
   const f = (x: number, l: string) => (Math.abs(x) < 0.005 ? null : <span className={x > 0 ? "up" : "down"}>{x > 0 ? "+" : ""}{Math.round(x * 100)}% {l}</span>);
   const a = f(d, "dps"), c = f(h, "hp");
@@ -119,10 +119,10 @@ function PickBar() {
 
 /** the parts the list shows, in the chosen sort order (worn parts first) */
 export function sortedParts(g: Game) {
-  const base0 = calc(g, { ignoreBuffs: true });
+  const base0 = calc(g, { abom: selAbom(g.s.squad.length), ignoreBuffs: true });
   const sort = g.s.opt.sort;
   const l = filteredParts(g);
-  const gain = new Map(l.map((p) => [p.id, sort === "upgrade" ? partGain(g, p, base0) : 0]));
+  const gain = new Map(l.map((p) => [p.id, sort === "upgrade" ? partGain(g, p, base0, selAbom(g.s.squad.length)) : 0]));
   return l.sort((a, b) =>
     +g.isWorn(b) - +g.isWorn(a) ||
     (sort === "upgrade" ? gain.get(b.id)! - gain.get(a.id)! : sort === "ilvl" ? b.ilvl - a.ilvl : sort === "tier" ? tierPoints(b) - tierPoints(a) : 0) ||
@@ -133,12 +133,12 @@ export function sortedParts(g: Game) {
 /** a key that changes whenever the list's contents or order could change */
 export const listKey = (g: Game) => {
   const s = g.s;
-  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad[0].eq) + ":" + ui.up + ui.slots.join() + ui.search + s.opt.sort + JSON.stringify(s.gens) + s.squad[0].infusion;
+  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad) + ":" + ui.abom + ui.up + ui.slots.join() + ui.search + s.opt.sort + JSON.stringify(s.gens);
 };
 
 function StashList() {
   const g = useGame();
-  const base0 = calc(g, { ignoreBuffs: true });
+  const base0 = calc(g, { abom: selAbom(g.s.squad.length), ignoreBuffs: true });
   // the list only needs rebuilding when parts, filters or worn gear change
   const key = listKey(g);
   // eslint-disable-next-line react-hooks/exhaustive-deps

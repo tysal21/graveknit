@@ -7,7 +7,7 @@ import { startBoss } from "../../engine/combat";
 import { fmt } from "../../engine/format";
 import { exportSave, importSave, saveToBrowser, wipeBrowserSave } from "../../engine/save";
 import { renderMany, renderSummary } from "../../engine/stash";
-import { tutFinish, tutGo } from "../../engine/tutorial";
+import { bossHintKey, lessonKey, tutFinish, tutGo } from "../../engine/tutorial";
 import { Modal } from "../common/Modal";
 import { act, startGame, useGame } from "../runtime";
 import { filteredParts } from "../panels/StitcheryPanel";
@@ -31,21 +31,26 @@ export function IntroModal() {
   );
 }
 
+/** "**bold**" in lesson text becomes <b>bold</b> */
+function Rich({ text }: { text: string }) {
+  return <>{text.split("**").map((bit, i) => (i % 2 ? <b key={i}>{bit}</b> : bit))}</>;
+}
+
 export function BossLessonModal() {
+  const g = useGame();
+  const b = g.act().boss;
   return (
     <Modal>
-      <h2>How the Warden fights</h2>
-      <p style={{ margin: 0 }}>Kill him within 30 seconds, or his lantern unmakes you. He telegraphs his moves a few seconds ahead. Each move has a right answer:</p>
+      <h2>How {b.name.replace(/^The /, "the ")} fights</h2>
+      <p style={{ margin: 0 }}><Rich text={b.lesson.intro} /></p>
       <ul>
-        <li><b>He reaches for the bell:</b> interrupt with <b>Bury</b> (Gravedigger's Arm, from Drunk Gravediggers), or he heals 15%.</li>
-        <li><b>He raises his lantern:</b> you <b>can't block this yet</b>. Make sure you have enough Max HP to take the hit. Ward (his Lantern Core) and Phase (Wraith Core) both drop from the Warden himself, so after your first win you can block or dodge it on later fights.</li>
-        <li><b>The lantern gutters:</b> he takes +50% damage. Fire <b>Cleave</b> and <b>Haste</b> now.</li>
+        {b.lesson.moves.map((m, i) => <li key={i}><Rich text={m} /></li>)}
       </ul>
-      <p style={{ margin: 0 }}>You only get two abilities: one from your Main Arm and one from your Soul Core. Pick the pair that answers the moves that hurt you most.</p>
-      <p className="muted" style={{ margin: 0 }}>The right button glows when it matters. Use keys 1 and 2. Turn off Auto abilities in the Crypt if you want to time them yourself.</p>
+      <p style={{ margin: 0 }}><Rich text={b.lesson.outro} /></p>
+      <p className="muted" style={{ margin: 0 }}>The right button glows when it matters. Use keys 1 to {Math.max(2, g.abilities().length)}. Turn off Auto abilities in the Crypt if you want to time them yourself.</p>
       <div className="row">
         <button className="btn" onClick={closeModal}>Not yet</button>
-        <button className="btn primary" onClick={() => { act((g) => { g.s.seen.bossLesson = 1; g.s.seen.hBoss = 1; g.s.hint = null; startBoss(g); }); closeModal(); }}>Begin the fight</button>
+        <button className="btn primary" onClick={() => { act((g) => { g.s.seen[lessonKey(b.id)] = 1; g.s.seen[bossHintKey(b.id)] = 1; g.s.hint = null; startBoss(g); }); closeModal(); }}>Begin the fight</button>
       </div>
     </Modal>
   );

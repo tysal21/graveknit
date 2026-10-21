@@ -16,7 +16,7 @@ Pushing to `main` publishes the game to GitHub Pages automatically (`.github/wor
 
 ## How the code is organised
 
-- `src/content/` is the game's data: balance numbers (`tune.ts`), affixes, abilities, generators, Rituals, the tutorial, and one file per act (`act1.ts`...). Register new acts in `acts.ts`. **Every balance number lives in exactly one place.**
+- `src/content/` is the game's data: balance numbers (`tune.ts`), affixes, abilities, generators, Rituals, the tutorial, and one file per act (`act1.ts`, `act2.ts`...). Register new acts in `acts.ts`. **Every balance number lives in exactly one place.**
 - `src/engine/` is the game rules, with no screen code. Everything takes a `Game` (`game.ts`) holding the saved `GameState` (`state.ts`) plus the live fight. Randomness goes through `g.rng` so tests can use a seed, and so the rules can move to a server in Phase 4.
 - `src/ui/` is the screen (React). `runtime.ts` runs the game loop and saves; `uiStore.ts` holds what's selected and open; `panels/` has Squad, Crypt, Stitchery and Graveyard; `common/Tips.tsx` has every info blip.
 - `tests/` has engine checks and `tests/bots/` the balance bots.
@@ -37,6 +37,9 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - **Bone Altar:** bonus = 25% × log10(1 + given ÷ 500); the button sacrifices half your Corpse Mass. Show the before/after preview under the button and DPS before/after in the log. **No in-fight Altar chip.** Don't make it stronger.
 - **Affix tiers:** T5 at item level 1, T4 at 3, T3 at 8, T2 at 20, T1 at 35. Roll odds 45/30/15/7/3.
 - **Notoriety:** each level ×1.25 enemy HP and damage (stacking), +10% drops, +2 item level.
+- **Stage guardians:** the last kill of Stages 2-4 and 12-14 (first clear only) is a named mini-boss with one boss move and a guaranteed Magic drop. Tuned so the untouched tutorial kit loses and one ~20% upgrade wins. No enrage; losing drops you a stage. Each new act gets guardians on its 2nd-4th stages.
+- **Ossuary Colossus (Act 2):** 40× trash HP (more than the Warden's 20×), 30 s enrage, slams three times (twice in a row at the end). Bots: about 20-45 minutes after the Warden.
+- **Squad:** slot 2 opens at Stage 20, slot 3 at 40. New Abominations start empty. Only the Vanguard (slot 1) takes hits; everyone's damage and abilities add up. Soul Essence and drop bonuses from parts add up across the squad; generator and Thrall bonuses count once.
 - **Boss victory:** a SLAIN stamp, then a loot pop-up (parts open on the Workbench, Thrall banner) on first kills and new Thralls. Repeat kills get a corner toast unless "Victory pop-up every kill" is on. Every future boss uses this.
 - Drop rates don't get stingier over time.
 

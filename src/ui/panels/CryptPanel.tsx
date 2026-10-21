@@ -1,8 +1,9 @@
-import { useEffect } from "react";
-import { ABILITY, type AbilityId } from "../../content/abilities";
-import { bossById } from "../../content/acts";
+import { useEffect, useState } from "react";
+import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
+import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
-import { chooseStage, startBoss, useAbility } from "../../engine/combat";
+import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, startBoss, useAbility } from "../../engine/combat";
+import { lessonKey } from "../../engine/tutorial";
 import { fmt, pct } from "../../engine/format";
 import { hasCounterFor } from "../../engine/stats";
 import { Bar } from "../common/Bar";
@@ -13,21 +14,20 @@ import { openModal, SLAIN_MS, ui } from "../uiStore";
 export function challengeBoss() {
   act((g) => {
     if (!g.bossReady()) return;
-    if (g.s.seen.bossLesson) startBoss(g);
+    if (g.s.seen[lessonKey(g.act().boss.id)]) startBoss(g);
     else openModal({ kind: "bossLesson" });
   });
 }
 
-const useAb = (id: AbilityId) => act((g) => useAbility(g, id, true));
+const useAb = (id: AbilityId, abom: number) => act((g) => useAbility(g, id, true, abom));
 
-/** keys 1 and 2 fire your two abilities */
+/** keys 1 to 4 fire the squad's abilities, in the order the buttons show */
 function useAbilityKeys() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).matches("input,select,textarea")) return;
-      const abs = getGame().c.abilities;
-      if (e.key === "1" && abs[0]) useAb(abs[0]);
-      if (e.key === "2" && abs[1]) useAb(abs[1]);
+      const a = getGame().abilities()[+e.key - 1];
+      if (a) useAb(a.id, a.abom);
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
@@ -37,16 +37,16 @@ function useAbilityKeys() {
 function Telegraph() {
   const g = useGame();
   const f = g.foe!;
-  const b = bossById(f.bossId!);
+  const b = foeScript(f);
   const e = f.cur;
   const left = (until: number, span: number) => <Bar kind={e?.type === "weak" ? "" : "enrage"} value={(until - f.t) / span} />;
   if (e && e.type === "heal")
-    return <div className="tele live"><span className="ct">Counter: Interrupt (Bury)</span><span>{b.moves[e.move].tele}</span>{left(e.end, TUNE.telegraphSecs)}</div>;
+    return <div className="tele live"><span className="ct">Counter: {COUNTER_TEXT.heal}</span><span>{b.moves[e.move].tele}</span>{left(e.end, TUNE.telegraphSecs)}</div>;
   if (e && e.type === "blast") {
-    const noCounter = !hasCounterFor(g.c.abilities, "blast");
+    const noCounter = !hasCounterFor(g.abilities().map((a) => a.id), "blast");
     return (
       <div className="tele live">
-        <span className="ct">Counter: Shield (Ward) or Dodge (Phase)</span>
+        <span className="ct">Counter: {COUNTER_TEXT.blast}</span>
         <span>
           {b.moves[e.move].tele}
           {noCounter && <b> You can't block this yet. Brace for the hit and make sure your Max HP can take it.</b>}
@@ -56,20 +56,45 @@ function Telegraph() {
     );
   }
   if (e && e.type === "weak")
-    return <div className="tele window"><span className="ct" style={{ color: "var(--good)" }}>Opening: Burst now (Cleave, Haste)</span><span>{b.moves[e.move].tele}</span>{left(f.weakUntil, TUNE.weakSecs)}</div>;
+    return <div className="tele window"><span className="ct" style={{ color: "var(--good)" }}>Opening: {COUNTER_TEXT.weak}</span><span>{b.moves[e.move].tele}</span>{left(f.weakUntil, TUNE.weakSecs)}</div>;
   if (f.t < f.stunUntil) return <div className="tele window"><span className="ct" style={{ color: "var(--good)" }}>Staggered</span><span>{b.stagger}</span></div>;
   return <div className="tele"><span className="faint">{b.idle}</span></div>;
+}
+
+/** "How to beat" rows for a boss or guardian, built from its moves */
+function MoveList() {
+  const g = useGame();
+  const f = g.foe!;
+  const sc = foeScript(f);
+  const timed = f.kind === "boss";
+  const them = f.kind === "boss" ? g.act().boss.them : "it";
+  return (
+    <>
+      <p style={{ margin: 0 }}>{timed ? `Kill ${them} within ${TUNE.enrage} seconds. Watch for ${them === "him" ? "his" : "its"} moves:` : Object.keys(sc.moves).length ? "No time limit, but watch for its move:" : "No time limit and no tricks. It just has a lot of HP and hits hard."}</p>
+      {Object.values(sc.moves).map((m, i) => (
+        <div className="row" key={i}><span>{m.short}</span><span>{COUNTER_TEXT[m.type]}</span></div>
+      ))}
+      <p className="faint" style={{ margin: 0 }}>Keys 1 to {Math.max(2, g.abilities().length)} use your abilities.</p>
+    </>
+  );
 }
 
 export function CryptPanel() {
   useAbilityKeys();
   const g = useGame();
-  const s = g.s, f = g.foe, p = g.pl, c = g.c;
+  const s = g.s, f = g.foe, p = g.pl;
   const actDef = g.act();
   const boss = f?.kind === "boss";
+  const special = !!f && isSpecial(f);
   const bdef = actDef.boss;
+  // which act's stages the picker shows; follows the current act unless you browse
+  const [viewN, setViewN] = useState<number | null>(null);
+  const shown = ACTS.find((a) => a.n === viewN) ?? actDef;
+  const openActs = ACTS.filter((a) => s.maxStage >= a.stages[0]);
   const stages: number[] = [];
-  for (let n = actDef.stages[0]; n < bdef.stage; n++) stages.push(n);
+  for (let n = shown.stages[0]; n < shown.boss.stage; n++) stages.push(n);
+  const abilities = g.abilities();
+  const many = s.squad.length > 1;
   const w = actDef.stageFoes[s.stage] || {};
   const tot = Object.values(w).reduce((a, b) => a + b, 0);
   const setOpt = (k: "push" | "auto" | "boss" | "bossPop", v: boolean) => act((g) => (g.s.opt[k] = v));
@@ -78,18 +103,31 @@ export function CryptPanel() {
   return (
     <Panel id="crypt" title="Crypt" small={boss ? `Stage ${bdef.stage} · Boss` : `Stage ${s.stage} · kill ${s.kills + 1} of ${TUNE.killsPerStage}`}>
       <div className="block">
+        {openActs.length > 1 && (
+          <div className="actpick">
+            {openActs.map((a) => (
+              <button key={a.n} className={a === shown ? "on" : ""} onClick={() => setViewN(a.n)}>{a.name}</button>
+            ))}
+          </div>
+        )}
         <div className="stages" id="stages">
           {stages.map((n) => {
             const lock = n > s.maxStage;
             return (
-              <button key={n} className={`stg ${n === s.stage && !boss ? "cur" : ""} ${lock ? "lock" : ""}`} disabled={lock} aria-label={`Stage ${n}`} onClick={() => act((g) => chooseStage(g, n))}>
+              <button key={n} className={`stg ${n === s.stage && !boss ? "cur" : ""} ${lock ? "lock" : ""}`} disabled={lock} aria-label={`Stage ${n}`} title={guardianFor(n) && !s.seen["g" + n] ? `${guardianFor(n)!.name} guards the end of this stage` : undefined} onClick={() => { act((g) => chooseStage(g, n)); setViewN(null); }}>
                 {n}
               </button>
             );
           })}
-          <button className={`stg boss ${boss ? "cur" : ""} ${s.maxStage < bdef.stage ? "lock" : ""}`} disabled={s.maxStage < bdef.stage} onClick={challengeBoss}>
-            {bdef.stage} · {shortName.split(" ").pop()}
-          </button>
+          {shown === actDef ? (
+            <button className={`stg boss ${boss ? "cur" : ""} ${s.maxStage < bdef.stage ? "lock" : ""}`} disabled={s.maxStage < bdef.stage} onClick={challengeBoss}>
+              {bdef.stage} · {shortName.split(" ").pop()}
+            </button>
+          ) : (
+            <button className="stg boss lock" disabled title="Go to one of this act's stages to fight its boss">
+              {shown.boss.stage} · {shown.boss.name.replace(/^The /, "").split(" ").pop()}
+            </button>
+          )}
         </div>
         <div className="toggles">
           <label><input type="checkbox" id="optPush" checked={s.opt.push} onChange={(e) => setOpt("push", e.target.checked)} /> Push to next stage</label>
@@ -98,29 +136,34 @@ export function CryptPanel() {
           {g.bossCleared() && <label title="First kills and new Thralls always show it. Otherwise repeat kills get a small note in the corner."><input type="checkbox" checked={s.opt.bossPop} onChange={(e) => setOpt("bossPop", e.target.checked)} /> Victory pop-up every kill</label>}
         </div>
       </div>
-      <div className={`fight ${boss ? "bossfight" : ""}`} id="fight">
+      <div className={`fight ${special ? "bossfight" : ""}`} id="fight">
         <div className="foe">
           <b>{f?.name ?? "…"}</b>
           <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
         </div>
         <Bar tall kind="enemy" value={f ? f.hp / f.max : 1} />
-        {boss && f && (
+        {special && f && (
           <div className="block">
-            <div className="row" style={{ fontSize: ".78rem" }}>
-              <span className="muted">Enrage</span>
-              <span className="num muted">{(TUNE.enrage - f.t).toFixed(1)}s</span>
-            </div>
-            <Bar kind="enrage" value={(TUNE.enrage - f.t) / TUNE.enrage} />
+            {boss && (
+              <>
+                <div className="row" style={{ fontSize: ".78rem" }}>
+                  <span className="muted">Enrage</span>
+                  <span className="num muted">{(TUNE.enrage - f.t).toFixed(1)}s</span>
+                </div>
+                <Bar kind="enrage" value={(TUNE.enrage - f.t) / TUNE.enrage} />
+              </>
+            )}
+            {!boss && <div className="faint" style={{ fontSize: ".78rem" }}>Stage guardian · drops a Magic part</div>}
             <Telegraph />
           </div>
         )}
         <div className="abil" id="abil">
-          {c.abilities.map((a, i) => {
-            const left = p ? (p.cd[a] || 0) - s.clock : 0;
-            const right = boss && f?.cur && ABILITY[a].counters === f.cur.type && !f.cur.done;
+          {abilities.map(({ abom, id: a }, i) => {
+            const left = p ? (p.cd[cdKey(abom, a)] || 0) - s.clock : 0;
+            const right = special && f?.cur && ABILITY[a].counters === f.cur.type && !f.cur.done;
             return (
-              <button key={a} className={`btn ${right && left <= 0 ? "right" : ""}`} id={"ab-" + a} disabled={left > 0} onClick={() => useAb(a)}>
-                <b>{i + 1} · {ABILITY[a].name}</b>
+              <button key={abom + a} className={`btn ${right && left <= 0 ? "right" : ""}`} id={abom ? `ab-${a}-${abom + 1}` : "ab-" + a} disabled={left > 0} onClick={() => useAb(a, abom)}>
+                <b>{i + 1} · {ABILITY[a].name}{many && <span className="who">#{abom + 1}</span>}</b>
                 <span className="sub">{ABILITY[a].type}</span>
                 <i className="cdfill" style={{ width: left > 0 ? (left / ABILITY[a].cd) * 100 + "%" : 0 }} />
               </button>
@@ -140,16 +183,10 @@ export function CryptPanel() {
         </button>
       )}
       <div className="block">
-        <h3>{boss ? `How to beat the ${shortName}` : "Who lives here"}</h3>
+        <h3>{special ? `How to beat ${f!.name.replace(/^The /, "the ")}` : "Who lives here"}</h3>
         <div className="foes">
-          {boss ? (
-            <>
-              <p style={{ margin: 0 }}>Kill him within {TUNE.enrage} seconds. Watch for his three moves:</p>
-              <div className="row"><span>Tolls the bell (heals {pct(TUNE.healPct)})</span><span>Interrupt: Bury</span></div>
-              <div className="row"><span>Raises his lantern (big blast)</span><span>Shield or Dodge: Ward, Phase</span></div>
-              <div className="row"><span>Lantern gutters (takes +50%)</span><span>Burst: Cleave, Haste</span></div>
-              <p className="faint" style={{ margin: 0 }}>Keys 1 and 2 use your abilities.</p>
-            </>
+          {special ? (
+            <MoveList />
           ) : (
             <>
               {Object.keys(w).map((k) => {
@@ -157,7 +194,7 @@ export function CryptPanel() {
                 return (
                   <div className="row" key={k}>
                     <span>{foe.name} <span className="faint">{Math.round((w[k] / tot) * 100)}%</span></span>
-                    <span>{actDef.bases[foe.drop].name}{foe.cm ? ", Corpse Mass" : ""}</span>
+                    <span>{BASES[foe.drop].name}{foe.cm ? ", Corpse Mass" : ""}</span>
                   </div>
                 );
               })}

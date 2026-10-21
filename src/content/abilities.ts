@@ -30,3 +30,10 @@ export const ABILITY_TUNE = {
   phase: { dur: 4 },
   autoDefensiveBelow: 0.6,
 };
+
+/** how each kind of boss move is answered, for telegraphs and the "How to beat" list */
+export const COUNTER_TEXT: Record<BossMoveType, string> = {
+  heal: "Interrupt: Bury",
+  blast: "Shield or Dodge: Ward, Phase",
+  weak: "Burst: Cleave, Haste",
+};

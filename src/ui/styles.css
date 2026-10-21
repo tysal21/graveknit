@@ -228,3 +228,14 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .toast{background:var(--panel);border:1px solid var(--line2);border-left:3px solid var(--trophy);border-radius:6px;padding:8px 10px;text-align:left;font-size:.85rem;animation:toastIn .25s ease-out}
 @keyframes toastIn{0%{transform:translateY(8px);opacity:0}100%{transform:none;opacity:1}}
 @media (max-width:760px){.toasts{bottom:64px;right:8px;left:8px;max-width:none} .slain{font-size:2.2rem}}
+
+/* squad: pick which Abomination the panel shows */
+.squadTabs{display:flex;gap:4px;flex-wrap:wrap}
+.squadTabs button{flex:1 1 0;min-width:8rem;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-radius:4px;background:var(--panel2);padding:5px 8px;text-align:left;font-size:.85rem}
+.squadTabs button.on{border-color:var(--lantern)}
+.squadTabs button span{font-size:.72rem}
+.slot.empty{border-style:dashed;opacity:.8}
+.abil .who{font-size:.7rem;color:var(--faint);margin-left:4px}
+.actpick{display:flex;gap:4px;margin-bottom:6px}
+.actpick button{border:1px solid var(--line);border-radius:4px;background:var(--panel2);padding:2px 8px;font-size:.78rem}
+.actpick button.on{border-color:var(--lantern);color:var(--lantern)}

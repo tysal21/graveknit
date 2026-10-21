@@ -84,7 +84,7 @@ export function calc(g: Game, opts: { abom?: number; swap?: Part; ignoreBuffs?: 
   const abom = opts.abom ?? 0;
   const s = g.s;
   const eq = wornParts(g, abom, opts.swap);
-  const t: Record<StatId, number> = { flat: TUNE.baseHit, dmgPct: 0, cc: TUNE.baseCrit, cm: TUNE.baseCritMulti, as: 0, poison: 0, hpFlat: TUNE.baseHp, ess: 0, drop: 0 };
+  const t: Record<StatId, number> = { flat: TUNE.baseHit, dmgPct: 0, cc: TUNE.baseCrit, cm: TUNE.baseCritMulti, as: 0, poison: 0, hpFlat: TUNE.baseHp, hpPct: 0, ess: 0, drop: 0 };
   for (const p of eq) {
     for (const [st, f] of BASES[p.base].imp) t[st] += f(p.ilvl);
     for (const a of p.affixes) t[AFFIX[a.k].stat] += affixValue(a, p.ilvl);
@@ -102,7 +102,7 @@ export function calc(g: Game, opts: { abom?: number; swap?: Part; ignoreBuffs?: 
   const hit = t.flat * mult;
   const aps = TUNE.baseAps * (1 + t.as / 100);
   const poisonDps = t.poison * inf * (1 + altar) * moon;
-  const maxHp = t.hpFlat * inf;
+  const maxHp = t.hpFlat * inf * (1 + t.hpPct / 100);
   const dps = hit * aps * (1 + ((cc / 100) * t.cm) / 100) + poisonDps;
   const main = eq.find((p) => BASES[p.base].slot === "main");
   const core = eq.find((p) => BASES[p.base].slot === "core");
@@ -110,12 +110,30 @@ export function calc(g: Game, opts: { abom?: number; swap?: Part; ignoreBuffs?: 
   return { ...t, cc, hit, aps, poisonDps, maxHp, dps, lvl, cap, integrity: total, inf, altar, moon, abilities };
 }
 
-/** how much better wearing `p` would be: % DPS change plus half the % HP change */
-export function partGain(g: Game, p: Part, base0 = calc(g, { ignoreBuffs: true })): number {
+/** how much better wearing `p` on Abomination `abom` would be: % DPS change plus half the % HP change */
+export function partGain(g: Game, p: Part, base0?: Stats, abom = 0): number {
   if (g.isWorn(p)) return 0;
-  const c = calc(g, { swap: p, ignoreBuffs: true });
+  base0 ??= calc(g, { abom, ignoreBuffs: true });
+  const c = calc(g, { abom, swap: p, ignoreBuffs: true });
   return (c.dps - base0.dps) / base0.dps + (0.5 * (c.maxHp - base0.maxHp)) / base0.maxHp;
 }
+
+/** the part of a stat that every squad member gets alike (generators, Thrall auras), so it isn't counted twice */
+export function sharedBonus(g: Game, st: StatId) {
+  let v = 0;
+  for (const gen of GENERATORS) if (gen.bonus?.stat === st) v += gen.bonus.value * (g.s.gens[gen.id] || 0);
+  for (const act of ACTS) if (act.boss.thrall.stat === st && g.s.bosses[act.boss.id]?.thrall) v += act.boss.thrall.value;
+  return v;
+}
+
+/** Soul Essence and drop bonuses add up across the squad: the Vanguard's full bonus plus what the others' parts give */
+export function squadBonus(g: Game, st: "ess" | "drop", cs: Stats[] = g.cs) {
+  const shared = sharedBonus(g, st);
+  return cs.reduce((sum, c, i) => sum + (i === 0 ? c[st] : c[st] - shared), 0);
+}
+
+/** the squad's damage adds up */
+export const squadDps = (cs: Stats[]) => cs.reduce((sum, c) => sum + c.dps, 0);
 
 export const hasCounterFor = (abilities: AbilityId[], type: "heal" | "blast" | "weak") =>
   abilities.some((a) => ABILITY[a].counters === type);

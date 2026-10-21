@@ -51,6 +51,30 @@ export const ACT1: ActDef = {
     10: "The Crypt Warden waits below. He has kept the dead in their graves for longer than you've been alive.",
   },
 
+  // the last kill of Stages 2 to 4, the first time: each one previews a Warden move
+  guardians: {
+    2: {
+      name: "The Rat King", foe: "rat", hp: 6.25, dmg: 2.2, int: 1.2, drop: "gnawedHand",
+      intro: "The rats part. Something wearing a crown of tails waddles forward.",
+      defeat: "The Rat King's subjects carry your Abomination off in pieces.",
+      idle: "Six rats, knotted at the tail, all of them furious. No tricks. Just a lot of rat.",
+    },
+    3: {
+      name: "The Gravedigger Foreman", foe: "digger", hp: 5.5, dmg: 2, int: 1.6, drop: "diggerArm",
+      move: { type: "heal", short: "Takes a swig (heals 15%)", tele: "The Foreman uncorks his flask…", hit: "He drinks deep and mends {n} HP. Bury (from a Gravedigger's Arm) would have stopped that.", countered: "Bury! The flask goes flying.", first: 5, every: 8 },
+      intro: "The Gravedigger Foreman arrives, sober for once, and furious about it.",
+      defeat: "The Foreman buries your Abomination. Professionally.",
+      idle: "The Foreman eyes his flask. Hit him before he drinks.",
+    },
+    4: {
+      name: "The Hound Alpha", foe: "hound", hp: 3, dmg: 1.6, int: 0.8, drop: "houndSkull",
+      move: { type: "weak", short: "Stops to howl (takes +50%)", tele: "The Alpha throws its head back to howl. It takes +50% damage.", hit: "The Alpha howls, wide open. Cleave and Haste now.", first: 5, every: 9 },
+      intro: "The pack falls quiet. The Hound Alpha is bigger than the others, and much, much hungrier.",
+      defeat: "The Alpha drags your Abomination off. The rest of the pack gets the leftovers.",
+      idle: "The Alpha circles. Save Cleave for when it howls.",
+    },
+  },
+
   boss: {
     id: "warden",
     name: "The Crypt Warden",
@@ -65,13 +89,23 @@ export const ACT1: ActDef = {
       { move: "gutter", at: 26.5, jitter: 0 },
     ],
     moves: {
-      bell: { type: "heal", tele: "The Warden reaches for the crypt bell…", hit: "The bell tolls. The Warden mends {n} HP.", countered: "Bury! The bell falls silent and the Warden staggers." },
-      lantern: { type: "blast", tele: "The Warden raises his lantern…", hit: "The lantern blast hits for {n}." },
-      gutter: { type: "weak", tele: "The lantern gutters. The Warden is blind and takes +50% damage.", hit: "The lantern gutters. The Warden is blind." },
+      bell: { type: "heal", short: "Tolls the bell (heals 15%)", tele: "The Warden reaches for the crypt bell…", hit: "The bell tolls. The Warden mends {n} HP.", countered: "Bury! The bell falls silent and the Warden staggers." },
+      lantern: { type: "blast", short: "Raises his lantern (big blast)", tele: "The Warden raises his lantern…", hit: "The lantern blast hits for {n}." },
+      gutter: { type: "weak", short: "Lantern gutters (takes +50%)", tele: "The lantern gutters. The Warden is blind and takes +50% damage.", hit: "The lantern gutters. The Warden is blind." },
     },
     lootPool: ["gnawedHand", "diggerArm", "houndSkull", "watchRib", "cleaverArm", "cleaverArm"],
     lootBonus: { chance: 0.15, base: "wraithCore", copies: 6 },
     thrall: { name: "Lantern-Bound Thrall", stat: "drop", value: 15, text: "+15% part drop chance" },
+    them: "him",
+    lesson: {
+      intro: "Kill him within 30 seconds, or his lantern unmakes you. He telegraphs his moves a few seconds ahead. Each move has a right answer:",
+      moves: [
+        "**He reaches for the bell:** interrupt with **Bury** (Gravedigger's Arm, from Drunk Gravediggers), or he heals 15%.",
+        "**He raises his lantern:** you **can't block this yet**. Make sure you have enough Max HP to take the hit. Ward (his Lantern Core) and Phase (Wraith Core) both drop from the Warden himself, so after your first win you can block or dodge it on later fights.",
+        "**The lantern gutters:** he takes +50% damage. Fire **Cleave** and **Haste** now.",
+      ],
+      outro: "You only get two abilities: one from your Main Arm and one from your Soul Core. Pick the pair that answers the moves that hurt you most.",
+    },
     intro: "You descend beneath the chapel. The Warden raises his head.",
     idle: "The Warden watches you. Wait for his next move.",
     stagger: "The Warden reels from the interrupted bell (+50% damage taken).",

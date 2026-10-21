@@ -69,7 +69,8 @@ export const infuseCost = (level: number) => Math.floor(TUNE.infuseBase * Math.p
 
 export function canInfuse(g: Game, abom = 0) {
   const a = g.s.squad[abom];
-  return a.infusion < g.c.cap && g.s.ess >= infuseCost(a.infusion);
+  const c = g.cs[abom];
+  return !!a && !!c && a.infusion < c.cap && g.s.ess >= infuseCost(a.infusion);
 }
 
 export function infuse(g: Game, abom = 0) {
@@ -90,7 +91,7 @@ export function altarPreview(g: Game) {
   const give = altarOffer(g);
   const now = altarBonus(g.s.altar);
   const after = altarBonus(g.s.altar + give);
-  const dps = g.c.dps;
+  const dps = g.dps();
   return { give, now, after, dps, dpsAfter: (dps * (1 + after)) / (1 + now) };
 }
 
@@ -100,5 +101,5 @@ export function sacrifice(g: Game) {
   g.s.cm -= pv.give;
   g.s.altar += pv.give;
   g.refresh();
-  g.log(`You feed ${fmt(pv.give)} Corpse Mass to the Bone Altar. The bones shift. Damage +${(pv.now * 100).toFixed(1)}% → +${(altarBonus(g.s.altar) * 100).toFixed(1)}% for this run (DPS ${fmt(pv.dps)} → ${fmt(g.c.dps)}).`);
+  g.log(`You feed ${fmt(pv.give)} Corpse Mass to the Bone Altar. The bones shift. Damage +${(pv.now * 100).toFixed(1)}% → +${(altarBonus(g.s.altar) * 100).toFixed(1)}% for this run (DPS ${fmt(pv.dps)} → ${fmt(g.dps())}).`);
 }

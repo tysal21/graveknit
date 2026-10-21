@@ -1,0 +1,70 @@
+// Test bots: simple players that play Act 1 at full speed and report how long the first Warden kill takes.
+// Run with: npm run bots
+import { describe, expect, it } from "vitest";
+import { GENERATORS } from "../../src/content/generators";
+import { equip, marrow } from "../../src/engine/crafting";
+import { buyGenerator, castRitual, genCost, infuse } from "../../src/engine/economy";
+import { partGain } from "../../src/engine/stats";
+import { RITUALS } from "../../src/content/rituals";
+import type { Game } from "../../src/engine/game";
+import { newGame } from "../helpers";
+
+/** what an attentive player does every few seconds */
+function playTurn(g: Game) {
+  // stitch on any upgrade, for every squad member
+  for (let abom = 0; abom < g.s.squad.length; abom++) {
+    let best;
+    do {
+      best = null;
+      let top = 0.005;
+      for (const p of g.s.parts) {
+        const gain = partGain(g, p, undefined, abom);
+        if (gain > top) [best, top] = [p, gain];
+      }
+      if (best) equip(g, best, abom);
+    } while (best);
+  }
+  // reroll worn Magic/Rare parts with spare Marrow
+  for (const p of g.s.parts) if (g.isWorn(p) && p.rarity !== "common" && g.s.marrow > 2) marrow(g, p);
+  for (let i = 0; i < 20; i++) for (let abom = 0; abom < g.s.squad.length; abom++) infuse(g, abom);
+  for (const r of RITUALS) if (r.id !== "moon" || g.foe?.kind === "boss") castRitual(g, r.id, false);
+  // buy the cheapest open generator
+  for (let i = 0; i < 20; i++) {
+    const open = GENERATORS.filter((x) => !x.later && g.s.maxStage >= x.unlock);
+    const cheapest = open.sort((a, b) => genCost(a, g.s.gens[a.id] || 0) - genCost(b, g.s.gens[b.id] || 0))[0];
+    if (!cheapest || g.s.cm < genCost(cheapest, g.s.gens[cheapest.id] || 0)) break;
+    buyGenerator(g, cheapest.id, false);
+  }
+}
+
+/** minutes of play until each boss first dies (Infinity if not within the limit) */
+function minutesToBosses(seed: number, ids: string[], limitMin: number) {
+  const g = newGame(seed);
+  g.s.opt.boss = true;
+  const out: Record<string, number> = {};
+  for (let t = 0; t < limitMin * 60; t += 5) {
+    g.advance(5);
+    playTurn(g);
+    for (const id of ids) if (out[id] === undefined && g.bossCleared(id)) out[id] = g.s.clock / 60;
+    if (ids.every((id) => out[id] !== undefined)) break;
+  }
+  return ids.map((id) => out[id] ?? Infinity);
+}
+
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return (s[Math.floor((s.length - 1) / 2)] + s[Math.ceil((s.length - 1) / 2)]) / 2;
+};
+
+describe("balance bots", () => {
+  it("beat the Crypt Warden in about 20 minutes and the Ossuary Colossus in about an hour", () => {
+    const runs = [1, 2, 3, 4, 5, 6].map((seed) => minutesToBosses(seed, ["warden", "colossus"], 240));
+    const warden = runs.map((r) => r[0]), colossus = runs.map((r) => r[1]);
+    console.log(`First Warden kill (minutes): ${warden.map((t) => t.toFixed(1)).join(", ")} · median ${median(warden).toFixed(1)}`);
+    console.log(`First Colossus kill (minutes): ${colossus.map((t) => t.toFixed(1)).join(", ")} · median ${median(colossus).toFixed(1)}`);
+    expect(median(warden)).toBeGreaterThan(8);
+    expect(median(warden)).toBeLessThan(45);
+    expect(median(colossus)).toBeGreaterThan(median(warden) + 15);
+    expect(median(colossus)).toBeLessThan(150);
+  }, 600_000);
+});

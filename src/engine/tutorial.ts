@@ -79,10 +79,27 @@ export function checkHints(g: Game) {
   } else if (!s.seen.hGens && s.maxStage >= 3) {
     s.seen.hGens = 1;
     s.hint = "gens";
-  } else if (!s.seen.hBoss && g.bossReady() && !g.bossCleared()) {
-    s.seen.hBoss = 1;
-    s.hint = "boss";
+  } else if (!s.seen.hDig && s.maxStage >= 11) {
+    s.seen.hDig = 1;
+    s.hint = "dig";
+  } else if (!s.seen.hSquad2 && s.squad.length >= 2) {
+    s.seen.hSquad2 = 1;
+    s.hint = "squad2";
+  } else if (g.bossReady() && !g.bossCleared()) {
+    // one tip per boss
+    const id = g.act().boss.id;
+    const key = bossHintKey(id);
+    if (!s.seen[key]) {
+      s.seen[key] = 1;
+      s.hint = id === "warden" ? "boss" : "boss2";
+    }
   }
 }
 
 export const currentHint = (g: Game) => (g.s.hint ? HINTS[g.s.hint] : null);
+
+/** the "seen" flag for a boss's ready tip */
+export const bossHintKey = (bossId: string) => (bossId === "warden" ? "hBoss" : "hBoss_" + bossId);
+
+/** the "seen" flag for a boss's lesson; the Warden's keeps its old name so old saves don't see it twice */
+export const lessonKey = (bossId: string) => (bossId === "warden" ? "bossLesson" : "lesson_" + bossId);

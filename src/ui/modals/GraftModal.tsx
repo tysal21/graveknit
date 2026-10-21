@@ -8,12 +8,12 @@ import type { Affix, Part } from "../../engine/state";
 import { calc } from "../../engine/stats";
 import { Modal } from "../common/Modal";
 import { act, useGame } from "../runtime";
-import { openModal, setUi } from "../uiStore";
+import { openModal, selAbom, setUi } from "../uiStore";
 
 const backToBench = () => openModal({ kind: "workbench" });
 
 function Delta({ g, from, to }: { g: Game; from: Part; to: Part }) {
-  const a = calc(g, { swap: from, ignoreBuffs: true }), b = calc(g, { swap: to, ignoreBuffs: true });
+  const a = calc(g, { abom: selAbom(g.s.squad.length), swap: from, ignoreBuffs: true }), b = calc(g, { abom: selAbom(g.s.squad.length), swap: to, ignoreBuffs: true });
   const f = (x: number, y: number, l: string) => {
     const d = (y - x) / x;
     return Math.abs(d) < 0.005 ? null : <span className={d > 0 ? "up" : "down"}>{d > 0 ? "+" : ""}{Math.round(d * 100)}% {l} </span>;
@@ -41,7 +41,7 @@ function Preview({ g, t, donor, dA, tA, hover }: { g: Game; t: Part; donor: Part
         {head}
         <p className="muted" style={{ margin: 0 }}>From <span className={`tc-${rarityClass(d)}`}>{partName(d)}</span>, each affix could become:</p>
         {d.affixes.map((a, k) => {
-          const best = graftSlots(t, a).map((i) => ({ i, c: graftResult(t, a, i) })).sort((x, y) => calc(g, { swap: y.c, ignoreBuffs: true }).dps - calc(g, { swap: x.c, ignoreBuffs: true }).dps)[0];
+          const best = graftSlots(t, a).map((i) => ({ i, c: graftResult(t, a, i) })).sort((x, y) => calc(g, { abom: selAbom(g.s.squad.length), swap: y.c, ignoreBuffs: true }).dps - calc(g, { abom: selAbom(g.s.squad.length), swap: x.c, ignoreBuffs: true }).dps)[0];
           if (!best) return null;
           return (
             <div className="af" key={k}>

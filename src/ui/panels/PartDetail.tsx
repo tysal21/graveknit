@@ -11,7 +11,7 @@ import { renderPart } from "../../engine/stash";
 import type { Part } from "../../engine/state";
 import { calc } from "../../engine/stats";
 import { act, useGame } from "../runtime";
-import { openModal, setUi, ui } from "../uiStore";
+import { openModal, selAbom, setUi, ui } from "../uiStore";
 
 function flashAfter(f: Flash | null, id: number) {
   if (f) setUi({ flash: { id, f, at: Date.now() } });
@@ -22,13 +22,16 @@ export function PartDetail({ part: p }: { part: Part }) {
   const s = g.s;
   const b = BASES[p.base];
   const worn = g.isWorn(p);
+  const ab = selAbom(s.squad.length);
+  const many = s.squad.length > 1;
+  const wearer = s.squad.find((a) => a.eq[b.slot] === p.id);
   const fl = ui.flash && ui.flash.id === p.id && Date.now() - ui.flash.at < 1500 ? ui.flash.f : {};
   const craftable = canCraft(p);
   const odds = tierOdds(p.ilvl);
   const lockedTiers = [1, 2, 3, 4, 5].filter((t) => p.ilvl < TUNE.tierIlvl[t]).map((t) => `T${t} at i${TUNE.tierIlvl[t]}`).join(", ");
   let cmp = null;
   if (!worn) {
-    const a = calc(g, { ignoreBuffs: true }), c2 = calc(g, { swap: p, ignoreBuffs: true });
+    const a = calc(g, { abom: ab, ignoreBuffs: true }), c2 = calc(g, { abom: ab, swap: p, ignoreBuffs: true });
     cmp = (
       <div className="cmp">
         <span>DPS {fmt(a.dps)} → <b className={c2.dps >= a.dps ? "up" : "down"}>{fmt(c2.dps)}</b></span>
@@ -86,7 +89,13 @@ export function PartDetail({ part: p }: { part: Part }) {
       )}
       {cmp}
       <div className="craft">
-        {worn ? <button className="btn" disabled>Worn</button> : <button className="btn primary" data-act="equip" onClick={() => act((g) => equip(g, p))}>Stitch it on</button>}
+        {worn && (!many || wearer === s.squad[ab]) ? (
+          <button className="btn" disabled>Worn{many && wearer ? ` by ${wearer.name}` : ""}</button>
+        ) : (
+          <button className="btn primary" data-act="equip" onClick={() => act((g) => equip(g, p, ab))}>
+            {many ? `Stitch onto ${s.squad[ab].name}` : "Stitch it on"}
+          </button>
+        )}
         <button className="btn" data-act="marrow" disabled={!craftable || s.marrow < 1} onClick={() => act((g) => flashAfter(marrow(g, p), p.id))}>
           Marrow Shard<span className="sub">Reroll unlocked affixes ({s.marrow})</span>
         </button>

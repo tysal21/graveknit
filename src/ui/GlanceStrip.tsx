@@ -37,7 +37,7 @@ export function usePills(): Pill[] {
   out.push({ on: ready, text: ready ? (g.bossCleared() ? `${short} ready to farm` : "(!) Boss ready") : fighting ? `Fighting the ${short}` : `Boss at Stage ${boss.stage}`, tab: "crypt" });
   const rr = RITUALS.filter((r) => s.rit[r.id].ready <= s.clock).length;
   out.push({ on: rr > 0 && !s.opt.rit, text: rr ? `${rr} Ritual${rr > 1 ? "s" : ""} ready` : "Rituals cooling", tab: "yard" });
-  const inf = canInfuse(g);
+  const inf = g.s.squad.some((_, i) => canInfuse(g, i));
   out.push({ on: inf, text: inf ? "Can infuse" : "Infusion", tab: "squad" });
   const piling = s.marrow >= 8 || s.dust >= 20;
   out.push({ on: piling, text: piling ? "Reagents piling up" : "Reagents", tab: "stitch" });

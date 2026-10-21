@@ -14,7 +14,7 @@ import { affixValue, isKept, partIntegrity, partName, rarityClass, rarityLabel }
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
-import { ui } from "../uiStore";
+import { selAbom, ui } from "../uiStore";
 
 // Info blips: hover (desktop) or tap (phone) anything with data-tip="key" to see where its number comes from.
 
@@ -71,8 +71,9 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
   const imp = b.imp.map(([st, f]) => IMPLICIT_TEXT[st](f(p.ilvl))).join(" · ");
   let cmp: ReactNode = null;
   if (!g.isWorn(p)) {
-    const a = calc(g, { ignoreBuffs: true }), c2 = calc(g, { swap: p, ignoreBuffs: true });
-    const w = g.partById(g.s.squad[0].eq[b.slot]);
+    const ab = selAbom(g.s.squad.length);
+    const a = calc(g, { abom: ab, ignoreBuffs: true }), c2 = calc(g, { abom: ab, swap: p, ignoreBuffs: true });
+    const w = g.partById(g.s.squad[ab].eq[b.slot]);
     cmp = (
       <Table
         rows={[
@@ -113,14 +114,18 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
 export function tipContent(g: Game, key: string): ReactNode {
   if (key.startsWith("part-")) return <PartTip g={g} id={+key.slice(5)} />;
   const s = g.s;
-  const c = calc(g);
-  const m = statSources(g);
+  const ab = selAbom(s.squad.length);
+  const c = calc(g, { abom: ab });
+  const m = statSources(g, ab);
   const st = s.stage;
-  const kill = essPerKill(st) * (1 + c.ess / 100);
+  const many = s.squad.length > 1;
+  const squadEss = g.bonus("ess");
+  const kill = essPerKill(st) * (1 + squadEss / 100);
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
   const raiseRow: Row[] = raise > 1 ? [["Raise the Fallen is active", `×${raise}`, "mul"]] : [];
   const boss = g.act().boss;
-  const abom = s.squad[0];
+  const abom = s.squad[ab];
+  const cmFoes = Object.values(g.act().foes).filter((f) => f.cm);
   const statTip = (id: StatId, h: string, p: string, unit: string, total: string) => <Tip h={h} p={p} rows={sourceRows(m[id], unit, total)} />;
 
   switch (key) {
@@ -128,7 +133,7 @@ export function tipContent(g: Game, key: string): ReactNode {
       return <Tip h="Corpse Mass" p="Buys generators in the Graveyard and feeds the Bone Altar." rows={[
         ["Generators", `${fmt(cmRate(g))}/s`],
         [`Each kill on Stage ${st}`, fmt(st * TUNE.cmPerKill)],
-        ["Drunk Gravedigger kills", "×5"],
+        ...cmFoes.map((f): Row => [`${f.name} kills`, `×${f.cm}`]),
         ["Grave Hunger Ritual", fmt(Math.max(RITUAL_TUNE.hungerMin, cmRate(g) * RITUAL_TUNE.hungerSecs))],
         [`${boss.name} kill`, String(TUNE.bossCm)],
         ["Rendering a part", "5 × item level"],
@@ -136,8 +141,8 @@ export function tipContent(g: Game, key: string): ReactNode {
     case "r-ess":
       return <Tip h="Soul Essence" p="Spent on Infusion in the Squad panel. Each level gives +12% damage and HP." rows={[
         [`Each kill on Stage ${st}`, fmt(kill)],
-        ["Includes your Soul Essence bonus", `+${Math.round(c.ess)}%`],
-        [`${boss.name} kill`, fmt(essPerKill(boss.stage) * TUNE.bossEssMult * (1 + c.ess / 100))],
+        [many ? "Includes your squad's Soul Essence bonus" : "Includes your Soul Essence bonus", `+${Math.round(squadEss)}%`],
+        [`${boss.name} kill`, fmt(essPerKill(boss.stage) * TUNE.bossEssMult * (1 + squadEss / 100))],
         ["Next Infusion level", fmt(infuseCost(abom.infusion))],
       ]} />;
     case "r-mar":
@@ -167,6 +172,7 @@ export function tipContent(g: Game, key: string): ReactNode {
         ["× Average crit bonus", `×${crit.toFixed(2)}`],
         ["+ Poison per second", `+${fmt(c.poisonDps)}`],
         ["Total", fmt(c.dps), "tot"],
+        ...(many ? s.squad.map((a, i): Row => [`${a.name}${i === 0 ? " (Vanguard)" : ""}`, fmt(g.cs[i]?.dps ?? 0)]).concat([["Whole squad", fmt(g.dps()), "tot"]]) : []),
       ]} />;
     }
     case "st-hit": {
@@ -188,21 +194,28 @@ export function tipContent(g: Game, key: string): ReactNode {
         rows={[...sourceRows(m.poison, "/s"), ...multRows(c), ["Poison per second", fmt(c.poisonDps), "tot"]]} />;
     case "st-hp":
       return <Tip h="Max HP" p="How much damage your Abomination can take. It heals 8% on each kill and 1% per second between kills, but not during boss fights."
-        rows={[...sourceRows(m.hpFlat, "", fmt(sumOf(m.hpFlat)), "Base HP"), [`× Infusion level ${c.lvl}`, `×${c.inf.toFixed(2)}`, "mul"], ["Max HP", fmt(c.maxHp), "tot"]]} />;
+        rows={[
+          ...sourceRows(m.hpFlat, "", fmt(sumOf(m.hpFlat)), "Base HP"),
+          [`× Infusion level ${c.lvl}`, `×${c.inf.toFixed(2)}`, "mul"],
+          ...(m.hpPct ? sourceRows(m.hpPct, "%", `×${(1 + sumOf(m.hpPct) / 100).toFixed(2)}`, "HP bonus") : []),
+          ["Max HP", fmt(c.maxHp), "tot"],
+        ]} after={many ? <p>Only the Vanguard takes hits, so only the Vanguard's HP matters in a fight.</p> : undefined} />;
     case "st-ess":
-      return statTip("ess", "Soul Essence bonus", "Extra Soul Essence from every kill.", "%", "+" + Math.round(c.ess) + "%");
+      return <Tip h="Soul Essence bonus" p={"Extra Soul Essence from every kill." + (many ? " Every squad member's parts add to it; generators and Thralls count once." : "")}
+        rows={[...sourceRows(m.ess, "%", "+" + Math.round(c.ess) + "%"), ...(many ? [["Whole squad", `+${Math.round(squadEss)}%`, "tot"] as Row] : [])]} />;
     case "st-drop":
-      return statTip("drop", "Part drop bonus", `Raises the ${pct(TUNE.partChance)} base chance that a kill drops a body part.`, "%", "+" + Math.round(c.drop) + "%");
+      return <Tip h="Part drop bonus" p={`Raises the ${pct(TUNE.partChance)} base chance that a kill drops a body part.` + (many ? " Every squad member's parts add to it; generators and Thralls count once." : "")}
+        rows={[...sourceRows(m.drop, "%", "+" + Math.round(c.drop) + "%"), ...(many ? [["Whole squad", `+${Math.round(g.bonus("drop"))}%`, "tot"] as Row] : [])]} />;
     case "x-stash": {
       const lc = g.looseCount();
       const kept = s.parts.filter((p) => !g.isWorn(p) && isKept(p)).length;
-      return <Tip h="Stash" p={`Holds ${TUNE.stashMax} unworn parts. Your 5 worn parts don't count. When it is full, your oldest unkept part is rendered into Corpse Mass to make room for each new one. Kept parts are never touched.`}
+      return <Tip h="Stash" p={`Holds ${TUNE.stashMax} unworn parts. Worn parts don't count. When it is full, your oldest unkept part is rendered into Corpse Mass to make room for each new one. Kept parts are never touched.`}
         rows={[["Parts in the stash", `${lc} / ${TUNE.stashMax}`], ["Kept (safe)", String(kept)], ["Space left", String(Math.max(0, TUNE.stashMax - lc))]]}
         after={<p>Keep a part to protect it from Render all, Render Commons and the full-stash clean-up.</p>} />;
     }
     case "x-inf": {
       const rows: Row[] = [["Vessel Integrity (item level × rarity)", "", "sub"]];
-      for (const p of wornParts(g)) rows.push([<>{BASES[p.base].name} <span className="faint">i{p.ilvl} × {RARITY_INTEGRITY[rarityClass(p)]}</span></>, partIntegrity(p).toFixed(1)]);
+      for (const p of wornParts(g, ab)) rows.push([<>{BASES[p.base].name} <span className="faint">i{p.ilvl} × {RARITY_INTEGRITY[rarityClass(p)]}</span></>, partIntegrity(p).toFixed(1)]);
       rows.push(
         [`Integrity ${c.integrity.toFixed(1)} ÷ 10`, `cap ${c.cap}`, "tot"],
         ["Levels bought", String(abom.infusion)],

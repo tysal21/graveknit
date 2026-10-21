@@ -36,6 +36,15 @@ function useAbilityKeys() {
   }, []);
 }
 
+// TEMPORARY art preview: PixelLab test sprites for the four Act 1 enemies.
+const FOE_SPRITES = new Set(["rat", "digger", "hound", "watch"]);
+
+function FoeSprite({ foeKey }: { foeKey?: string }) {
+  if (!foeKey || !FOE_SPRITES.has(foeKey)) return null;
+  // a relative path, so it works from GitHub Pages too
+  return <img className="foe-sprite" src={`sprites/foe-${foeKey}.png`} alt="" />;
+}
+
 function Telegraph() {
   const g = useGame();
   const f = g.foe!;
@@ -143,6 +152,7 @@ export function CryptPanel() {
           <b>{f?.name ?? "…"}</b>
           <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
         </div>
+        <FoeSprite foeKey={f?.key} />
         <Bar tall kind="enemy" value={f ? f.hp / f.max : 1} />
         {special && f && (
           <div className="block">

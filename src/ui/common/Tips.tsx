@@ -11,7 +11,7 @@ import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
 import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
-import { rareChance, trashWeights } from "../../engine/stash";
+import { rareChance, rareLuckMult, trashWeights } from "../../engine/stash";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -209,10 +209,14 @@ export function tipContent(g: Game, key: string): ReactNode {
         rows={[...sourceRows(m.drop, "%", "+" + Math.round(c.drop) + "%"), ...(many ? [["Whole squad", `+${Math.round(g.bonus("drop"))}%`, "tot"] as Row] : [])]} />;
     case "x-rare": {
       const w = trashWeights(g), tot = w.common + w.magic + w.rare;
-      return <Tip h="Rare luck" p={`Every part a normal enemy drops that isn't Rare makes the next one likelier. The Rare odds double every ${TUNE.rareDoubleEvery} misses, up to about ${pct(TUNE.rareCapW / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rareCapW))}, then reset when a Rare drops.`}
+      const nextAt = (Math.floor(s.rareDry / TUNE.rareDoubleKills) + 1) * TUNE.rareDoubleKills;
+      const capped = w.rare >= TUNE.rareCapW;
+      return <Tip h="Rare luck" p={`A Rare part comes about once every 360 kills. Go ${TUNE.rareDoubleKills} kills without one and the Rare odds double, then double again every ${TUNE.rareDoubleKills} kills after, until a Rare drops and it resets.`}
         rows={[
-          ["Base Rare chance", pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))],
-          ["Drops since your last Rare", String(s.rareDry)],
+          ["Base Rare chance per part", pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))],
+          ["Kills since your last Rare", String(s.rareDry)],
+          ["Rare luck", `×${rareLuckMult(g)}`, "mul"],
+          capped ? ["Luck is at its cap", ""] : ["Doubles again at", `${nextAt} kills`],
           ["Next part is Rare", pct(rareChance(g)), "tot"],
           ["Magic", pct(w.magic / tot)],
           ["Common", pct(w.common / tot)],

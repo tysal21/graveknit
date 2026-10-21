@@ -54,7 +54,11 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
   s.marrow += marrow;
   s.clock += sec;
   let rare = 0, parts = 0;
+  // Rare luck counts kills: spread the offline kills evenly between the parts that dropped
+  const killsPerPart = partsRolled ? Math.max(1, Math.round(kills / partsRolled)) : 0;
+  if (!partsRolled) g.s.rareDry += kills;
   for (let i = 0; i < partsRolled; i++) {
+    g.s.rareDry += killsPerPart - 1;
     if (!makeRoom(g)) continue;
     const k = pickWeighted(g.rng, w);
     // every part gets a proper rarity (the prototype's NaN bug came from skipping this)

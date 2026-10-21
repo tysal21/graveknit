@@ -90,7 +90,7 @@ export interface GameState {
   lastSave: number;
   bossRetryAt: number;
   stats: { kills: number; rolls: number };
-  /** trash part drops since the last Rare; raises the Rare odds (see TUNE.rareDoubleEvery) */
+  /** normal kills since the last Rare part; raises the Rare odds (see TUNE.rareDoubleKills) */
   rareDry: number;
 }
 

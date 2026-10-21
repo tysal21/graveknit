@@ -27,9 +27,10 @@ export const TUNE = {
   // drops
   partChance: 0.04,
   rarityW: { common: 65, magic: 28, rare: 7 },
-  // Rare luck: every trash part drop that isn't Rare makes the next one likelier. The Rare weight
-  // doubles every this-many misses (7 → 14 → 28 …) up to the cap (about a 50% chance), and resets on a Rare.
-  rareDoubleEvery: 10, rareCapW: 93,
+  // Rare luck: a Rare part is about 1 kill in 360, so after half that many kills without one the Rare weight
+  // doubles, and again every this-many kills after (7 → 14 → 28 …) up to the cap (a Rare is about half of all
+  // drops). A Rare resets it.
+  rareDoubleKills: 180, rareCapW: 93,
   bossRarityW: { common: 15, magic: 50, rare: 35 },
   dustChance: 0.12, marrowChance: 0.03,
   bossLoot: { parts: 2, marrow: 2, dust: 4, threadChance: 0.3 },

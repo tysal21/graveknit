@@ -109,7 +109,7 @@ export function SquadPanel() {
             // an empty slot opens the Stitchery filtered to that slot
             if (!part)
               return (
-                <button key={id} className="slot empty" onClick={() => { setUi({ slots: [id], up: false }); showTab("stitch"); }}>
+                <button key={id} className="slot empty" onClick={() => { setUi({ slots: [id] }); showTab("stitch"); }}>
                   <span className="k">{name}</span>
                   <span className="n faint">empty · find a part</span>
                 </button>

@@ -46,16 +46,13 @@ export function matchesSearch(p: Part, q: string) {
 }
 
 /** does a part pass the current filters? */
-export function shownByFilters(g: Game, p: Part, base0: Stats) {
+export function shownByFilters(p: Part) {
   const slotOk = !ui.slots.length || ui.slots.includes(BASES[p.base].slot);
-  if (!slotOk || !matchesSearch(p, ui.search)) return false;
-  const upOk = !ui.up || (!g.isWorn(p) && partGain(g, p, base0, selAbom(g.s.squad.length)) > 0.005);
-  return slotOk && upOk;
+  return slotOk && matchesSearch(p, ui.search);
 }
 
 export function filteredParts(g: Game) {
-  const base0 = calc(g, { abom: selAbom(g.s.squad.length), ignoreBuffs: true });
-  return g.s.parts.filter((p) => shownByFilters(g, p, base0));
+  return g.s.parts.filter(shownByFilters);
 }
 
 export function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
@@ -76,13 +73,12 @@ export function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
 const tierPoints = (p: Part) => p.affixes.reduce((t, a) => t + (6 - a.t), 0);
 
 function Filters() {
-  const isOn = (k: string) => (k === "all" ? !ui.up && !ui.slots.length : k === "up" ? ui.up : ui.slots.includes(k as SlotId));
+  const isOn = (k: string) => (k === "all" ? !ui.slots.length : ui.slots.includes(k as SlotId));
   const click = (k: string) => {
-    if (k === "all") setUi({ up: false, slots: [] });
-    else if (k === "up") setUi({ up: !ui.up });
+    if (k === "all") setUi({ slots: [] });
     else setUi({ slots: ui.slots.includes(k as SlotId) ? ui.slots.filter((x) => x !== k) : [...ui.slots, k as SlotId] });
   };
-  const opts: [string, string][] = [["all", "All"], ["up", "Upgrades"], ...SLOTS.map((s) => [s.id, s.name] as [string, string])];
+  const opts: [string, string][] = [["all", "All"], ...SLOTS.map((s) => [s.id, s.name] as [string, string])];
   return (
     <div className="filters" id="filters">
       {opts.map(([k, n]) => (
@@ -138,7 +134,7 @@ export function sortedParts(g: Game) {
 /** a key that changes whenever the list's contents or order could change */
 export const listKey = (g: Game) => {
   const s = g.s;
-  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad) + ":" + ui.abom + ui.up + ui.slots.join() + ui.search + s.opt.sort + JSON.stringify(s.gens);
+  return s.parts.length + ":" + s.nextId + ":" + JSON.stringify(s.squad) + ":" + ui.abom + ui.slots.join() + ui.search + s.opt.sort + JSON.stringify(s.gens);
 };
 
 function StashList() {

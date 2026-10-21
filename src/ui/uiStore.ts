@@ -25,8 +25,6 @@ export const SLAIN_MS = 1600;
 export const ui = {
   /** the part open in the Stitchery */
   sel: null as number | null,
-  /** filter: only upgrades */
-  up: false,
   /** filter: these slots (none = all) */
   slots: [] as SlotId[],
   /** search box text: every word must match the part */

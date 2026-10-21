@@ -25,7 +25,7 @@ onGameCreated((g) => {
       if (g.s.opt.sound) rareDropCue();
       setUi({ toasts: [...ui.toasts.slice(-2), { at: Date.now(), rare: e.id }] });
     }
-    if (e.type === "tutPartDropped") setUi({ up: false, slots: [] });
+    if (e.type === "tutPartDropped") setUi({ slots: [] });
     if (e.type === "tutStep") {
       const p = TUTORIAL[e.step]?.panel;
       // the workbench covers the board, so close it once the tutorial moves past the Stitchery

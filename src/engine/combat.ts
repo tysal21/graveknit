@@ -240,7 +240,7 @@ function onTrashKill(g: Game) {
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
   if (!g.inTut()) {
     const p = g.rng() < TUNE.partChance * raise * (1 + g.bonus("drop") / 100) ? dropPart(g, foe.drop, stage, trashWeights(g)) : null;
-    countRareLuck(g, p);
+    countRareLuck(g, p, stage);
   }
   if (g.inTut()) tutKill(g);
   if (g.rng() < TUNE.dustChance * raise) s.dust++;

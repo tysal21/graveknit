@@ -12,16 +12,27 @@ describe("Rare luck", () => {
     const g = newGame();
     const base = rareChance(g);
     expect(base).toBeCloseTo(TUNE.rarityW.rare / 100, 5);
-    for (let i = 0; i < TUNE.rareDoubleKills - 1; i++) countRareLuck(g, i % 20 ? null : drop("magic"));
+    for (let i = 0; i < TUNE.rareDoubleKills - 1; i++) countRareLuck(g, i % 20 ? null : drop("magic"), 1);
     expect(rareLuckMult(g)).toBe(1);
-    countRareLuck(g, null);
+    countRareLuck(g, null, 1);
     expect(rareLuckMult(g)).toBe(2);
     expect(rareChance(g)).toBeCloseTo(14 / (93 + 14), 5);
     g.s.rareDry = 2 * TUNE.rareDoubleKills;
     expect(rareLuckMult(g)).toBe(4);
-    countRareLuck(g, drop("rare"));
+    countRareLuck(g, drop("rare"), 1);
     expect(g.s.rareDry).toBe(0);
     expect(rareChance(g)).toBeCloseTo(base, 5);
+  });
+
+  it("only counts kills within 2 stages of your best, but any Rare resets it", () => {
+    const g = newGame();
+    g.s.maxStage = 9;
+    countRareLuck(g, null, 1);
+    expect(g.s.rareDry).toBe(0);
+    countRareLuck(g, null, 7);
+    expect(g.s.rareDry).toBe(1);
+    countRareLuck(g, drop("rare"), 1);
+    expect(g.s.rareDry).toBe(0);
   });
 
   it("stops rising at the cap", () => {

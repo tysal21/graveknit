@@ -31,6 +31,8 @@ export const TUNE = {
   // doubles, and again every this-many kills after (7 → 14 → 28 …) up to the cap (a Rare is about half of all
   // drops). A Rare resets it.
   rareDoubleKills: 180, rareCapW: 93,
+  // only kills this close to your furthest stage build Rare luck, so farming Stage 1 doesn't
+  rareLuckStages: 2,
   bossRarityW: { common: 15, magic: 50, rare: 35 },
   dustChance: 0.12, marrowChance: 0.03,
   bossLoot: { parts: 2, marrow: 2, dust: 4, threadChance: 0.3 },

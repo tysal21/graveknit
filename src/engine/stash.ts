@@ -51,9 +51,13 @@ export function rareChance(g: Game) {
   return w.rare / (w.common + w.magic + w.rare);
 }
 
-/** after a normal kill: a Rare part resets the streak, anything else (a lesser part, or nothing) grows it */
-export function countRareLuck(g: Game, p: Part | null) {
-  g.s.rareDry = p?.rarity === "rare" ? 0 : g.s.rareDry + 1;
+/** the lowest stage whose kills still build Rare luck */
+export const rareLuckFloor = (g: Game) => Math.max(1, g.s.maxStage - TUNE.rareLuckStages);
+
+/** after a normal kill: a Rare part resets the streak; anything else grows it, if the kill was near your best stage */
+export function countRareLuck(g: Game, p: Part | null, stage: number, kills = 1) {
+  if (p?.rarity === "rare") g.s.rareDry = 0;
+  else if (stage >= rareLuckFloor(g)) g.s.rareDry += kills;
 }
 
 /** a part drops from a kill; trophies always get in */

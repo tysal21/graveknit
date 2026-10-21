@@ -11,7 +11,7 @@ import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
 import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
-import { rareChance, rareLuckMult, trashWeights } from "../../engine/stash";
+import { rareChance, rareLuckFloor, rareLuckMult, trashWeights } from "../../engine/stash";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -221,7 +221,7 @@ export function tipContent(g: Game, key: string): ReactNode {
           ["Magic", pct(w.magic / tot)],
           ["Common", pct(w.common / tot)],
         ]}
-        after={<p>Bosses and guardians use their own odds and don't touch your streak.</p>} />;
+        after={<p>Only kills at Stage {rareLuckFloor(g)} or higher count (within {TUNE.rareLuckStages} of your best).{s.stage < rareLuckFloor(g) ? " You're below that now, so your luck isn't building." : ""} Bosses and guardians use their own odds and don't touch your streak.</p>} />;
     }
     case "x-stash": {
       const lc = g.looseCount();

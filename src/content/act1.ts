@@ -54,7 +54,7 @@ export const ACT1: ActDef = {
   // the last kill of Stages 2 to 4, the first time: each one previews a Warden move
   guardians: {
     2: {
-      name: "The Rat King", foe: "rat", hp: 6.25, dmg: 2.2, int: 1.2, drop: "gnawedHand",
+      name: "The Rat King", foe: "rat", hp: 6, dmg: 2.1, int: 1.2, drop: "gnawedHand",
       intro: "The rats part. Something wearing a crown of tails waddles forward.",
       defeat: "The Rat King's subjects carry your Abomination off in pieces.",
       idle: "Six rats, knotted at the tail, all of them furious. No tricks. Just a lot of rat.",

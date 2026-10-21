@@ -31,3 +31,14 @@ export function rareDropCue() {
   tone(659, 0.6, 0.15);
   tone(988, 0.9, 0.15, 0.12);
 }
+
+/** a guardian or Elite gets two low notes; a boss gets a deeper, longer one */
+export function arrivalCue(tier: string) {
+  if (tier === "boss") {
+    tone(98, 2.4, 0.25);
+    tone(147, 2, 0.15, 0.25);
+  } else {
+    tone(220, 0.5, 0.18);
+    tone(165, 0.8, 0.18, 0.18);
+  }
+}

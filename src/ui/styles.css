@@ -253,3 +253,27 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 /* a Rare drop: gold edge and a short glow so it stands out from boss toasts */
 .toast.rare{border-left-color:var(--rare);animation:toastIn .25s ease-out,rareGlow 1.6s ease-out}
 @keyframes rareGlow{0%{box-shadow:0 0 0 rgba(220,197,92,0)}20%{box-shadow:0 0 18px rgba(220,197,92,.55)}100%{box-shadow:0 0 0 rgba(220,197,92,0)}}
+/* threat tiers: normal enemies stay plain; Elites teal, guardians purple, bosses blood red */
+:root{--elite:#4fb3a5;--guardian:#a07be0}
+.rank{align-self:flex-start;font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;padding:1px 7px;border:1px solid currentColor;border-radius:3px;margin-bottom:-4px}
+.r-elite{color:var(--elite)} .r-guardian{color:var(--guardian)} .r-boss{color:var(--blood)}
+.fight.tier-elite{border-color:var(--elite)}
+.fight.tier-guardian{border-color:var(--guardian);box-shadow:inset 0 0 24px rgba(160,123,224,.12)}
+.fight.tier-boss{border-color:var(--blood);box-shadow:inset 0 0 60px rgba(0,0,0,.85),inset 0 0 18px rgba(194,73,63,.25)}
+.tier-elite .foe b{color:var(--elite)} .tier-guardian .foe b{color:var(--guardian)} .tier-boss .foe b{color:var(--blood);font-size:1.35rem}
+.tier-elite .foe-sprite{filter:drop-shadow(0 0 8px rgba(79,179,165,.75))}
+.tier-guardian .foe-sprite{width:240px;height:240px;filter:drop-shadow(0 0 10px rgba(160,123,224,.6))}
+.tier-boss .foe-sprite{width:288px;height:288px;filter:drop-shadow(0 0 14px rgba(194,73,63,.6))}
+.bar.elite,.bar.guardian{border-width:2px} .bar.elite{border-color:var(--elite)} .bar.guardian{border-color:var(--guardian)}
+.bar.boss{height:18px;border:2px solid var(--blood)}
+/* the arrival banner sweeps across the fight, then fades */
+.arrival{position:absolute;left:0;right:0;top:38%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 8px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(10,8,8,.92) 15%,rgba(10,8,8,.92) 85%,transparent);animation:arrive 1.8s ease-out forwards;z-index:5}
+.arrival small{font-size:.72rem;text-transform:uppercase;letter-spacing:.2em}
+.arrival b{font-family:var(--display);font-weight:400;font-size:1.6rem;letter-spacing:.04em}
+.a-elite small,.a-elite b{color:var(--elite)} .a-guardian small,.a-guardian b{color:var(--guardian)} .a-boss small,.a-boss b{color:var(--blood)}
+@keyframes arrive{0%{opacity:0;transform:translateX(-30%)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
+/* stage buttons: a skull where a guardian waits, a crown on the boss */
+.stg{position:relative}
+.stg-mark{position:absolute;top:-7px;right:-5px;font-style:normal;font-size:.7rem;color:var(--guardian);text-shadow:0 0 3px #000}
+.stg.boss .crown{color:var(--blood)}
+@media (prefers-reduced-motion:reduce){.arrival{animation:none}}

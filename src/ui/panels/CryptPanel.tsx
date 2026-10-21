@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
 import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
-import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, startBoss, useAbility } from "../../engine/combat";
+import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, startBoss, useAbility, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
 import { fmt, pct } from "../../engine/format";
 import { rareChance } from "../../engine/stash";
 import { hasCounterFor } from "../../engine/stats";
 import { Bar } from "../common/Bar";
+import { foeTier } from "../common/tier";
+import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
@@ -43,6 +45,31 @@ function FoeSprite({ foeKey }: { foeKey?: string }) {
   if (!foeKey || !FOE_SPRITES.has(foeKey)) return null;
   // a relative path, so it works from GitHub Pages too
   return <img className="foe-sprite" src={`sprites/foe-${foeKey}.png`} alt="" />;
+}
+
+const ARRIVAL_MS = 1800;
+
+/** a banner that sweeps across the fight when a guardian, Elite or boss shows up */
+function Arrival() {
+  const g = useGame();
+  const f = g.foe;
+  const last = useRef<Foe | null>(f);
+  const [shown, setShown] = useState<{ line: string; name: string; tier: string; at: number } | null>(null);
+  useEffect(() => {
+    if (f === last.current) return;
+    last.current = f;
+    const t = foeTier(f);
+    if (!f || !t.arrival) return;
+    setShown({ line: t.arrival, name: f.name, tier: t.id, at: Date.now() });
+    if (g.s.opt.sound) arrivalCue(t.id);
+  });
+  if (!shown || Date.now() - shown.at > ARRIVAL_MS) return null;
+  return (
+    <div className={`arrival a-${shown.tier}`} aria-live="polite">
+      <small>{shown.line}</small>
+      <b>{shown.name}</b>
+    </div>
+  );
 }
 
 function Telegraph() {
@@ -97,6 +124,7 @@ export function CryptPanel() {
   const actDef = g.act();
   const boss = f?.kind === "boss";
   const special = !!f && isSpecial(f);
+  const tier = foeTier(f);
   const bdef = actDef.boss;
   // which act's stages the picker shows; follows the current act unless you browse
   const [viewN, setViewN] = useState<number | null>(null);
@@ -127,12 +155,13 @@ export function CryptPanel() {
             return (
               <button key={n} className={`stg ${n === s.stage && !boss ? "cur" : ""} ${lock ? "lock" : ""}`} disabled={lock} aria-label={`Stage ${n}`} title={guardianFor(n) && !s.seen["g" + n] ? `${guardianFor(n)!.name} guards the end of this stage` : undefined} onClick={() => { act((g) => chooseStage(g, n)); setViewN(null); }}>
                 {n}
+                {guardianFor(n) && !s.seen["g" + n] && !lock && <i className="stg-mark" aria-hidden="true">☠</i>}
               </button>
             );
           })}
           {shown === actDef ? (
             <button className={`stg boss ${boss ? "cur" : ""} ${s.maxStage < bdef.stage ? "lock" : ""}`} disabled={s.maxStage < bdef.stage} onClick={challengeBoss}>
-              {bdef.stage} · {shortName.split(" ").pop()}
+              <span className="crown" aria-hidden="true">♛</span> {bdef.stage} · {shortName.split(" ").pop()}
             </button>
           ) : (
             <button className="stg boss lock" disabled title="Go to one of this act's stages to fight its boss">
@@ -147,13 +176,14 @@ export function CryptPanel() {
           {g.bossCleared() && <label title="First kills and new Thralls always show it. Otherwise repeat kills get a small note in the corner."><input type="checkbox" checked={s.opt.bossPop} onChange={(e) => setOpt("bossPop", e.target.checked)} /> Victory pop-up every kill</label>}
         </div>
       </div>
-      <div className={`fight ${special ? "bossfight" : ""}`} id="fight">
+      <div className={`fight tier-${tier.id} ${special ? "bossfight" : ""}`} id="fight">
+        {tier.label && <div className={`rank r-${tier.id}`}>{tier.label}</div>}
         <div className="foe">
           <b>{f?.name ?? "…"}</b>
           <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
         </div>
         <FoeSprite foeKey={f?.key} />
-        <Bar tall kind="enemy" value={f ? f.hp / f.max : 1} />
+        <Bar tall kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
         {special && f && (
           <div className="block">
             {boss && (
@@ -182,6 +212,7 @@ export function CryptPanel() {
             );
           })}
         </div>
+        <Arrival />
         {ui.slain && Date.now() - ui.slain.at < SLAIN_MS + 400 && <div className="slain" aria-hidden="true">Slain</div>}
         <div className="ticker">
           {g.ticker.map((t, i) => (

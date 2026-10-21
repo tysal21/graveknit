@@ -89,7 +89,7 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
       <b className={`h tc-${rarityClass(p)}`}>{partName(p)}</b>
       <p>
         {rarityLabel(p)} {slotName(b.slot)} · item level {p.ilvl}
-        {g.isWorn(p) ? " · worn" : ""}
+        {g.isWorn(p) ? (g.s.squad.length > 1 ? ` · worn by ${g.s.squad[g.wornBy(p)].name}` : " · worn") : ""}
         {isKept(p) ? " · kept" : ""}
       </p>
       <div>

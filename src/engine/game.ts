@@ -107,7 +107,11 @@ export class Game {
     return id == null ? undefined : this.s.parts.find((p) => p.id === id);
   }
   isWorn(p: Part) {
-    return this.s.squad.some((a) => a.eq[BASES[p.base].slot] === p.id);
+    return this.wornBy(p) >= 0;
+  }
+  /** which squad slot is wearing this part, or -1 if it's loose in the stash */
+  wornBy(p: Part) {
+    return this.s.squad.findIndex((a) => a.eq[BASES[p.base].slot] === p.id);
   }
   /** parts in the stash (worn parts don't count) */
   looseCount() {

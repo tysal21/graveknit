@@ -239,3 +239,6 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .actpick{display:flex;gap:4px;margin-bottom:6px}
 .actpick button{border:1px solid var(--line);border-radius:4px;background:var(--panel2);padding:2px 8px;font-size:.78rem}
 .actpick button.on{border-color:var(--lantern);color:var(--lantern)}
+/* who wears a part, once the squad has more than one Abomination */
+.onother{color:var(--blood)}
+.warnline{margin:.4rem 0;padding:.4rem .6rem;border-left:3px solid var(--blood);background:rgba(208,87,78,.08);font-size:.82rem}

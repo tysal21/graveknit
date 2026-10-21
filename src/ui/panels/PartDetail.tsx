@@ -25,12 +25,14 @@ export function PartDetail({ part: p }: { part: Part }) {
   const ab = selAbom(s.squad.length);
   const many = s.squad.length > 1;
   const wearer = s.squad.find((a) => a.eq[b.slot] === p.id);
+  // worn, but by a different Abomination than the one you're stitching onto
+  const onOther = !!wearer && wearer !== s.squad[ab];
   const fl = ui.flash && ui.flash.id === p.id && Date.now() - ui.flash.at < 1500 ? ui.flash.f : {};
   const craftable = canCraft(p);
   const odds = tierOdds(p.ilvl);
   const lockedTiers = [1, 2, 3, 4, 5].filter((t) => p.ilvl < TUNE.tierIlvl[t]).map((t) => `T${t} at i${TUNE.tierIlvl[t]}`).join(", ");
   let cmp = null;
-  if (!worn) {
+  if (!worn || onOther) {
     const a = calc(g, { abom: ab, ignoreBuffs: true }), c2 = calc(g, { abom: ab, swap: p, ignoreBuffs: true });
     cmp = (
       <div className="cmp">
@@ -47,7 +49,7 @@ export function PartDetail({ part: p }: { part: Part }) {
         <div className={`title tc-${rarityClass(p)}`}>{partName(p)}</div>
         <div className="sub">
           {rarityLabel(p)} {slotName(b.slot)} · item level {p.ilvl} · Integrity {partIntegrity(p).toFixed(1)}
-          {worn ? " · worn" : ""}
+          {worn ? (many && wearer ? ` · worn by ${wearer.name}` : " · worn") : ""}
         </div>
       </div>
       <div className="impl">
@@ -87,13 +89,19 @@ export function PartDetail({ part: p }: { part: Part }) {
           </div>
         </>
       )}
+      {onOther && (
+        <p className="warnline">
+          {wearer!.name} is wearing this. Stitching it onto {s.squad[ab].name} takes it off {wearer!.name} and leaves their {slotName(b.slot).toLowerCase()} slot empty.
+        </p>
+      )}
       {cmp}
       <div className="craft">
         {worn && (!many || wearer === s.squad[ab]) ? (
           <button className="btn" disabled>Worn{many && wearer ? ` by ${wearer.name}` : ""}</button>
         ) : (
           <button className="btn primary" data-act="equip" onClick={() => act((g) => equip(g, p, ab))}>
-            {many ? `Stitch onto ${s.squad[ab].name}` : "Stitch it on"}
+            {onOther ? `Move to ${s.squad[ab].name}` : many ? `Stitch onto ${s.squad[ab].name}` : "Stitch it on"}
+            {onOther && <span className="sub">Takes it off {wearer!.name}</span>}
           </button>
         )}
         <button className="btn" data-act="marrow" disabled={!craftable || s.marrow < 1} onClick={() => act((g) => flashAfter(marrow(g, p), p.id))}>

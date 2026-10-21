@@ -59,7 +59,12 @@ export function filteredParts(g: Game) {
 }
 
 export function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
-  if (g.isWorn(p)) return <span className="muted">worn</span>;
+  const w = g.wornBy(p);
+  if (w >= 0) {
+    if (g.s.squad.length < 2) return <span className="muted">worn</span>;
+    // worn by the Abomination you're stitching onto, or by someone else in the squad
+    return <span className={w === selAbom(g.s.squad.length) ? "muted" : "onother"}>on {g.s.squad[w].name}</span>;
+  }
   const b = calc(g, { abom: selAbom(g.s.squad.length), swap: p, ignoreBuffs: true });
   const d = (b.dps - base0.dps) / base0.dps, h = (b.maxHp - base0.maxHp) / base0.maxHp;
   const f = (x: number, l: string) => (Math.abs(x) < 0.005 ? null : <span className={x > 0 ? "up" : "down"}>{x > 0 ? "+" : ""}{Math.round(x * 100)}% {l}</span>);

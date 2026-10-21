@@ -35,8 +35,17 @@ export const TUNE = {
   tierW: { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 } as Record<number, number>,
   tierIlvl: { 5: 1, 4: 3, 3: 8, 2: 20, 1: 35 } as Record<number, number>,
 
+  // affix rolls: each tier's range is stretched this much around its middle, so neighbouring tiers overlap a little.
+  // Rolls follow a bell curve (the average of two dice), so the top or bottom 10% of a range is about 1 roll in 50.
+  tierSpread: 1.8,
+
   // crafting and the stash
   residueMax: 8, graftMarrow: 3, graftDust: 5, stashMax: 60,
+  // Re-stitch lifts a part to your best stage's item level. Cost per level gained, × the part's rarity weight
+  // (Common 0.5, Magic 1, Rare/Trophy 1.5): Grave Dust, plus this many kills' worth of Soul Essence at the new level
+  restitchDust: 3, restitchEssKills: 50,
+  // pressing Grave Dust into a Marrow Shard
+  dustPerMarrow: 20,
 
   // Thralls: base chance per boss kill, plus this much per kill without one
   thrallBase: 0.03, thrallPity: 0.005,

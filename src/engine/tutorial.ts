@@ -82,6 +82,9 @@ export function checkHints(g: Game) {
   } else if (!s.seen.hDig && s.maxStage >= 11) {
     s.seen.hDig = 1;
     s.hint = "dig";
+  } else if (!s.seen.hRestitch && wornLagging(g)) {
+    s.seen.hRestitch = 1;
+    s.hint = "restitch";
   } else if (!s.seen.hSquad2 && s.squad.length >= 2) {
     s.seen.hSquad2 = 1;
     s.hint = "squad2";
@@ -95,6 +98,9 @@ export function checkHints(g: Game) {
     }
   }
 }
+
+/** a worn part has fallen a few item levels behind, so Re-stitch is worth a mention */
+const wornLagging = (g: Game) => g.s.parts.some((p) => g.isWorn(p) && p.rarity !== "common" && p.ilvl <= g.s.maxStage - 3);
 
 export const currentHint = (g: Game) => (g.s.hint ? HINTS[g.s.hint] : null);
 

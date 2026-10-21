@@ -10,7 +10,7 @@ import { essPerKill } from "../../engine/combat";
 import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
-import { affixValue, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -100,7 +100,7 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
         p.affixes.map((a, i) => (
           <div className="afl" key={i}>
             <span className={`tb t${a.t}`}>T{a.t}</span>
-            <span>{AFFIX[a.k].fmt(affixValue(a, p.ilvl))}</span>
+            <span>{AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a.roll).cls}`}>{rollQuality(a.roll).label}</span></span>
           </div>
         ))
       ) : (

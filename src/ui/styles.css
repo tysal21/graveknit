@@ -242,3 +242,10 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 /* who wears a part, once the squad has more than one Abomination */
 .onother{color:var(--blood)}
 .warnline{margin:.4rem 0;padding:.4rem .6rem;border-left:3px solid var(--blood);background:rgba(208,87,78,.08);font-size:.82rem}
+/* how good a roll is within its tier */
+.q{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;margin-left:4px}
+.q-botched{color:var(--blood)}
+.q-fair{color:var(--faint)}
+.q-fine{color:var(--muted)}
+.q-pristine{color:var(--good)}
+.q-perfect{color:var(--t1);text-shadow:0 0 6px rgba(240,199,90,.6)}

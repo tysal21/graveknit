@@ -47,7 +47,7 @@ export const PANEL_LOCKED_TEXT: Record<PanelId, string> = {
 };
 
 // One-time tips after the tutorial
-export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2";
+export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2" | "restitch";
 export const HINTS: Record<HintId, TutStep> = {
   infuse: { id: "infuse", panel: "squad", title: "You can Infuse", text: "Soul Essence buys Infusion levels. Each level gives +12% damage and HP. Your parts limit how many levels you can hold, so better parts raise the cap.", target: "#infBtn" },
   gens: { id: "gens", panel: "yard", title: "New generator", text: "Bone Harvesters are open. They cost more but add hit damage as well as Corpse Mass.", target: "#buy-harv" },
@@ -56,6 +56,7 @@ export const HINTS: Record<HintId, TutStep> = {
   guardMeet: { id: "guardMeet", panel: "crypt", title: "A stage guardian", text: "The first time you clear some stages, the last enemy is a guardian: a tougher named enemy with one boss move. Beat it to move on. It always drops a Magic part.", target: "#fight" },
   guard: { id: "guard", panel: "squad", title: "Get stronger, then try again", text: "Guardians are built to need an upgrade. Infuse a level or two, or stitch on a better part, and your Abomination will push back up and fight it again.", target: "#infBtn" },
   dig: { id: "dig", panel: "yard", title: "New generator", text: "Catacomb Diggers are open. Each one adds attack speed for the whole squad as well as Corpse Mass.", target: "#buy-dig" },
+  restitch: { id: "restitch", panel: "stitch", title: "Re-stitch old parts", text: "A part you like doesn't have to be left behind. Open it on the Workbench and Re-stitch it: Grave Dust and Soul Essence lift it to your best stage's item level, keeping every roll. Spare Dust can also be pressed into Marrow Shards there.", target: "#stash" },
   squad2: { id: "squad2", panel: "squad", title: "A second Abomination", text: "Squad slot 2 is open. Your second Abomination starts with no parts: pick it at the top of the Squad panel, then stitch parts onto it from the Stitchery. It fights behind the Vanguard, adds its damage and brings two more abilities.", target: "#squadTabs" },
 };
 

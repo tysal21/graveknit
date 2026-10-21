@@ -4,9 +4,9 @@ import { BASES } from "../../content/acts";
 import { slotName } from "../../content/slots";
 import { IMPLICIT_TEXT } from "../../content/stats";
 import { TUNE } from "../../content/tune";
-import { canCraft, canGraft, dust, equip, marrow, toggleLock, type Flash } from "../../engine/crafting";
+import { canCraft, canGraft, canRestitch, dust, equip, marrow, pressMarrow, restitch, restitchCost, toggleLock, type Flash } from "../../engine/crafting";
 import { fmt, pct } from "../../engine/format";
-import { affixRange, affixValue, isKept, isTrophy, partCM, partIntegrity, partName, rarityClass, rarityLabel, tierOdds } from "../../engine/parts";
+import { affixRange, affixValue, rollQuality, isKept, isTrophy, partCM, partIntegrity, partName, rarityClass, rarityLabel, tierOdds } from "../../engine/parts";
 import { renderPart } from "../../engine/stash";
 import type { Part } from "../../engine/state";
 import { calc } from "../../engine/stats";
@@ -43,6 +43,7 @@ export function PartDetail({ part: p }: { part: Part }) {
     );
   }
   const kept = isKept(p), trophy = isTrophy(p);
+  const rs = restitchCost(g, p);
   return (
     <div className={`card r-${rarityClass(p)}`}>
       <div>
@@ -62,7 +63,8 @@ export function PartDetail({ part: p }: { part: Part }) {
             <div key={i} className={`af ${fl[i] ? "flash-" + fl[i] : ""}`}>
               <span className={`tb t${a.t}`}>T{a.t}</span>
               <span>
-                {AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className="rng">{AFFIX[a.k].name} · {affixRange(a, p.ilvl)}</span>
+                {AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a.roll).cls}`}>{rollQuality(a.roll).label}</span>{" "}
+                <span className="rng">{AFFIX[a.k].name} · {affixRange(a, p.ilvl)}</span>
               </span>
               <button className={`lockb ${a.locked ? "on" : ""}`} disabled={!a.locked && s.thread < 1} title={a.locked ? "Unlock" : "Lock with a Spectral Thread"} onClick={() => act((g) => toggleLock(g, p, i))}>
                 {a.locked ? "Locked" : "Lock"}
@@ -109,6 +111,13 @@ export function PartDetail({ part: p }: { part: Part }) {
         </button>
         <button className="btn" disabled={!craftable || s.dust < 1} onClick={() => act((g) => flashAfter(dust(g, p), p.id))}>
           Grave Dust<span className="sub">Reroll values in tier ({s.dust})</span>
+        </button>
+        <button className="btn" data-act="restitch" disabled={!canRestitch(g, p)} onClick={() => act((g) => restitch(g, p))}>
+          Re-stitch{rs ? ` to i${rs.to}` : ""}
+          <span className="sub">{rs ? `${rs.dust} Dust + ${fmt(rs.ess)} Essence, keeps every roll` : "Already at your best item level"}</span>
+        </button>
+        <button className="btn" data-act="press" disabled={s.dust < TUNE.dustPerMarrow} onClick={() => act((g) => pressMarrow(g))}>
+          Press Marrow<span className="sub">{TUNE.dustPerMarrow} Dust → 1 Marrow Shard</span>
         </button>
         <button className="btn" disabled={!canGraft(g, p)} onClick={() => openModal({ kind: "graft", target: p.id })}>
           Graft<span className="sub">{TUNE.graftMarrow} Marrow + {TUNE.graftDust} Dust, eats a donor</span>

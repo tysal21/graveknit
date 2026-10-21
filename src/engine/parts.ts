@@ -22,9 +22,29 @@ export const rollTier = (rng: Rng, ilvl: number) => +pickWeighted(rng, tierOdds(
 
 const ilvlScale = (ilvl: number) => 0.5 + ilvl / 20;
 
+/** a tier's range after stretching it around its middle (see TUNE.tierSpread) */
+export function tierRange(k: string, t: number): [number, number] {
+  const [lo, hi] = AFFIX[k].r[t - 1];
+  const mid = (lo + hi) / 2, half = ((hi - lo) / 2) * TUNE.tierSpread;
+  // never let the bottom of a range reach zero
+  return [Math.max(mid - half, lo / 3), mid + half];
+}
+
+/** where a roll lands in its range, 0 to 1: the average of two dice, so the middle is common and the ends are rare */
+export const rollRoll = (rng: Rng) => (rng() + rng()) / 2;
+
+/** a word for how good a roll is within its tier */
+export function rollQuality(roll: number): { label: string; cls: string } {
+  if (roll >= 0.9) return { label: "Perfect", cls: "q-perfect" };
+  if (roll >= 0.75) return { label: "Pristine", cls: "q-pristine" };
+  if (roll >= 0.4) return { label: "Fine", cls: "q-fine" };
+  if (roll >= 0.1) return { label: "Fair", cls: "q-fair" };
+  return { label: "Botched", cls: "q-botched" };
+}
+
 export function affixValue(a: Affix, ilvl: number): number {
   const A = AFFIX[a.k];
-  const [lo, hi] = A.r[a.t - 1];
+  const [lo, hi] = tierRange(a.k, a.t);
   let v = lo + (hi - lo) * a.roll;
   if (A.scale) v *= ilvlScale(ilvl);
   return A.dec ? Math.round(v * 10) / 10 : Math.round(v);
@@ -32,7 +52,7 @@ export function affixValue(a: Affix, ilvl: number): number {
 
 export function affixRange(a: Affix, ilvl: number): string {
   const A = AFFIX[a.k];
-  const r = A.r[a.t - 1];
+  const r = tierRange(a.k, a.t);
   const m = A.scale ? ilvlScale(ilvl) : 1;
   const f = (x: number) => (A.dec ? Math.round(x * m * 10) / 10 : Math.round(x * m));
   return `${f(r[0])}–${f(r[1])}`;
@@ -59,7 +79,7 @@ export function rollAffixes(rng: Rng, p: Part) {
     let have = out.filter((a) => AFFIX[a.k].kind === kind).length;
     while (have < n) {
       const k = pickAffixType(rng, p, kind, out.map((a) => a.k));
-      out.push({ k, t: rollTier(rng, p.ilvl), roll: rng(), locked: false });
+      out.push({ k, t: rollTier(rng, p.ilvl), roll: rollRoll(rng), locked: false });
       have++;
     }
   }

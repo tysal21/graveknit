@@ -2,7 +2,7 @@
 // Run with: npm run bots
 import { describe, expect, it } from "vitest";
 import { GENERATORS } from "../../src/content/generators";
-import { equip, marrow } from "../../src/engine/crafting";
+import { equip, marrow, pressMarrow, restitch } from "../../src/engine/crafting";
 import { buyGenerator, castRitual, genCost, infuse } from "../../src/engine/economy";
 import { partGain } from "../../src/engine/stats";
 import { RITUALS } from "../../src/content/rituals";
@@ -13,7 +13,7 @@ import { newGame } from "../helpers";
 function playTurn(g: Game) {
   // stitch on any upgrade, for every squad member
   for (let abom = 0; abom < g.s.squad.length; abom++) {
-    let best;
+    let best, tries = 0;
     do {
       best = null;
       let top = 0.005;
@@ -22,8 +22,12 @@ function playTurn(g: Game) {
         if (gain > top) [best, top] = [p, gain];
       }
       if (best) equip(g, best, abom);
-    } while (best);
+      // a guard: two parts that each look better than the other would swap forever
+    } while (best && ++tries < 10);
   }
+  // lift worn Magic/Rare parts that have fallen 3+ item levels behind, then press spare Dust into Marrow
+  for (const p of g.s.parts) if (g.isWorn(p) && p.rarity !== "common" && p.ilvl <= g.s.maxStage - 3) restitch(g, p);
+  while (g.s.dust > 30) pressMarrow(g);
   // reroll worn Magic/Rare parts with spare Marrow
   for (const p of g.s.parts) if (g.isWorn(p) && p.rarity !== "common" && g.s.marrow > 2) marrow(g, p);
   for (let i = 0; i < 20; i++) for (let abom = 0; abom < g.s.squad.length; abom++) infuse(g, abom);

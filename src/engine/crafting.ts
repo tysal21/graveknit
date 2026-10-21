@@ -2,7 +2,9 @@ import { AFFIX, affixShortName } from "../content/affixes";
 import { BASES } from "../content/acts";
 import { TUNE } from "../content/tune";
 import type { Game } from "./game";
-import { affixScore, allowedTiers, partScore, rollAffixes } from "./parts";
+import { RARITY_INTEGRITY } from "../content/tune";
+import { essPerKill } from "./combat";
+import { affixScore, allowedTiers, partScore, rarityClass, rollAffixes, rollRoll } from "./parts";
 import type { Affix, Part } from "./state";
 import { tutEvent } from "./tutorial";
 
@@ -24,7 +26,14 @@ function bragRoll(g: Game, p: Part, before: Affix[]) {
   for (const a of p.affixes) {
     if (a.locked) continue;
     if (a.t <= 3 && !before.some((b) => b.k === a.k && b.t <= a.t)) g.log(`You rolled a Tier ${a.t} ${affixShortName(a.k)} on a ${BASES[p.base].name}!`, "brag");
+    else bragPerfect(g, p, a, before);
   }
+}
+
+/** a Perfect roll (top 10% of its range) is rare enough to shout about, once per new one */
+function bragPerfect(g: Game, p: Part, a: Affix, before: Affix[]) {
+  const was = before.find((b) => b.k === a.k && b.t === a.t);
+  if (a.roll >= 0.9 && !(was && was.roll >= 0.9)) g.log(`Perfect roll! Tier ${a.t} ${affixShortName(a.k)} at the top of its range on a ${BASES[p.base].name}.`, "brag");
 }
 
 export const canCraft = (p: Part) => p.rarity !== "common";
@@ -61,7 +70,8 @@ export function dust(g: Game, p: Part): Flash | null {
   if (g.s.dust < 1 || !canCraft(p)) return null;
   g.s.dust--;
   const before = p.affixes.map((a) => ({ ...a }));
-  for (const a of p.affixes) if (!a.locked) a.roll = g.rng();
+  for (const a of p.affixes) if (!a.locked) a.roll = rollRoll(g.rng);
+  for (const a of p.affixes) if (!a.locked) bragPerfect(g, p, a, before);
   g.refresh();
   return flashes(p, before);
 }
@@ -88,6 +98,49 @@ export function equip(g: Game, p: Part, abom = 0) {
   p.isNew = false;
   g.refresh();
   tutEvent(g, "equip");
+}
+
+// ---- Re-stitch: lift an old part to your best stage's item level, so a part you crafted keeps up ----
+
+/** the item level Re-stitch lifts parts to: the furthest stage you've reached */
+export const restitchTarget = (g: Game) => g.s.maxStage;
+
+/** what lifting this part to the target costs, or null if there's nothing to gain */
+export function restitchCost(g: Game, p: Part) {
+  const to = restitchTarget(g), lv = to - p.ilvl;
+  if (lv <= 0) return null;
+  const w = RARITY_INTEGRITY[rarityClass(p)];
+  return {
+    to,
+    dust: Math.ceil(lv * TUNE.restitchDust * w),
+    ess: Math.ceil(lv * TUNE.restitchEssKills * essPerKill(to) * w),
+  };
+}
+
+export function canRestitch(g: Game, p: Part) {
+  const c = restitchCost(g, p);
+  return !!c && g.s.dust >= c.dust && g.s.ess >= c.ess;
+}
+
+/** tiers and rolls stay as they are; the item level (and so every value that grows with it) goes up */
+export function restitch(g: Game, p: Part) {
+  const c = restitchCost(g, p);
+  if (!c || !canRestitch(g, p)) return false;
+  g.s.dust -= c.dust;
+  g.s.ess -= c.ess;
+  const from = p.ilvl;
+  p.ilvl = c.to;
+  g.log(`Re-stitched the ${BASES[p.base].name}: item level ${from} → ${c.to}.`);
+  g.refresh();
+  return true;
+}
+
+/** Grave Dust piles up faster than Marrow: press the spare into Marrow Shards */
+export function pressMarrow(g: Game) {
+  if (g.s.dust < TUNE.dustPerMarrow) return false;
+  g.s.dust -= TUNE.dustPerMarrow;
+  g.s.marrow++;
+  return true;
 }
 
 // ---- grafting: sacrifice a donor to move one affix onto a part of the same slot ----

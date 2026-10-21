@@ -36,7 +36,7 @@ function useAbilityKeys() {
   }, []);
 }
 
-// TEMPORARY art preview: PixelLab test sprites for the four Act 1 enemies.
+// Enemy art (PixelLab, 64x64). Foes without a sprite yet show just their name.
 const FOE_SPRITES = new Set(["rat", "digger", "hound", "watch"]);
 
 function FoeSprite({ foeKey }: { foeKey?: string }) {

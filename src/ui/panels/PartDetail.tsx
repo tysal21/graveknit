@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ABILITY } from "../../content/abilities";
 import { AFFIX } from "../../content/affixes";
 import { BASES } from "../../content/acts";
@@ -17,8 +18,25 @@ function flashAfter(f: Flash | null, id: number) {
   if (f) setUi({ flash: { id, f, at: Date.now() } });
 }
 
+/** the first lock explains that a Thread is spent for good; shown once per save */
+function LockWarning({ onLock, onCancel }: { onLock: () => void; onCancel: () => void }) {
+  return (
+    <div className="warnline lockwarn" role="alertdialog" aria-label="Locking uses up a Spectral Thread">
+      <p style={{ margin: "0 0 6px" }}>
+        <b>Locking uses up a Spectral Thread.</b> The locked affix stays put while you reroll the rest. Unlocking is free, but it
+        does <b>not</b> give the Thread back, and locking a different affix costs another one.
+      </p>
+      <button className="btn small primary" onClick={onLock}>Lock it</button>{" "}
+      <button className="btn small" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
 export function PartDetail({ part: p }: { part: Part }) {
   const g = useGame();
+  // which affix is waiting on the first-lock warning, if any
+  const [ask, setAsk] = useState<{ id: number; i: number } | null>(null);
+  const askLock = ask && ask.id === p.id ? ask.i : null;
   const s = g.s;
   const b = BASES[p.base];
   const worn = g.isWorn(p);
@@ -66,7 +84,7 @@ export function PartDetail({ part: p }: { part: Part }) {
                 {AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a, p.ilvl).cls}`}>{rollQuality(a, p.ilvl).label}</span>{" "}
                 <span className="rng">{AFFIX[a.k].name} · {affixRange(a, p.ilvl)}</span>
               </span>
-              <button className={`lockb ${a.locked ? "on" : ""}`} disabled={!a.locked && s.thread < 1} title={a.locked ? "Unlock" : "Lock with a Spectral Thread"} onClick={() => act((g) => toggleLock(g, p, i))}>
+              <button className={`lockb ${a.locked ? "on" : ""}`} disabled={!a.locked && s.thread < 1} title={a.locked ? "Unlock" : "Lock with a Spectral Thread"} onClick={() => (!a.locked && !s.seen.lockTip ? setAsk({ id: p.id, i }) : act((g) => toggleLock(g, p, i)))}>
                 {a.locked ? "Locked" : "Lock"}
               </button>
             </div>
@@ -75,6 +93,12 @@ export function PartDetail({ part: p }: { part: Part }) {
           <p className="faint" style={{ margin: 0 }}>Common parts have no affixes to craft on.</p>
         )}
       </div>
+      {askLock !== null && (
+        <LockWarning
+          onLock={() => { act((g) => { g.s.seen.lockTip = 1; toggleLock(g, p, askLock); }); setAsk(null); }}
+          onCancel={() => setAsk(null)}
+        />
+      )}
       {craftable && (
         <>
           <div className="block">

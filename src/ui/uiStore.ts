@@ -43,7 +43,8 @@ export const ui = {
   /** the SLAIN stamp over the fight, shown for a moment after a boss dies */
   slain: null as { at: number } | null,
   /** small corner notes for repeat boss kills; click one to see the full loot */
-  toasts: [] as { at: number; win: BossWin }[],
+  /** corner notes: a repeat boss kill (win) or a Rare drop (rare = the part's id) */
+  toasts: [] as { at: number; win?: BossWin; rare?: number }[],
 };
 
 /** the selected Abomination, kept in range if the squad changed (an import, a wipe) */

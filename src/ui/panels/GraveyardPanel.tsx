@@ -110,7 +110,7 @@ function Settings() {
     <details className="tools">
       <summary>Settings, saves and tester tools</summary>
       <div className="row">
-        <label className="toggles"><input type="checkbox" checked={g.s.opt.sound} onChange={(e) => act((g) => (g.s.opt.sound = e.target.checked))} /> Sound when a boss is ready</label>
+        <label className="toggles"><input type="checkbox" checked={g.s.opt.sound} onChange={(e) => act((g) => (g.s.opt.sound = e.target.checked))} /> Sounds: a bell when a boss is ready, a chime for a Rare drop</label>
       </div>
       <div className="row">
         <button className="btn small" onClick={() => openModal({ kind: "saves" })}>Export or import save</button>

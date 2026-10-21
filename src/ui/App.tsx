@@ -12,7 +12,7 @@ import { GraveyardPanel } from "./panels/GraveyardPanel";
 import { SquadPanel } from "./panels/SquadPanel";
 import { StitcheryPanel } from "./panels/StitcheryPanel";
 import { onGameCreated, useGame } from "./runtime";
-import { bossReadyCue } from "./sound";
+import { bossReadyCue, rareDropCue } from "./sound";
 import { isPhone, openModal, setUi, showTab, SLAIN_MS, ui } from "./uiStore";
 
 const TABS: [PanelId, string][] = [["squad", "Squad"], ["crypt", "Crypt"], ["stitch", "Stitchery"], ["yard", "Graveyard"]];
@@ -21,6 +21,10 @@ const TABS: [PanelId, string][] = [["squad", "Squad"], ["crypt", "Crypt"], ["sti
 onGameCreated((g) => {
   g.on((e) => {
     if (e.type === "bossReady" && g.s.opt.sound) bossReadyCue();
+    if (e.type === "rareDrop") {
+      if (g.s.opt.sound) rareDropCue();
+      setUi({ toasts: [...ui.toasts.slice(-2), { at: Date.now(), rare: e.id }] });
+    }
     if (e.type === "tutPartDropped") setUi({ up: false, slots: [] });
     if (e.type === "tutStep") {
       const p = TUTORIAL[e.step]?.panel;

@@ -21,7 +21,8 @@ export type GameEvent =
   | { type: "tutPartDropped"; id: number }
   | { type: "tutStep"; step: number }
   | { type: "offline"; report: OfflineReport }
-  | { type: "bossWin"; win: BossWin };
+  | { type: "bossWin"; win: BossWin }
+  | { type: "rareDrop"; id: number };
 
 /** what one boss kill gave you, for the victory pop-up */
 export interface BossWin {
@@ -87,7 +88,7 @@ export class Game {
       parts: [], nextId: 1, bosses: {}, rit,
       opt: { push: false, auto: false, boss: false, rit: false, sound: false, sort: "new", bossPop: false },
       tut: 0, tutKills: 0, tutPart: null, hint: null,
-      seen: {}, log: [], lastSave: Date.now(), bossRetryAt: 0, stats: { kills: 0, rolls: 0 },
+      seen: {}, log: [], lastSave: Date.now(), bossRetryAt: 0, stats: { kills: 0, rolls: 0 }, rareDry: 0,
     };
   }
 

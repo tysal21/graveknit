@@ -80,15 +80,30 @@ export function Toasts() {
   return (
     <div className="toasts" aria-live="polite">
       {live.map((t) => {
-        const b = bossById(t.win.bossId);
+        if (t.rare !== undefined) return <RareToast key={t.at} at={t.at} id={t.rare} />;
+        if (!t.win) return null;
+        const win = t.win;
+        const b = bossById(win.bossId);
         return (
-          <button key={t.at} className="toast" onClick={() => setUi({ modal: { kind: "victory", win: t.win }, toasts: ui.toasts.filter((x) => x !== t) })}>
-            <b>{b.name.replace(/^The /, "")} slain</b> in {t.win.secs.toFixed(1)}s · {lootSummary(g, t.win)}
+          <button key={t.at} className="toast" onClick={() => setUi({ modal: { kind: "victory", win }, toasts: ui.toasts.filter((x) => x !== t) })}>
+            <b>{b.name.replace(/^The /, "")} slain</b> in {win.secs.toFixed(1)}s · {lootSummary(g, win)}
             <span className="faint"> · see loot</span>
           </button>
         );
       })}
     </div>
+  );
+}
+
+/** a gold corner note when a Rare drops; click to open it on the Workbench */
+function RareToast({ at, id }: { at: number; id: number }) {
+  const g = useGame();
+  const p = g.partById(id);
+  if (!p) return null;
+  return (
+    <button className="toast rare" onClick={() => { setUi({ toasts: ui.toasts.filter((x) => x.at !== at) }); selectPart(id); }}>
+      <b className="tc-rare">Rare drop!</b> {partName(p)} <span className="faint">· item level {p.ilvl} · open it</span>
+    </button>
   );
 }
 

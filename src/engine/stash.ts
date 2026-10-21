@@ -33,12 +33,35 @@ export function makeRoom(g: Game): boolean {
   return !!oldest;
 }
 
+// ---- Rare luck: the longer you go without a Rare, the likelier the next one ----
+
+/** rarity odds for a trash drop right now, with the Rare weight raised by your dry streak */
+export function trashWeights(g: Game): Record<Rarity, number> {
+  const w = TUNE.rarityW;
+  const rare = Math.min(TUNE.rareCapW, w.rare * Math.pow(2, g.s.rareDry / TUNE.rareDoubleEvery));
+  return { ...w, rare };
+}
+
+/** the chance the next trash part is Rare */
+export function rareChance(g: Game) {
+  const w = trashWeights(g);
+  return w.rare / (w.common + w.magic + w.rare);
+}
+
+/** after a trash drop: a Rare resets the streak, anything else grows it */
+export function countRareLuck(g: Game, p: Part | null) {
+  if (p) g.s.rareDry = p.rarity === "rare" ? 0 : g.s.rareDry + 1;
+}
+
 /** a part drops from a kill; trophies always get in */
 export function dropPart(g: Game, base: string, ilvl: number, weights: Record<Rarity, number>): Part | null {
   if (!BASES[base].trophy && !makeRoom(g)) return null;
   const p = makePart(g, base, ilvl, pickWeighted(g.rng, weights));
   g.tick(`${partName(p)} dropped.`, "tc-" + rarityClass(p));
-  if (p.rarity === "rare") g.log(`A Rare ${BASES[base].name} dropped (item level ${ilvl}).`, "brag");
+  if (p.rarity === "rare") {
+    g.log(`A Rare ${BASES[base].name} dropped (item level ${ilvl}).`, "brag");
+    g.emit({ type: "rareDrop", id: p.id });
+  }
   const best = p.affixes.reduce((m, a) => Math.min(m, a.t), 9);
   if (best <= 3) g.log(`It came with a Tier ${best} ${affixShortName(p.affixes.find((a) => a.t === best)!.k)} roll.`, "brag");
   return p;

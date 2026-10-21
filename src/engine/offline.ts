@@ -5,7 +5,7 @@ import { cmRate } from "./economy";
 import type { Game } from "./game";
 import { makePart } from "./parts";
 import { pickWeighted } from "./rng";
-import { makeRoom } from "./stash";
+import { countRareLuck, makeRoom, trashWeights } from "./stash";
 import { calc, squadBonus, squadDps } from "./stats";
 
 export interface OfflineReport {
@@ -58,7 +58,8 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
     if (!makeRoom(g)) continue;
     const k = pickWeighted(g.rng, w);
     // every part gets a proper rarity (the prototype's NaN bug came from skipping this)
-    const p = makePart(g, act.foes[k].drop, stage, pickWeighted(g.rng, TUNE.rarityW));
+    const p = makePart(g, act.foes[k].drop, stage, pickWeighted(g.rng, trashWeights(g)));
+    countRareLuck(g, p);
     parts++;
     if (p.rarity === "rare") rare++;
   }

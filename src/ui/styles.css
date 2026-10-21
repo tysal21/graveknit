@@ -249,3 +249,6 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .q-fine{color:var(--muted)}
 .q-pristine{color:var(--good)}
 .q-perfect{color:var(--t1);text-shadow:0 0 6px rgba(240,199,90,.6)}
+/* a Rare drop: gold edge and a short glow so it stands out from boss toasts */
+.toast.rare{border-left-color:var(--rare);animation:toastIn .25s ease-out,rareGlow 1.6s ease-out}
+@keyframes rareGlow{0%{box-shadow:0 0 0 rgba(220,197,92,0)}20%{box-shadow:0 0 18px rgba(220,197,92,.55)}100%{box-shadow:0 0 0 rgba(220,197,92,0)}}

@@ -12,6 +12,8 @@ export const SAVE_KEY = "graveknit-save";
 const MIGRATIONS: Record<number, (s: any) => any> = {
   // 1 → 2: the "victory pop-up every boss kill" setting (off by default)
   1: (s) => ({ ...s, opt: { ...s.opt, bossPop: false }, v: 2 }),
+  // 2 → 3: Rare luck starts fresh
+  2: (s) => ({ ...s, rareDry: 0, v: 3 }),
 };
 
 export function migrate(raw: any): GameState | null {
@@ -38,6 +40,7 @@ export function repair(g: Game) {
     }
     if (!Number.isFinite(p.ilvl) || p.ilvl < 1) p.ilvl = 1;
   }
+  if (!Number.isFinite(s.rareDry) || s.rareDry < 0) s.rareDry = 0;
   for (const a of s.squad) for (const slot in a.eq) if (!g.partById(a.eq[slot as keyof typeof a.eq])) delete a.eq[slot as keyof typeof a.eq];
   for (const k of ["cm", "ess", "marrow", "dust", "thread", "altar"] as const) if (!Number.isFinite(s[k])) s[k] = 0;
   g.refresh();

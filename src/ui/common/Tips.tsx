@@ -11,6 +11,7 @@ import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
 import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { rareChance, trashWeights } from "../../engine/stash";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -206,6 +207,18 @@ export function tipContent(g: Game, key: string): ReactNode {
     case "st-drop":
       return <Tip h="Part drop bonus" p={`Raises the ${pct(TUNE.partChance)} base chance that a kill drops a body part.` + (many ? " Every squad member's parts add to it; generators and Thralls count once." : "")}
         rows={[...sourceRows(m.drop, "%", "+" + Math.round(c.drop) + "%"), ...(many ? [["Whole squad", `+${Math.round(g.bonus("drop"))}%`, "tot"] as Row] : [])]} />;
+    case "x-rare": {
+      const w = trashWeights(g), tot = w.common + w.magic + w.rare;
+      return <Tip h="Rare luck" p={`Every part a normal enemy drops that isn't Rare makes the next one likelier. The Rare odds double every ${TUNE.rareDoubleEvery} misses, up to about ${pct(TUNE.rareCapW / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rareCapW))}, then reset when a Rare drops.`}
+        rows={[
+          ["Base Rare chance", pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))],
+          ["Drops since your last Rare", String(s.rareDry)],
+          ["Next part is Rare", pct(rareChance(g)), "tot"],
+          ["Magic", pct(w.magic / tot)],
+          ["Common", pct(w.common / tot)],
+        ]}
+        after={<p>Bosses and guardians use their own odds and don't touch your streak.</p>} />;
+    }
     case "x-stash": {
       const lc = g.looseCount();
       const kept = s.parts.filter((p) => !g.isWorn(p) && isKept(p)).length;

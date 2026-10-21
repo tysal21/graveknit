@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { startBoss } from "../../src/engine/combat";
 import type { BossWin } from "../../src/engine/game";
 import { migrate } from "../../src/engine/save";
+import { SAVE_VERSION } from "../../src/engine/state";
 import { newGame } from "../helpers";
 
 /** start the Warden fight and knock him down to finish it on the next step */
@@ -42,7 +43,7 @@ describe("boss victory report", () => {
     old.v = 1;
     delete old.opt.bossPop;
     const s = migrate(old)!;
-    expect(s.v).toBe(2);
+    expect(s.v).toBe(SAVE_VERSION);
     expect(s.opt.bossPop).toBe(false);
   });
 });

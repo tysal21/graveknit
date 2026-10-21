@@ -87,6 +87,7 @@ h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mut
 #altarPrev{font-size:.78rem}
 .foe{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .foe b{font-family:var(--display);font-weight:400;font-size:1.15rem}
+.foe-sprite{display:block;width:192px;height:192px;margin:4px auto;image-rendering:pixelated}
 .tele{border:1px dashed var(--line2);border-radius:5px;padding:8px 10px;min-height:3.6rem;display:flex;flex-direction:column;gap:5px;font-size:.92rem}
 .tele.live{border-style:solid;border-color:var(--lantern);background:rgba(224,169,72,.07)}
 .tele.window{border-style:solid;border-color:var(--good);background:rgba(127,183,126,.08)}

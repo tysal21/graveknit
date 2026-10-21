@@ -88,7 +88,7 @@ export class Game {
       parts: [], nextId: 1, bosses: {}, rit,
       opt: { push: false, auto: false, boss: false, rit: false, sound: false, sort: "new", bossPop: false },
       tut: 0, tutKills: 0, tutPart: null, hint: null,
-      seen: {}, log: [], lastSave: Date.now(), bossRetryAt: 0, stats: { kills: 0, rolls: 0 }, rareDry: 0,
+      seen: {}, log: [], lastSave: Date.now(), bossRetryAt: 0, stats: { kills: 0, rolls: 0 },
     };
   }
 

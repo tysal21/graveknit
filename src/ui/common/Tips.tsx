@@ -11,7 +11,6 @@ import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
 import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
-import { rareChance, rareLuckFloor, rareLuckMult, trashWeights } from "../../engine/stash";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -208,20 +207,14 @@ export function tipContent(g: Game, key: string): ReactNode {
       return <Tip h="Part drop bonus" p={`Raises the ${pct(TUNE.partChance)} base chance that a kill drops a body part.` + (many ? " Every squad member's parts add to it; generators and Thralls count once." : "")}
         rows={[...sourceRows(m.drop, "%", "+" + Math.round(c.drop) + "%"), ...(many ? [["Whole squad", `+${Math.round(g.bonus("drop"))}%`, "tot"] as Row] : [])]} />;
     case "x-rare": {
-      const w = trashWeights(g), tot = w.common + w.magic + w.rare;
-      const nextAt = (Math.floor(s.rareDry / TUNE.rareDoubleKills) + 1) * TUNE.rareDoubleKills;
-      const capped = w.rare >= TUNE.rareCapW;
-      return <Tip h="Rare luck" p={`A Rare part comes about once every 360 kills. Go ${TUNE.rareDoubleKills} kills without one and the Rare odds double, then double again every ${TUNE.rareDoubleKills} kills after, until a Rare drops and it resets.`}
+      const w = TUNE.rarityW, tot = w.common + w.magic + w.rare;
+      return <Tip h="Part rarity" p={`Every part a normal enemy drops rolls its rarity with the same odds, every time. No streaks, no tricks: about 1 part in ${Math.round(tot / w.rare)} is Rare.`}
         rows={[
-          ["Base Rare chance per part", pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))],
-          ["Kills since your last Rare", String(s.rareDry)],
-          ["Rare luck", `×${rareLuckMult(g)}`, "mul"],
-          capped ? ["Luck is at its cap", ""] : ["Doubles again at", `${nextAt} kills`],
-          ["Next part is Rare", pct(rareChance(g)), "tot"],
+          ["Rare", pct(w.rare / tot), "tot"],
           ["Magic", pct(w.magic / tot)],
           ["Common", pct(w.common / tot)],
         ]}
-        after={<p>Only kills at Stage {rareLuckFloor(g)} or higher count (within {TUNE.rareLuckStages} of your best).{s.stage < rareLuckFloor(g) ? " You're below that now, so your luck isn't building." : ""} Bosses and guardians use their own odds and don't touch your streak.</p>} />;
+        after={<p>Bosses and guardians use their own, better odds.</p>} />;
     }
     case "x-stash": {
       const lc = g.looseCount();

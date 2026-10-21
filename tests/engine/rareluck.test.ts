@@ -1,50 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { TUNE } from "../../src/content/tune";
 import { migrate } from "../../src/engine/save";
-import { countRareLuck, rareChance, rareLuckMult } from "../../src/engine/stash";
-import type { Part } from "../../src/engine/state";
+import { SAVE_VERSION } from "../../src/engine/state";
 import { newGame } from "../helpers";
 
-const drop = (rarity: Part["rarity"]) => ({ rarity }) as Part;
-
-describe("Rare luck", () => {
-  it("doubles the Rare odds at 180 kills without a Rare, again at 360, and resets on a Rare", () => {
+describe("flat Rare chance", () => {
+  it("drops the old Rare luck counter from saves", () => {
     const g = newGame();
-    const base = rareChance(g);
-    expect(base).toBeCloseTo(TUNE.rarityW.rare / 100, 5);
-    for (let i = 0; i < TUNE.rareDoubleKills - 1; i++) countRareLuck(g, i % 20 ? null : drop("magic"), 1);
-    expect(rareLuckMult(g)).toBe(1);
-    countRareLuck(g, null, 1);
-    expect(rareLuckMult(g)).toBe(2);
-    expect(rareChance(g)).toBeCloseTo(14 / (93 + 14), 5);
-    g.s.rareDry = 2 * TUNE.rareDoubleKills;
-    expect(rareLuckMult(g)).toBe(4);
-    countRareLuck(g, drop("rare"), 1);
-    expect(g.s.rareDry).toBe(0);
-    expect(rareChance(g)).toBeCloseTo(base, 5);
-  });
-
-  it("only counts kills within 2 stages of your best, but any Rare resets it", () => {
-    const g = newGame();
-    g.s.maxStage = 9;
-    countRareLuck(g, null, 1);
-    expect(g.s.rareDry).toBe(0);
-    countRareLuck(g, null, 7);
-    expect(g.s.rareDry).toBe(1);
-    countRareLuck(g, drop("rare"), 1);
-    expect(g.s.rareDry).toBe(0);
-  });
-
-  it("stops rising at the cap", () => {
-    const g = newGame();
-    g.s.rareDry = 50 * TUNE.rareDoubleKills;
-    expect(rareChance(g)).toBeCloseTo(TUNE.rareCapW / (93 + TUNE.rareCapW), 5);
-  });
-
-  it("starts at zero for old saves", () => {
-    const g = newGame();
-    const old = JSON.parse(JSON.stringify({ ...g.s, v: 2 }));
-    delete old.rareDry;
-    expect(migrate(old)!.rareDry).toBe(0);
+    const old = JSON.parse(JSON.stringify({ ...g.s, v: 3, rareDry: 250 }));
+    const s = migrate(old)!;
+    expect(s.v).toBe(SAVE_VERSION);
+    expect("rareDry" in s).toBe(false);
   });
 });

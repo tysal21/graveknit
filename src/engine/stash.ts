@@ -33,33 +33,6 @@ export function makeRoom(g: Game): boolean {
   return !!oldest;
 }
 
-// ---- Rare luck: the longer you go without a Rare, the likelier the next one ----
-
-/** ×1, ×2, ×4 …: the Rare weight doubles once per TUNE.rareDoubleKills kills without a Rare */
-export const rareLuckMult = (g: Game) => Math.pow(2, Math.floor(g.s.rareDry / TUNE.rareDoubleKills));
-
-/** rarity odds for a trash drop right now, with the Rare weight raised by your dry streak */
-export function trashWeights(g: Game): Record<Rarity, number> {
-  const w = TUNE.rarityW;
-  const rare = Math.min(TUNE.rareCapW, w.rare * rareLuckMult(g));
-  return { ...w, rare };
-}
-
-/** the chance the next trash part is Rare */
-export function rareChance(g: Game) {
-  const w = trashWeights(g);
-  return w.rare / (w.common + w.magic + w.rare);
-}
-
-/** the lowest stage whose kills still build Rare luck */
-export const rareLuckFloor = (g: Game) => Math.max(1, g.s.maxStage - TUNE.rareLuckStages);
-
-/** after a normal kill: a Rare part resets the streak; anything else grows it, if the kill was near your best stage */
-export function countRareLuck(g: Game, p: Part | null, stage: number, kills = 1) {
-  if (p?.rarity === "rare") g.s.rareDry = 0;
-  else if (stage >= rareLuckFloor(g)) g.s.rareDry += kills;
-}
-
 /** a part drops from a kill; trophies always get in */
 export function dropPart(g: Game, base: string, ilvl: number, weights: Record<Rarity, number>): Part | null {
   if (!BASES[base].trophy && !makeRoom(g)) return null;

@@ -8,7 +8,7 @@ import type { Stats } from "./stats";
 import { fmt, pct } from "./format";
 import type { Game } from "./game";
 import { autoRituals, cmRate } from "./economy";
-import { countRareLuck, dropPart, trashWeights } from "./stash";
+import { dropPart } from "./stash";
 import { tutEvent, tutKill } from "./tutorial";
 import { pickWeighted } from "./rng";
 import { bossById } from "../content/acts";
@@ -238,10 +238,7 @@ function onTrashKill(g: Game) {
   s.lifeEss += ess;
   s.cm += stage * TUNE.cmPerKill * (foe.cm || 1);
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
-  if (!g.inTut()) {
-    const p = g.rng() < TUNE.partChance * raise * (1 + g.bonus("drop") / 100) ? dropPart(g, foe.drop, stage, trashWeights(g)) : null;
-    countRareLuck(g, p, stage);
-  }
+  if (!g.inTut() && g.rng() < TUNE.partChance * raise * (1 + g.bonus("drop") / 100)) dropPart(g, foe.drop, stage, TUNE.rarityW);
   if (g.inTut()) tutKill(g);
   if (g.rng() < TUNE.dustChance * raise) s.dust++;
   if (g.rng() < TUNE.marrowChance * raise) {

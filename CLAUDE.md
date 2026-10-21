@@ -43,7 +43,7 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - **Ossuary Colossus (Act 2):** 40× trash HP (more than the Warden's 20×), 30 s enrage, slams three times (twice in a row at the end). Bots: about 20-45 minutes after the Warden.
 - **Squad:** slot 2 opens at Stage 20, slot 3 at 40. New Abominations start empty. Only the Vanguard (slot 1) takes hits; everyone's damage and abilities add up. Soul Essence and drop bonuses from parts add up across the squad; generator and Thrall bonuses count once.
 - **Boss victory:** a SLAIN stamp, then a loot pop-up (parts open on the Workbench, Thrall banner) on first kills and new Thralls. Repeat kills get a corner toast unless "Victory pop-up every kill" is on. Every future boss uses this.
-- **Loot:** 4% of kills drop a part; rarity 65 / 28 / 7 (Common / Magic / Rare). **Rare luck** instead of a guaranteed Rare: after 180 normal kills without a Rare part the Rare odds double, then double again every 180 kills (Tyler's pick: half the ~1-in-360 Rare rate), capped at about half of all drops, reset by a Rare. Only kills within 2 stages of your best count, so farming easy stages doesn't build luck (shown with an ⓘ in the Crypt). A Rare drop gets a gold toast that opens it on the Workbench, plus a chime if sounds are on. Bosses and guardians keep their own odds.
+- **Loot:** 4% of kills drop a part; rarity 65 / 28 / 7 (Common / Magic / Rare), so about 1 part in 14 is Rare. **No Rare luck or pity of any kind** (Tyler's pick, so nothing can be cheesed; tried and removed). A Rare drop gets a gold toast that opens it on the Workbench, plus a chime if sounds are on. Bosses and guardians keep their own odds.
 - Drop rates don't get stingier over time.
 
 ## Style

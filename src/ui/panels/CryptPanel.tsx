@@ -5,7 +5,6 @@ import { TUNE } from "../../content/tune";
 import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, startBoss, useAbility, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
 import { fmt, pct } from "../../engine/format";
-import { rareChance } from "../../engine/stash";
 import { hasCounterFor } from "../../engine/stats";
 import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
@@ -243,7 +242,7 @@ export function CryptPanel() {
               })}
               <p className="faint" style={{ margin: 0 }}>
                 Each kill: {pct(TUNE.partChance)} part, {pct(TUNE.dustChance)} Grave Dust, {pct(TUNE.marrowChance)} Marrow Shard. Parts drop at item level {s.stage}.{" "}
-                <span data-tip="x-rare" tabIndex={0}>Next part Rare: <b className="tc-rare">{pct(rareChance(g))}</b><Info /></span>
+                <span data-tip="x-rare" tabIndex={0}>Rare: <b className="tc-rare">{pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))}</b> of parts<Info /></span>
               </p>
             </>
           )}

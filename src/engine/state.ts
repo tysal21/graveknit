@@ -90,9 +90,7 @@ export interface GameState {
   lastSave: number;
   bossRetryAt: number;
   stats: { kills: number; rolls: number };
-  /** normal kills since the last Rare part; raises the Rare odds (see TUNE.rareDoubleKills) */
-  rareDry: number;
 }
 
 /** the newest save version; see save.ts for how older saves are upgraded */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;

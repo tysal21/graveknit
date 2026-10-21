@@ -281,3 +281,8 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .stg-mark{position:absolute;top:-7px;right:-5px;font-style:normal;font-size:.7rem;color:var(--guardian);text-shadow:0 0 3px #000}
 .stg.boss .crown{color:var(--blood)}
 @media (prefers-reduced-motion:reduce){.arrival{animation:none}}
+/* graft: the part as it is now beside what you'd get */
+.gcompare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gcompare .gnow{border-right:1px solid var(--line);padding-right:14px}
+.gcompare .af.goes>span:nth-child(2){text-decoration:line-through;text-decoration-color:var(--blood)}
+@media (max-width:760px){.gcompare{grid-template-columns:1fr;height:auto}.gcompare .gnow{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:10px}}

@@ -3,7 +3,7 @@ import { AFFIX, affixShortName } from "../../content/affixes";
 import { TUNE } from "../../content/tune";
 import { donors, graft, graftIsBetter, graftResult, graftSlots } from "../../engine/crafting";
 import type { Game } from "../../engine/game";
-import { affixValue, partName, rarityClass } from "../../engine/parts";
+import { affixValue, partName, rarityClass, rollQuality } from "../../engine/parts";
 import type { Affix, Part } from "../../engine/state";
 import { calc } from "../../engine/stats";
 import { Modal } from "../common/Modal";
@@ -24,6 +24,28 @@ function Delta({ g, from, to }: { g: Game; from: Part; to: Part }) {
 
 function AffixLine({ a, part }: { a: Affix; part: Part }) {
   return <><span className={`tb t${a.t}`}>T{a.t}</span> {AFFIX[a.k].fmt(affixValue(a, part.ilvl))} <span className="faint">{AFFIX[a.k].name}</span></>;
+}
+
+/** the part as it is now, so the preview beside it has something to compare against */
+function NowCard({ t, mark }: { t: Part; mark: number | null }) {
+  return (
+    <>
+      <h3>Now</h3>
+      <div className={`tc-${rarityClass(t)}`} style={{ fontFamily: "var(--display)", fontSize: "1.05rem" }}>{partName(t)}</div>
+      <div className="afx">
+        {t.affixes.map((a, k) => (
+          <div className={`af ${k === mark ? "goes" : ""}`} key={k}>
+            <span className={`tb t${a.t}`}>T{a.t}</span>
+            <span>
+              {AFFIX[a.k].fmt(affixValue(a, t.ilvl))} <span className={`q ${rollQuality(a, t.ilvl).cls}`}>{rollQuality(a, t.ilvl).label}</span>
+              {k === mark && <span className="faint"> (replaced)</span>}
+            </span>
+            <span />
+          </div>
+        ))}
+      </div>
+    </>
+  );
 }
 
 type Hover = { kind: "donor"; id: number } | { kind: "dA"; i: number } | { kind: "tA"; i: number } | null;
@@ -139,8 +161,9 @@ export function GraftModal({ targetId }: { targetId: number }) {
           </div>
         </>
       )}
-      <div className="gprev" id="gprev">
-        <Preview g={g} t={t} donor={d} dA={dA} tA={tA} hover={hover} />
+      <div className="gprev gcompare" id="gprev">
+        <div className="gnow"><NowCard t={t} mark={hover?.kind === "tA" ? hover.i : tA} /></div>
+        <div><Preview g={g} t={t} donor={d} dA={dA} tA={tA} hover={hover} /></div>
       </div>
       <div className="row">
         <button className="btn" onClick={backToBench}>Cancel</button>

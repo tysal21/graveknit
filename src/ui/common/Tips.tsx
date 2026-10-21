@@ -223,7 +223,7 @@ export function tipContent(g: Game, key: string): ReactNode {
         [`Sacrifice half now (${fmt(give)})`, `+${(after * 100).toFixed(1)}%`],
         ["Bonus by total given", "", "sub"],
         ["500", "+" + at(500)], ["5,000", "+" + at(5000)], ["50,000", "+" + at(50000)],
-      ]} after={<p>The bonus multiplies hit damage and poison. It resets when you die and rise again.</p>} />;
+      ]} after={<p>The bonus multiplies hit damage and poison. It lasts until Death (coming in a later act). Losing a fight doesn't touch it.</p>} />;
     }
   }
   return null;

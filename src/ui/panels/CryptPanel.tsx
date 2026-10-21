@@ -8,7 +8,7 @@ import { hasCounterFor } from "../../engine/stats";
 import { Bar } from "../common/Bar";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
-import { openModal } from "../uiStore";
+import { openModal, SLAIN_MS, ui } from "../uiStore";
 
 export function challengeBoss() {
   act((g) => {
@@ -72,7 +72,7 @@ export function CryptPanel() {
   for (let n = actDef.stages[0]; n < bdef.stage; n++) stages.push(n);
   const w = actDef.stageFoes[s.stage] || {};
   const tot = Object.values(w).reduce((a, b) => a + b, 0);
-  const setOpt = (k: "push" | "auto" | "boss", v: boolean) => act((g) => (g.s.opt[k] = v));
+  const setOpt = (k: "push" | "auto" | "boss" | "bossPop", v: boolean) => act((g) => (g.s.opt[k] = v));
   const shortName = bdef.name.replace(/^The /, "");
 
   return (
@@ -95,6 +95,7 @@ export function CryptPanel() {
           <label><input type="checkbox" id="optPush" checked={s.opt.push} onChange={(e) => setOpt("push", e.target.checked)} /> Push to next stage</label>
           <label><input type="checkbox" checked={s.opt.auto} onChange={(e) => setOpt("auto", e.target.checked)} /> Auto abilities</label>
           <label><input type="checkbox" checked={s.opt.boss} onChange={(e) => setOpt("boss", e.target.checked)} /> Auto-challenge {shortName.split(" ").pop()}</label>
+          {g.bossCleared() && <label title="First kills and new Thralls always show it. Otherwise repeat kills get a small note in the corner."><input type="checkbox" checked={s.opt.bossPop} onChange={(e) => setOpt("bossPop", e.target.checked)} /> Victory pop-up every kill</label>}
         </div>
       </div>
       <div className={`fight ${boss ? "bossfight" : ""}`} id="fight">
@@ -126,6 +127,7 @@ export function CryptPanel() {
             );
           })}
         </div>
+        {ui.slain && Date.now() - ui.slain.at < SLAIN_MS + 400 && <div className="slain" aria-hidden="true">Slain</div>}
         <div className="ticker">
           {g.ticker.map((t, i) => (
             <div key={i} className={t.cls}>{t.text}</div>

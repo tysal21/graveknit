@@ -76,7 +76,11 @@ export interface GameState {
   nextId: number;
   bosses: Record<string, BossRecord>;
   rit: Record<RitualId, RitualState>;
-  opt: { push: boolean; auto: boolean; boss: boolean; rit: boolean; sound: boolean; sort: SortId };
+  opt: {
+    push: boolean; auto: boolean; boss: boolean; rit: boolean; sound: boolean; sort: SortId;
+    /** show the big victory pop-up on every boss kill, not only the special ones */
+    bossPop: boolean;
+  };
   tut: number;
   tutKills: number;
   tutPart: number | null;
@@ -89,4 +93,4 @@ export interface GameState {
 }
 
 /** the newest save version; see save.ts for how older saves are upgraded */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;

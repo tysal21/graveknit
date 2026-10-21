@@ -211,3 +211,20 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 @media (max-width:760px){.modal.bench .craft{grid-template-columns:repeat(2,minmax(0,1fr))} .scrim{padding:8px} .modal{max-height:94vh}}
 .search{font:inherit;font-size:.85rem;background:var(--panel2);color:var(--bone);border:1px solid var(--line2);border-radius:4px;padding:3px 8px;flex:1;min-width:8rem}
 .search::placeholder{color:var(--faint)}
+
+/* boss victory: SLAIN stamp, pop-up, corner toasts */
+.fight{position:relative}
+.slain{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-family:var(--display);font-size:3rem;letter-spacing:.2em;text-transform:uppercase;color:var(--blood);text-shadow:0 0 18px rgba(0,0,0,.9);background:rgba(10,8,8,.82);border-radius:6px;animation:stamp .35s ease-out}
+@keyframes stamp{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.modal.victory{max-width:34rem;border-color:var(--trophy);box-shadow:0 0 40px rgba(224,128,48,.18)}
+.modal.victory h2{font-size:2rem;color:var(--trophy)}
+.modal.victory .eyebrow{margin:0 0 -8px;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lantern)}
+.loot{display:flex;flex-direction:column;gap:4px}
+.loot .reag{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.9rem;margin-bottom:4px}
+.loot .item.gone{display:block}
+.thrallBanner{border:1px solid var(--trophy);background:rgba(224,128,48,.1);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.thrallBanner b{color:var(--trophy)}
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:6px;z-index:15;max-width:min(22rem,calc(100vw - 32px))}
+.toast{background:var(--panel);border:1px solid var(--line2);border-left:3px solid var(--trophy);border-radius:6px;padding:8px 10px;text-align:left;font-size:.85rem;animation:toastIn .25s ease-out}
+@keyframes toastIn{0%{transform:translateY(8px);opacity:0}100%{transform:none;opacity:1}}
+@media (max-width:760px){.toasts{bottom:64px;right:8px;left:8px;max-width:none} .slain{font-size:2.2rem}}

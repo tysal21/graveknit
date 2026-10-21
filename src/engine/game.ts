@@ -20,7 +20,26 @@ export type GameEvent =
   | { type: "bossReady" }
   | { type: "tutPartDropped"; id: number }
   | { type: "tutStep"; step: number }
-  | { type: "offline"; report: OfflineReport };
+  | { type: "offline"; report: OfflineReport }
+  | { type: "bossWin"; win: BossWin };
+
+/** what one boss kill gave you, for the victory pop-up */
+export interface BossWin {
+  bossId: string;
+  /** the first time you beat this boss */
+  first: boolean;
+  /** how long the fight took, in seconds */
+  secs: number;
+  ess: number;
+  cm: number;
+  marrow: number;
+  dust: number;
+  thread: boolean;
+  /** ids of the parts that dropped (some may be rendered later) */
+  parts: number[];
+  /** the boss rose as your Thrall this time */
+  thrall: boolean;
+}
 
 /**
  * The running game: the saved state plus what only exists while playing
@@ -64,7 +83,7 @@ export class Game {
       gens: {}, altar: 0,
       squad: [{ name: "The First Stitch", eq: {}, infusion: 1 }],
       parts: [], nextId: 1, bosses: {}, rit,
-      opt: { push: false, auto: false, boss: false, rit: false, sound: false, sort: "new" },
+      opt: { push: false, auto: false, boss: false, rit: false, sound: false, sort: "new", bossPop: false },
       tut: 0, tutKills: 0, tutPart: null, hint: null,
       seen: {}, log: [], lastSave: Date.now(), bossRetryAt: 0, stats: { kills: 0, rolls: 0 },
     };

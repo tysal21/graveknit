@@ -220,9 +220,10 @@ function onBossKill(g: Game) {
   s.dust += L.dust;
   const thread = g.rng() < L.threadChance;
   if (thread) s.thread++;
+  const parts: number[] = [];
   g.log(`${b.name} falls in ${f.t.toFixed(1)} seconds. You collect ${L.marrow} Marrow Shards, ${L.dust} Grave Dust${thread ? " and a Spectral Thread" : ""}.`);
   if (first) {
-    makePart(g, b.trophy, b.stage, "rare");
+    parts.push(makePart(g, b.trophy, b.stage, "rare").id);
     g.log(b.firstClear[0], "brag");
     for (const line of b.firstClear.slice(1)) g.log(line, "story");
     if (b.stage + 1 <= LAST_STAGE) {
@@ -235,15 +236,19 @@ function onBossKill(g: Game) {
   for (let i = 0; i < L.parts; i++) {
     const pool = [...b.lootPool];
     if (b.lootBonus && g.rng() < b.lootBonus.chance) for (let k = 0; k < b.lootBonus.copies; k++) pool.push(b.lootBonus.base);
-    dropPart(g, pool[Math.floor(g.rng() * pool.length)], b.stage, TUNE.bossRarityW);
+    const p = dropPart(g, pool[Math.floor(g.rng() * pool.length)], b.stage, TUNE.bossRarityW);
+    if (p) parts.push(p.id);
   }
+  let bound = false;
   if (!rec.thrall) {
     const ch = TUNE.thrallBase + TUNE.thrallPity * rec.tries;
     if (g.rng() < ch) {
-      rec.thrall = true;
+      rec.thrall = bound = true;
       g.log(`${b.name} rises again, bound to you. Thrall aura: ${b.thrall.text}. (${pct(ch)} chance)`, "brag");
     } else rec.tries++;
   }
+  // the screen shows this as the victory pop-up (or a toast on repeat kills)
+  g.emit({ type: "bossWin", win: { bossId: b.id, first, secs: f.t, ess, cm: TUNE.bossCm, marrow: L.marrow, dust: L.dust, thread, parts, thrall: bound } });
   s.stage = b.stage - 1;
   s.kills = 0;
   s.bossRetryAt = s.clock + TUNE.bossRetryWin;

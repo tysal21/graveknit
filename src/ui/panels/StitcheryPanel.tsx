@@ -58,7 +58,7 @@ export function filteredParts(g: Game) {
   return g.s.parts.filter((p) => shownByFilters(g, p, base0));
 }
 
-function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
+export function Delta({ g, p, base0 }: { g: Game; p: Part; base0: Stats }) {
   if (g.isWorn(p)) return <span className="muted">worn</span>;
   const b = calc(g, { swap: p, ignoreBuffs: true });
   const d = (b.dps - base0.dps) / base0.dps, h = (b.maxHp - base0.maxHp) / base0.maxHp;

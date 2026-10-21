@@ -6,13 +6,14 @@ import { panelOpen } from "./common/Panel";
 import { TipLayer } from "./common/Tips";
 import { GlanceStrip, usePills } from "./GlanceStrip";
 import { ModalLayer } from "./modals/Modals";
+import { Toasts, wantsPopup } from "./modals/Victory";
 import { CryptPanel } from "./panels/CryptPanel";
 import { GraveyardPanel } from "./panels/GraveyardPanel";
 import { SquadPanel } from "./panels/SquadPanel";
 import { StitcheryPanel } from "./panels/StitcheryPanel";
 import { onGameCreated, useGame } from "./runtime";
 import { bossReadyCue } from "./sound";
-import { isPhone, openModal, setUi, showTab, ui } from "./uiStore";
+import { isPhone, openModal, setUi, showTab, SLAIN_MS, ui } from "./uiStore";
 
 const TABS: [PanelId, string][] = [["squad", "Squad"], ["crypt", "Crypt"], ["stitch", "Stitchery"], ["yard", "Graveyard"]];
 
@@ -28,6 +29,16 @@ onGameCreated((g) => {
       if (p && isPhone()) showTab(p);
     }
     if (e.type === "offline") openModal({ kind: "offline", report: e.report });
+    if (e.type === "bossWin") {
+      // stamp SLAIN over the fight first, then show the loot once it has sunk in
+      setUi({ slain: { at: Date.now() } });
+      const big = wantsPopup(g, e.win);
+      setTimeout(() => {
+        // never cover another open window (a graft, a confirm box): fall back to a toast
+        if (big && !ui.modal) openModal({ kind: "victory", win: e.win });
+        else setUi({ toasts: [...ui.toasts.slice(-2), { at: Date.now(), win: e.win }] });
+      }, SLAIN_MS);
+    }
   });
 });
 
@@ -63,6 +74,7 @@ export function App() {
         )}
       </nav>
       <ModalLayer />
+      <Toasts />
       <TipLayer />
     </div>
   );

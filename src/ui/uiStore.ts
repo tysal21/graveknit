@@ -1,6 +1,7 @@
 import type { SlotId } from "../content/slots";
 import type { PanelId } from "../content/tutorial";
 import type { Flash } from "../engine/crafting";
+import type { BossWin } from "../engine/game";
 import type { OfflineReport } from "../engine/offline";
 import { bump } from "./runtime";
 
@@ -14,7 +15,11 @@ export type ModalState =
   | { kind: "renderPicked" }
   | { kind: "reset" }
   | { kind: "saves" }
-  | { kind: "workbench" };
+  | { kind: "workbench" }
+  | { kind: "victory"; win: BossWin };
+
+/** how long the SLAIN stamp shows before the loot appears */
+export const SLAIN_MS = 1600;
 
 /** what's selected, filtered and open on screen. Not saved. */
 export const ui = {
@@ -33,6 +38,10 @@ export const ui = {
   modal: null as ModalState,
   /** rows that just got better or worse after a reroll */
   flash: null as { id: number; f: Flash; at: number } | null,
+  /** the SLAIN stamp over the fight, shown for a moment after a boss dies */
+  slain: null as { at: number } | null,
+  /** small corner notes for repeat boss kills; click one to see the full loot */
+  toasts: [] as { at: number; win: BossWin }[],
 };
 
 export function setUi(patch: Partial<typeof ui>) {

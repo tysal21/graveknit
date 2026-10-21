@@ -10,7 +10,8 @@ export const SAVE_KEY = "graveknit-save";
  * and add a step here that turns version N into N+1. Never delete old steps.
  */
 const MIGRATIONS: Record<number, (s: any) => any> = {
-  // 1: (s) => ({ ...s, newField: 0, v: 2 }),
+  // 1 → 2: the "victory pop-up every boss kill" setting (off by default)
+  1: (s) => ({ ...s, opt: { ...s.opt, bossPop: false }, v: 2 }),
 };
 
 export function migrate(raw: any): GameState | null {

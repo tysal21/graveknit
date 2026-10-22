@@ -4,7 +4,7 @@ import { TUNE } from "../../src/content/tune";
 import { guardianFor, makeVanguard, openSquadSlots, spawnTrash, startBoss, useAbility } from "../../src/engine/combat";
 import { equip } from "../../src/engine/crafting";
 import { makePart } from "../../src/engine/parts";
-import { newGame } from "../helpers";
+import { arrive, newGame } from "../helpers";
 
 describe("Act 2", () => {
   it("runs to Stage 20 with the Ossuary Colossus at the end", () => {
@@ -75,6 +75,7 @@ describe("Act 2", () => {
     g.s.bosses.warden = { kills: 1, thrall: false, tries: 1 };
     g.s.kills = TUNE.killsPerStage - 1;
     g.foe!.hp = 0;
+    arrive(g);
     g.step(0.1);
     expect(g.s.stage).toBe(11);
   });
@@ -110,6 +111,7 @@ describe("stage guardians", () => {
     spawnTrash(g);
     const parts = g.s.parts.length;
     g.foe!.hp = 0;
+    arrive(g);
     g.step(0.1);
     expect(g.s.seen.g3).toBe(1);
     const p = g.s.parts[g.s.parts.length - 1];
@@ -129,6 +131,7 @@ describe("stage guardians", () => {
     spawnTrash(g);
     g.pl!.hp = 0.01;
     g.foe!.atk = 99;
+    arrive(g);
     g.step(0.1);
     expect(g.s.stage).toBe(1);
     expect(g.s.seen.g2).toBeUndefined();

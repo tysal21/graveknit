@@ -8,7 +8,8 @@ import type { Abomination } from "../engine/state";
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  "minion-abom-cleaver", "minion-abom-shovel", "altar",
+  ...["cleaver", "shovel"].flatMap((arm) => ["wisp", "lantern", "wraith"].map((core) => `minion-abom-${arm}-${core}`)),
+  "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
   "ab-cleave", "ab-haste", "ab-bury", "ab-ward", "ab-phase",
@@ -33,6 +34,10 @@ export const THRALL_ART: Record<string, string> = { warden: "lantern" };
 // guardians are keyed by the stage they guard
 const GUARDIAN_ART: Record<number, string> = { 2: "guard-ratKing", 3: "guard-foreman", 4: "guard-alpha" };
 
+// small beasts are drawn filling their canvas, so shrink them to sit right beside people
+const FOE_SCALE: Record<string, number> = { "foe-rat": 0.6, "foe-hound": 0.8, "guard-ratKing": 0.8, "guard-alpha": 0.95 };
+export const foeScale = (src: string | null) => FOE_SCALE[src?.replace(/^sprites\/|\.png$/g, "") ?? ""] ?? 1;
+
 /** which picture to show for the enemy in front of you */
 export function foeArt(f: Foe | null | undefined): string | null {
   if (!f) return null;
@@ -49,18 +54,15 @@ export function stageBackground(stage: number): string | null {
   return null;
 }
 
-// the Main Arm picks the body; anything without its own sprite uses the cleaver one
-const ARM_ART: Record<string, string> = { cleaverArm: "minion-abom-cleaver", diggerArm: "minion-abom-shovel" };
-// the Soul Core picks the glow in its chest
-const CORE_GLOW: Record<string, string> = { wispCore: "#7fdc5a", lanternCore: "#e0b85a", wraithCore: "#8fc6ff" };
+// the Main Arm picks the weapon and the Soul Core the colour of the eyes and chest.
+// Anything without its own picture (later acts' parts) falls back to the cleaver and the green wisp.
+const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
+const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };
 
 export function abomArt(g: Game, a: Abomination) {
-  const arm = g.partById(a.eq.main)?.base;
-  const core = g.partById(a.eq.core)?.base;
-  return {
-    src: artUrl(ARM_ART[arm ?? ""] ?? "minion-abom-cleaver")!,
-    glow: core ? CORE_GLOW[core] ?? "#7fdc5a" : null,
-  };
+  const arm = ARM_ART[g.partById(a.eq.main)?.base ?? ""] ?? "cleaver";
+  const core = CORE_ART[g.partById(a.eq.core)?.base ?? ""] ?? "wisp";
+  return artUrl(`minion-abom-${arm}-${core}`)!;
 }
 
 /** a part's picture. In lists, a part without art gets an empty square so the rows still line up. */

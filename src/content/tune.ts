@@ -9,6 +9,8 @@ export const TUNE = {
   // enemy hit = dmgBase × dmgGrow^(stage-1)
   dmgBase: 7, dmgGrow: 1.17,
   killsPerStage: 10, healOnKill: 0.08, regenPerSec: 0.01,
+  // seconds each new enemy takes to walk in. Nobody fights meanwhile, so it also caps kills per second.
+  walkIn: 0.5,
 
   // bosses: 20× trash HP (v1 said 12×, raised after playtesting), hits at 0.5× every 2 seconds
   bossHpMult: 20, enrage: 30, bossHitMult: 0.5, bossAtkInt: 2,

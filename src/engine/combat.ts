@@ -40,6 +40,8 @@ export interface Foe {
   elite?: boolean;
   key?: string;
   bossId?: string;
+  /** seconds left before it reaches you; nobody fights until then */
+  walk?: number;
   /** a guardian's stage */
   gStage?: number;
   name: string;
@@ -111,7 +113,7 @@ export function spawnTrash(g: Game) {
   const elite = rollElite(g, s);
   const hp = trashHp(s) * f.hp * (elite ? TUNE.eliteHp : 1);
   const name = elite ? `${act.elitePrefixes![Math.floor(g.rng() * act.elitePrefixes!.length)]} ${f.name}` : f.name;
-  g.foe = { kind: "trash", elite, key: k, name, hp, max: hp, dmg: enemyHit(s) * f.dmg * (elite ? TUNE.eliteDmg : 1), int: f.int, atk: 0, t: 0, ev: [], cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
+  g.foe = { kind: "trash", elite, key: k, name, hp, max: hp, dmg: enemyHit(s) * f.dmg * (elite ? TUNE.eliteDmg : 1), int: f.int, atk: 0, t: 0, ev: [], cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [], walk: TUNE.walkIn };
 }
 
 /** Dust and Marrow fade by 15% for each stage past the first 2 below your best, down to a tenth */
@@ -153,7 +155,7 @@ export function startGuardian(g: Game, stage: number) {
   // the move repeats on a fixed rhythm so it's learnable
   if (gd.move) for (let at = gd.move.first; at < 120; at += gd.move.every) ev.push({ move: "move", type: gd.move.type, at, end: 0 });
   const hp = trashHp(stage) * gd.hp;
-  g.foe = { kind: "guardian", key: gd.foe, gStage: stage, name: gd.name, hp, max: hp, dmg: enemyHit(stage) * gd.dmg, int: gd.int ?? f.int, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
+  g.foe = { kind: "guardian", key: gd.foe, gStage: stage, name: gd.name, hp, max: hp, dmg: enemyHit(stage) * gd.dmg, int: gd.int ?? f.int, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [], walk: TUNE.walkIn };
   g.log(gd.intro, "story");
   if (!g.s.seen.hGuardMeet && !g.s.hint) {
     g.s.seen.hGuardMeet = 1;
@@ -524,6 +526,12 @@ export function stepCombat(g: Game, dt: number) {
   g.refresh();
   const f = g.foe!, p = g.pl!, c = g.c;
   const boss = isSpecial(f);
+  // the next enemy is still walking in: nobody swings, and the Vanguard gets its breath back
+  if (f.walk) {
+    f.walk = Math.max(0, f.walk - dt);
+    p.hp = Math.min(c.maxHp, p.hp + c.maxHp * TUNE.regenPerSec * dt);
+    return;
+  }
   if (boss) f.t += dt;
   if (s.opt.auto) {
     for (const { abom, id } of g.abilities()) {

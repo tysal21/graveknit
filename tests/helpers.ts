@@ -8,3 +8,8 @@ export function newGame(seed = 1) {
   tutFinish(g, true);
   return g;
 }
+
+/** skip the enemy's walk-in, so a test can fight it straight away */
+export function arrive(g: Game) {
+  if (g.foe) g.foe.walk = 0;
+}

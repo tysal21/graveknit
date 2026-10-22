@@ -4,6 +4,7 @@ import { TUNE } from "../content/tune";
 import { fmt } from "./format";
 import type { Game } from "./game";
 import { altarBonus } from "./stats";
+import { essPerKill } from "./combat";
 import { tutEvent } from "./tutorial";
 
 /** Corpse Mass per second from generators */
@@ -71,19 +72,21 @@ export function autoRituals(g: Game) {
   for (const id of ["moon", "wind"] as const) if (g.s.rit[id].ready <= g.s.clock) castRitual(g, id, true);
 }
 
-export const infuseCost = (level: number) => Math.floor(TUNE.infuseBase * Math.pow(TUNE.infuseGrow, level - 1));
+/** the level's own price, plus a few minutes of kills at your best stage, so Essence stays worth something as kills pay more */
+export const infuseCost = (level: number, bestStage: number) =>
+  Math.floor(TUNE.infuseBase * Math.pow(TUNE.infuseGrow, level - 1) + TUNE.infuseKills * essPerKill(bestStage));
 
 export function canInfuse(g: Game, abom = 0) {
   const a = g.s.squad[abom];
   const c = g.cs[abom];
-  return !!a && !!c && a.infusion < c.cap && g.s.ess >= infuseCost(a.infusion);
+  return !!a && !!c && a.infusion < c.cap && g.s.ess >= infuseCost(a.infusion, g.s.maxStage);
 }
 
 export function infuse(g: Game, abom = 0) {
   g.refresh();
   if (!canInfuse(g, abom)) return;
   const a = g.s.squad[abom];
-  g.s.ess -= infuseCost(a.infusion);
+  g.s.ess -= infuseCost(a.infusion, g.s.maxStage);
   a.infusion++;
   g.log(`Infusion level ${a.infusion}. The stitches glow faintly.`);
   if (g.s.hint === "infuse") g.s.hint = null;

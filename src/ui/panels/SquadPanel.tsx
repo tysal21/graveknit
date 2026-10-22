@@ -53,7 +53,7 @@ export function SquadPanel() {
   const ab = selAbom(sq.length);
   const c = g.cs[ab] ?? g.c, p = g.pl, abom = sq[ab];
   const vanguard = ab === 0;
-  const cost = infuseCost(abom.infusion);
+  const cost = infuseCost(abom.infusion, g.s.maxStage);
   const shield = p && p.ward > 0 && p.wardUntil > g.s.clock;
   const many = sq.length > 1;
   return (

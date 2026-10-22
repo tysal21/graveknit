@@ -44,9 +44,10 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
   const kills = Math.floor((sec / (avgHp / dps + 0.3)) * rate);
   const ess = kills * essPerKill(stage) * (1 + squadBonus(g, "ess", cs) / 100);
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
-  const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(kills * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
-  const dust = Math.round(kills * TUNE.dustChance);
-  const marrow = Math.round(kills * TUNE.marrowChance);
+  const loot = kills * TUNE.offlineLoot;
+  const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(loot * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
+  const dust = Math.round(loot * TUNE.dustChance);
+  const marrow = Math.round(loot * TUNE.marrowChance);
   s.ess += ess;
   s.lifeEss += ess;
   s.cm += cm;

@@ -34,8 +34,9 @@ export const TUNE = {
   // Soul Essence per kill = essBase × essGrow^(stage-1)
   essBase: 2, essGrow: 1.15, bossEssMult: 15, bossCm: 200,
 
-  // Infusion
-  infuseBase: 20, infuseGrow: 1.28, infuseMult: 1.12,
+  // Infusion: each level costs infuseBase × infuseGrow^(level-1), plus infuseKills kills' worth of Essence at your best stage
+  // (the second part keeps Infusion from becoming pocket change once kills pay a lot)
+  infuseBase: 20, infuseGrow: 1.28, infuseMult: 1.12, infuseKills: 60,
 
   // drops
   partChance: 0.04,
@@ -58,15 +59,16 @@ export const TUNE = {
   residueMax: 8, graftMarrow: 3, graftDust: 5, stashMax: 60,
   // Re-stitch lifts a part to your best stage's item level. Cost per level gained, × the part's rarity weight
   // (Common 0.5, Magic 1, Rare/Trophy 1.5): Grave Dust, plus this many kills' worth of Soul Essence at the new level
-  restitchDust: 3, restitchEssKills: 50,
+  restitchDust: 4, restitchEssKills: 100,
   // pressing Grave Dust into a Marrow Shard
   dustPerMarrow: 20,
 
   // Thralls: base chance per boss kill, plus this much per kill without one
   thrallBase: 0.03, thrallPity: 0.005,
 
-  // offline: 55% of the active rate, capped at 12 hours
-  offlineRate: 0.55, offlineCapH: 12, offlineMaxParts: 25,
+  // offline: 55% of the active rate, capped at 12 hours. Parts, Grave Dust and Marrow come in at a quarter of that,
+  // so AFK nights pay Essence and Corpse Mass but crafting still needs play
+  offlineRate: 0.55, offlineCapH: 12, offlineMaxParts: 25, offlineLoot: 0.25,
 
   // Graveyard
   costGrow: 1.15, altarK: 0.25, altarScale: 500, altarMinCm: 20, cmPerKill: 0.5,

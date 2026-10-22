@@ -145,7 +145,7 @@ export function tipContent(g: Game, key: string): ReactNode {
         [`Each kill on Stage ${st}`, fmt(kill)],
         [many ? "Includes your squad's Soul Essence bonus" : "Includes your Soul Essence bonus", `+${Math.round(squadEss)}%`],
         [`${boss.name} kill`, fmt(essPerKill(boss.stage) * TUNE.bossEssMult * (1 + squadEss / 100))],
-        ["Next Infusion level", fmt(infuseCost(abom.infusion))],
+        ["Next Infusion level", fmt(infuseCost(abom.infusion, s.maxStage))],
       ]} />;
     case "r-mar":
       return <Tip h="Marrow Shard" p="Rerolls every unlocked affix on a part: new stats, new tiers." rows={[
@@ -247,8 +247,8 @@ export function tipContent(g: Game, key: string): ReactNode {
         ["Levels bought", String(abom.infusion)],
         ["Levels held by these parts", String(c.lvl)],
         ["Current multiplier", `×${c.inf.toFixed(2)}`, "mul"],
-        abom.infusion < c.cap ? ["Next level costs", `${fmt(infuseCost(abom.infusion))} Essence`] : ["Next level", `needs cap ${abom.infusion + 1}`],
-        ["Each level costs more", `×${TUNE.infuseGrow}`],
+        abom.infusion < c.cap ? ["Next level costs", `${fmt(infuseCost(abom.infusion, s.maxStage))} Essence`] : ["Next level", `needs cap ${abom.infusion + 1}`],
+        ["Price", `level price ×${TUNE.infuseGrow} each + ${TUNE.infuseKills} kills at Stage ${s.maxStage}`],
       );
       return <Tip h="Infusion" p={`Spend Soul Essence to raise your Abomination's level. Each level multiplies damage, poison and HP by ×${TUNE.infuseMult}. Your parts' Vessel Integrity limits how many levels the body can hold.`}
         rows={rows} after={<p>Common parts count ×0.5, Magic ×1, Rare and trophies ×1.5. Swapping in weaker parts keeps your bought levels, but only the held ones count.</p>} />;

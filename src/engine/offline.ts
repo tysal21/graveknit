@@ -41,7 +41,7 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
     tot += w[k];
   }
   avgHp /= tot;
-  const kills = Math.floor((sec / (avgHp / dps + 0.3)) * rate);
+  const kills = Math.floor((sec / (avgHp / dps + TUNE.walkIn)) * rate);
   const ess = kills * essPerKill(stage) * (1 + squadBonus(g, "ess", cs) / 100);
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
   const loot = kills * TUNE.offlineLoot;

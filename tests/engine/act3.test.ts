@@ -9,7 +9,7 @@ import { affixFits, makePart } from "../../src/engine/parts";
 import { seeded } from "../../src/engine/rng";
 import { deserialize, repair } from "../../src/engine/save";
 import { calc } from "../../src/engine/stats";
-import { newGame } from "../helpers";
+import { arrive, newGame } from "../helpers";
 
 /** a game standing in front of the Arch-Necromancer */
 function atRival(seed = 1) {
@@ -114,6 +114,7 @@ describe("Act 3", () => {
     expect(f.max).toBeGreaterThan(3 * 100);
     const parts = g.s.parts.length;
     f.hp = 0;
+    arrive(g);
     stepCombat(g, 0.01);
     const sig = g.s.parts.slice(parts).find((p) => p.sig);
     expect(sig).toBeTruthy();

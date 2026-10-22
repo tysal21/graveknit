@@ -38,22 +38,38 @@ function useAbilityKeys() {
   }, []);
 }
 
+/** counts each new enemy, so its picture restarts the walk-in animation */
+function useArrivals(f: Foe | null) {
+  const last = useRef(f);
+  const n = useRef(0);
+  if (f !== last.current) {
+    last.current = f;
+    n.current++;
+  }
+  return n.current;
+}
+
 /** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
+ *  Each new enemy walks in while the place scrolls past, so you move through it over a stage.
  *  Stages without art (Acts 2 and 3 for now) keep the text-only look. */
 function Scene() {
   const g = useGame();
   const f = g.foe;
+  const arrivals = useArrivals(f);
   const foe = foeArt(f);
   const bg = stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage);
   if (!foe && !bg) return null;
   const me = abomArt(g, g.s.squad[0]);
+  // a stage's 10 kills carry you from one side of the picture to the other; guardians and bosses wait at the far end
+  const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
+  const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg})` : undefined, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
-    <div className="scene" style={bg ? { backgroundImage: `url(${bg})` } : undefined}>
+    <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">
         <img src={me.src} alt="" />
         {me.glow && <i className="core-glow" style={{ "--glow": me.glow } as CSSProperties} />}
       </div>
-      {foe && <img className="foe-sprite" src={foe} alt="" />}
+      {foe && <img key={arrivals} className="foe-sprite" src={foe} alt="" />}
     </div>
   );
 }

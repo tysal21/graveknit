@@ -10,7 +10,7 @@ import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
 import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
-import { abomArt, foeArt, Icon, stageBackground } from "../art";
+import { abomArt, foeArt, foeScale, Icon, stageBackground } from "../art";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
@@ -66,10 +66,9 @@ function Scene() {
   return (
     <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">
-        <img src={me.src} alt="" />
-        {me.glow && <i className="core-glow" style={{ "--glow": me.glow } as CSSProperties} />}
+        <img src={me} alt="" />
       </div>
-      {foe && <img key={arrivals} className="foe-sprite" src={foe} alt="" />}
+      {foe && <img key={arrivals} className="foe-sprite" src={foe} alt="" style={{ "--size": foeScale(foe) } as CSSProperties} />}
     </div>
   );
 }

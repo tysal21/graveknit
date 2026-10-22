@@ -303,17 +303,14 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .scene::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(10,9,8,.45),rgba(10,9,8,.7))}
 .scene .me{position:relative;width:min(176px,46%);z-index:1;animation:breathe 2.6s ease-in-out infinite;transform-origin:50% 100%}
 .scene .me img{display:block;width:100%;image-rendering:pixelated}
-/* the Soul Core's colour shows through the open ribcage */
-.scene .core-glow{position:absolute;left:40%;top:37%;width:20%;height:20%;border-radius:50%;background:radial-gradient(var(--glow),transparent 70%);mix-blend-mode:screen;animation:pulse 2.2s ease-in-out infinite}
-.scene .foe-sprite{width:min(176px,50%);height:auto;margin:0;z-index:1;animation:enter var(--walk) ease-out,breathe 2.2s ease-in-out var(--walk) infinite;transform-origin:50% 100%}
+.scene .foe-sprite{width:calc(min(176px,50%) * var(--size,1));height:auto;margin:0;z-index:1;animation:enter var(--walk) ease-out,breathe 2.2s ease-in-out var(--walk) infinite;transform-origin:50% 100%}
 /* each enemy walks in from the right; your Abomination trudges on meanwhile */
 @keyframes enter{from{transform:translateX(80%);opacity:0}to{transform:none;opacity:1}}
 .scene.walking .me{animation:trudge calc(var(--walk) / 2) ease-in-out infinite}
 @keyframes trudge{0%,100%{transform:none}50%{transform:translateY(-3px) rotate(1.5deg)}}
-.tier-guardian .scene .foe-sprite{width:min(224px,55%);height:auto}
-.tier-boss .scene .foe-sprite{width:min(256px,57%);height:auto}
+.tier-guardian .scene .foe-sprite{width:calc(min(224px,55%) * var(--size,1));height:auto}
+.tier-boss .scene .foe-sprite{width:calc(min(256px,57%) * var(--size,1));height:auto}
 @keyframes breathe{0%,100%{transform:none}50%{transform:scaleY(1.025)}}
-@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
 .btn.iconed{position:relative;padding-left:46px;text-align:left}
 .btn.iconed .px-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%)}
 .rit .btn .px-icon{display:block;margin:0 auto 3px}

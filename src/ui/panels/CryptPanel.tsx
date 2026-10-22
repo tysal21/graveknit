@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
 import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
@@ -10,6 +10,7 @@ import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
 import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
+import { abomArt, foeArt, Icon, stageBackground } from "../art";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
@@ -37,13 +38,24 @@ function useAbilityKeys() {
   }, []);
 }
 
-// Enemy art (PixelLab, 64x64). Foes without a sprite yet show just their name.
-const FOE_SPRITES = new Set(["rat", "digger", "hound", "watch"]);
-
-function FoeSprite({ foeKey }: { foeKey?: string }) {
-  if (!foeKey || !FOE_SPRITES.has(foeKey)) return null;
-  // a relative path, so it works from GitHub Pages too
-  return <img className="foe-sprite" src={`sprites/foe-${foeKey}.png`} alt="" />;
+/** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
+ *  Stages without art (Acts 2 and 3 for now) keep the text-only look. */
+function Scene() {
+  const g = useGame();
+  const f = g.foe;
+  const foe = foeArt(f);
+  const bg = stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage);
+  if (!foe && !bg) return null;
+  const me = abomArt(g, g.s.squad[0]);
+  return (
+    <div className="scene" style={bg ? { backgroundImage: `url(${bg})` } : undefined}>
+      <div className="me">
+        <img src={me.src} alt="" />
+        {me.glow && <i className="core-glow" style={{ "--glow": me.glow } as CSSProperties} />}
+      </div>
+      {foe && <img className="foe-sprite" src={foe} alt="" />}
+    </div>
+  );
 }
 
 const ARRIVAL_MS = 1800;
@@ -201,7 +213,7 @@ export function CryptPanel() {
           <b>{f?.name ?? "…"}</b>
           <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
         </div>
-        <FoeSprite foeKey={f?.key} />
+        <Scene />
         <Bar tall kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
         {f && <Adds />}
         {f?.elite && <div className="faint" style={{ fontSize: ".78rem" }}>Elite · pays {TUNE.elitePay}× and drops a signature part</div>}
@@ -225,7 +237,8 @@ export function CryptPanel() {
             const left = p ? (p.cd[cdKey(abom, a)] || 0) - s.clock : 0;
             const right = special && f?.cur && ABILITY[a].counters === f.cur.type && !f.cur.done;
             return (
-              <button key={abom + a} className={`btn ${right && left <= 0 ? "right" : ""}`} id={abom ? `ab-${a}-${abom + 1}` : "ab-" + a} disabled={left > 0} onClick={() => useAb(a, abom)}>
+              <button key={abom + a} className={`btn iconed ${right && left <= 0 ? "right" : ""}`} id={abom ? `ab-${a}-${abom + 1}` : "ab-" + a} disabled={left > 0} onClick={() => useAb(a, abom)}>
+                <Icon name={"ab-" + a} />
                 <b>{i + 1} · {ABILITY[a].name}{many && <span className="who">#{abom + 1}</span>}</b>
                 <span className="sub">{ABILITY[a].type}</span>
                 <i className="cdfill" style={{ width: left > 0 ? (left / ABILITY[a].cd) * 100 + "%" : 0 }} />

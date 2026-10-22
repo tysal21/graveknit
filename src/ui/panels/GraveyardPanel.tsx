@@ -4,6 +4,7 @@ import { TUNE } from "../../content/tune";
 import { altarPreview, buyGenerator, castRitual, cmRate, genCost, sacrifice } from "../../engine/economy";
 import { fmt, mmss } from "../../engine/format";
 import { tutFinish } from "../../engine/tutorial";
+import { Icon } from "../art";
 import { Info } from "../common/Info";
 import { Panel } from "../common/Panel";
 import { act, speed, useGame } from "../runtime";
@@ -21,9 +22,10 @@ function Rituals() {
           const left = st.ready - s.clock;
           const active = st.until > s.clock;
           if (s.maxStage < (r.unlock ?? 1))
-            return <button key={r.id} className="btn" id={"rit-" + r.id} disabled><b>{r.name}</b><span className="sub">Opens at Stage {r.unlock}</span></button>;
+            return <button key={r.id} className="btn" id={"rit-" + r.id} disabled><Icon name={"rit-" + r.id} /><b>{r.name}</b><span className="sub">Opens at Stage {r.unlock}</span></button>;
           return (
             <button key={r.id} className={`btn ${left <= 0 ? "ready" : ""}`} id={"rit-" + r.id} disabled={left > 0} onClick={() => act((g) => castRitual(g, r.id as RitualId, false))}>
+              <Icon name={"rit-" + r.id} />
               <b>{r.name}</b>
               <span className="sub">{active ? `Active ${mmss(st.until - s.clock)}` : left > 0 ? `Ready in ${mmss(left)}` : r.short}</span>
             </button>
@@ -46,14 +48,17 @@ function Generators() {
       <div>
         {GENERATORS.map((gen) => {
           const n = s.gens[gen.id] || 0;
-          if (gen.later) return <div key={gen.id} className="gen locked"><div>{gen.name}<div className="meta">{gen.bonusText} · {gen.later}</div></div><span /></div>;
-          if (s.maxStage < gen.unlock) return <div key={gen.id} className="gen locked"><div>{gen.name}<div className="meta">Unlocks at Stage {gen.unlock}</div></div><span /></div>;
+          if (gen.later) return <div key={gen.id} className="gen locked"><div className="gname"><Icon name={"gen-" + gen.id} /><div>{gen.name}<div className="meta">{gen.bonusText} · {gen.later}</div></div></div><span /></div>;
+          if (s.maxStage < gen.unlock) return <div key={gen.id} className="gen locked"><div className="gname"><Icon name={"gen-" + gen.id} /><div>{gen.name}<div className="meta">Unlocks at Stage {gen.unlock}</div></div></div><span /></div>;
           const cost = genCost(gen, n);
           return (
             <div key={gen.id} className="gen">
-              <div>
-                {gen.name} <span className="num faint">×{n}</span>
-                <div className="meta">{gen.rate} Corpse Mass/s · {gen.bonusText}</div>
+              <div className="gname">
+                <Icon name={"gen-" + gen.id} />
+                <div>
+                  {gen.name} <span className="num faint">×{n}</span>
+                  <div className="meta">{gen.rate} Corpse Mass/s · {gen.bonusText}</div>
+                </div>
               </div>
               <div className="row">
                 <button className="btn small" id={"buy-" + gen.id} disabled={s.cm < cost} onClick={() => act((g) => buyGenerator(g, gen.id, false))}>{fmt(cost)}</button>
@@ -74,16 +79,21 @@ function Altar() {
   return (
     <div className="block">
       <h3 data-tip="x-altar" tabIndex={0}>Bone Altar<Info /></h3>
-      <div className="row">
-        <span>+{(pv.now * 100).toFixed(1)}% damage <span className="faint">({fmt(g.s.altar)} given)</span></span>
-        <button className="btn small" disabled={!enough} onClick={() => act(sacrifice)}>Sacrifice half</button>
-      </div>
-      <div id="altarPrev">
-        {enough ? (
-          <><span className="faint">Sacrifice {fmt(pv.give)} now:</span> damage +{(pv.now * 100).toFixed(1)}% → <b className="up">+{(pv.after * 100).toFixed(1)}%</b>, DPS {fmt(pv.dps)} → <b className="up">{fmt(pv.dpsAfter)}</b></>
-        ) : (
-          <span className="faint">Needs at least {TUNE.altarMinCm} Corpse Mass.</span>
-        )}
+      <div className="altar">
+        <Icon name="altar" size={64} />
+        <div>
+          <div className="row">
+            <span>+{(pv.now * 100).toFixed(1)}% damage <span className="faint">({fmt(g.s.altar)} given)</span></span>
+            <button className="btn small" disabled={!enough} onClick={() => act(sacrifice)}>Sacrifice half</button>
+          </div>
+          <div id="altarPrev">
+            {enough ? (
+              <><span className="faint">Sacrifice {fmt(pv.give)} now:</span> damage +{(pv.now * 100).toFixed(1)}% → <b className="up">+{(pv.after * 100).toFixed(1)}%</b>, DPS {fmt(pv.dps)} → <b className="up">{fmt(pv.dpsAfter)}</b></>
+            ) : (
+              <span className="faint">Needs at least {TUNE.altarMinCm} Corpse Mass.</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

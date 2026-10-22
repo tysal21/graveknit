@@ -295,3 +295,31 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .uniqfx{color:var(--unique)}
 .toast.unique{border-left-color:var(--unique);animation:toastIn .25s ease-out,rareGlow 1.6s ease-out}
 .tc-elite{color:var(--elite)}
+/* pixel art (PixelLab). Every picture is optional: without it the text-only look stays. */
+.px-icon{display:inline-block;flex-shrink:0;image-rendering:pixelated}
+.px-icon.blank{border:1px dashed var(--line);border-radius:4px;opacity:.5}
+.scene{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:4px;min-height:200px;padding:10px 8px 6px;border-radius:4px;background:#0d0c0b center bottom/cover no-repeat;image-rendering:pixelated;overflow:hidden}
+/* darken the place so the fighters stand out */
+.scene::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(10,9,8,.45),rgba(10,9,8,.7))}
+.scene .me{position:relative;width:min(176px,46%);z-index:1;animation:breathe 2.6s ease-in-out infinite;transform-origin:50% 100%}
+.scene .me img{display:block;width:100%;image-rendering:pixelated}
+/* the Soul Core's colour shows through the open ribcage */
+.scene .core-glow{position:absolute;left:41%;top:44%;width:20%;height:20%;border-radius:50%;background:radial-gradient(var(--glow),transparent 70%);mix-blend-mode:screen;animation:pulse 2.2s ease-in-out infinite}
+.scene .foe-sprite{width:min(176px,50%);height:auto;margin:0;z-index:1;animation:breathe 2.2s ease-in-out infinite;transform-origin:50% 100%}
+.tier-guardian .scene .foe-sprite{width:min(224px,55%);height:auto}
+.tier-boss .scene .foe-sprite{width:min(256px,57%);height:auto}
+@keyframes breathe{0%,100%{transform:none}50%{transform:scaleY(1.025)}}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+.btn.iconed{position:relative;padding-left:46px;text-align:left}
+.btn.iconed .px-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%)}
+.rit .btn .px-icon{display:block;margin:0 auto 3px}
+.gen .gname{display:flex;gap:8px;align-items:center}
+.altar{display:flex;gap:10px;align-items:center}
+.altar>div{flex:1;min-width:0}
+.res .px-icon{vertical-align:-3px;margin-right:4px;image-rendering:auto}
+.item{grid-template-columns:auto minmax(0,1fr) auto}
+.item>.px-icon{grid-row:span 2;align-self:center}
+.item .meta{grid-column:2/-1}
+.slot{grid-template-columns:32px 5.2rem minmax(0,1fr)}
+.card-head{display:flex;gap:10px;align-items:center}
+.thrallBanner .thrall-art{width:96px;height:96px;align-self:center}

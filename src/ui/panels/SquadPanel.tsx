@@ -10,6 +10,7 @@ import { Panel } from "../common/Panel";
 import { act, useGame } from "../runtime";
 import { selAbom, setUi, showTab } from "../uiStore";
 import { selectPart } from "./StitcheryPanel";
+import { PartIcon } from "../art";
 
 const STAT_ROWS: [string, string, (c: ReturnType<typeof useGame>["c"]) => string][] = [
   ["dps", "Damage per second", (c) => fmt(c.dps)],
@@ -111,12 +112,14 @@ export function SquadPanel() {
             if (!part)
               return (
                 <button key={id} className="slot empty" onClick={() => { setUi({ slots: [id] }); showTab("stitch"); }}>
+                  <span className="px-icon blank" style={{ width: 32, height: 32 }} />
                   <span className="k">{name}</span>
                   <span className="n faint">empty · find a part</span>
                 </button>
               );
             return (
               <button key={id} className={`slot r-${rarityClass(part)}`} onClick={() => selectPart(part.id)}>
+                <PartIcon base={part.base} blank />
                 <span className="k">{name}</span>
                 <span className={`n tc-${rarityClass(part)}`}>
                   {partName(part)} <span className="faint">i{part.ilvl}</span>

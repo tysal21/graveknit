@@ -13,6 +13,7 @@ import type { Part } from "../../engine/state";
 import { bestAllyAffix, calc, wornParts } from "../../engine/stats";
 import { act, useGame } from "../runtime";
 import { openModal, selAbom, setUi, ui } from "../uiStore";
+import { PartIcon } from "../art";
 
 function flashAfter(f: Flash | null, id: number) {
   if (f) setUi({ flash: { id, f, at: Date.now() } });
@@ -80,11 +81,14 @@ export function PartDetail({ part: p }: { part: Part }) {
   const rs = restitchCost(g, p);
   return (
     <div className={`card r-${rarityClass(p)}`}>
-      <div>
-        <div className={`title tc-${rarityClass(p)}`}>{partName(p)}</div>
-        <div className="sub">
-          {rarityLabel(p)} {slotName(b.slot)} · item level {p.ilvl} · Integrity {partIntegrity(p).toFixed(1)}
-          {worn ? (many && wearer ? ` · worn by ${wearer.name}` : " · worn") : ""}
+      <div className="card-head">
+        <PartIcon base={p.base} size={64} />
+        <div>
+          <div className={`title tc-${rarityClass(p)}`}>{partName(p)}</div>
+          <div className="sub">
+            {rarityLabel(p)} {slotName(b.slot)} · item level {p.ilvl} · Integrity {partIntegrity(p).toFixed(1)}
+            {worn ? (many && wearer ? ` · worn by ${wearer.name}` : " · worn") : ""}
+          </div>
         </div>
       </div>
       <div className="impl">

@@ -55,7 +55,7 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - Drop rates don't get stingier over time.
 - **Walk-in:** each new enemy takes 0.5 s to walk in (`walkIn` in `tune.ts`); nobody fights meanwhile, which also caps kills per second so parking on your best stage can't multiply reagents. On screen the enemy slides in and the background scrolls across a stage's 10 kills.
 - **Abomination sprite:** a hooded, cloaked body with a dark face, so the skull, ribcage and off arm don't need to match. The Main Arm is the near arm and picks the weapon (cleaver or shovel); the Soul Core picks the colour of the eyes and chest (green Wisp, gold Lantern, blue Wraith), one file per pair: `minion-abom-<arm>-<core>.png` (Tyler's pick).
-- **Sprite sizes:** small beasts are shrunk on screen to sit right beside people (`FOE_SCALE` in `src/ui/art.tsx`: rat 0.6, hound 0.8).
+- **Sprite facing and sizes:** your Abominations face right; every enemy, guardian and boss faces left, toward them (mirror the file if a new one comes out the wrong way). small beasts are shrunk on screen to sit right beside people (`FOE_SCALE` in `src/ui/art.tsx`: rat 0.6, hound 0.8).
 
 ## Style
 

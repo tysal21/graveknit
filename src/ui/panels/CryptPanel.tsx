@@ -62,7 +62,7 @@ function Scene() {
   const me = abomArt(g, g.s.squad[0]);
   // a stage's 10 kills carry you from one side of the picture to the other; guardians and bosses wait at the far end
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
-  const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg})` : undefined, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
+  const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
     <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">

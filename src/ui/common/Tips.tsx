@@ -252,7 +252,9 @@ export function tipContent(g: Game, key: string): ReactNode {
         ["Levels held by these parts", String(c.lvl)],
         ["Current multiplier", `×${c.inf.toFixed(2)}`, "mul"],
         abom.infusion < c.cap ? ["Next level costs", `${fmt(infuseCost(abom.infusion, s.maxStage))} Essence`] : ["Next level", `needs cap ${abom.infusion + 1}`],
-        ["Price", `level price ×${TUNE.infuseGrow} each + ${TUNE.infuseKills} kills at Stage ${s.maxStage}`],
+        // two short rows: one long value can't wrap and pushed the whole tip off its box
+        ["Price grows", `×${TUNE.infuseGrow} a level`],
+        ["Plus Essence from", `${TUNE.infuseKills} kills at Stage ${s.maxStage}`],
       );
       return <Tip h="Infusion" p={`Spend Soul Essence to raise your Abomination's level. Each level multiplies damage, poison and HP by ×${TUNE.infuseMult}. Your parts' Vessel Integrity limits how many levels the body can hold.`}
         rows={rows} after={<p>Common parts count ×0.5, Magic ×1, Rare and trophies ×1.5. Swapping in weaker parts keeps your bought levels, but only the held ones count.</p>} />;

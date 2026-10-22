@@ -18,8 +18,9 @@ const HAVE = new Set([
   ...["pauperSkull", "pauperRib", "cleaverArm", "pauperHand", "wispCore", "gnawedHand", "diggerArm", "houndSkull", "watchRib", "lanternCore", "wraithCore"].map((b) => "part-" + b),
 ]);
 
-/** the file for a picture, or null if it hasn't been drawn yet. Relative, so it works on GitHub Pages. */
-export const artUrl = (name: string) => (HAVE.has(name) ? `sprites/${name}.png` : null);
+/** the file for a picture, or null if it hasn't been drawn yet. Relative, so it works on GitHub Pages.
+ *  The ?v= stamp changes with every build, so a redrawn picture never shows up as the old one. */
+export const artUrl = (name: string) => (HAVE.has(name) ? `sprites/${name}.png?v=${__BUILD__}` : null);
 
 /** a small pixel-art icon; renders nothing if the art doesn't exist */
 export function Icon({ name, size = 32, className = "" }: { name: string; size?: number; className?: string }) {
@@ -36,7 +37,7 @@ const GUARDIAN_ART: Record<number, string> = { 2: "guard-ratKing", 3: "guard-for
 
 // small beasts are drawn filling their canvas, so shrink them to sit right beside people
 const FOE_SCALE: Record<string, number> = { "foe-rat": 0.6, "foe-hound": 0.8, "guard-ratKing": 0.8, "guard-alpha": 0.95 };
-export const foeScale = (src: string | null) => FOE_SCALE[src?.replace(/^sprites\/|\.png$/g, "") ?? ""] ?? 1;
+export const foeScale = (src: string | null) => FOE_SCALE[src?.replace(/^sprites\/|\.png.*$/g, "") ?? ""] ?? 1;
 
 /** which picture to show for the enemy in front of you */
 export function foeArt(f: Foe | null | undefined): string | null {
@@ -46,12 +47,17 @@ export function foeArt(f: Foe | null | undefined): string | null {
   return artUrl("foe-" + f.key);
 }
 
-/** Act 1's three places: the cellar, the graveyard, then the crypt and the Warden */
-export function stageBackground(stage: number): string | null {
-  if (stage <= 3) return artUrl("bg-cellar");
-  if (stage <= 8) return artUrl("bg-graveyard");
-  if (stage <= 10) return artUrl("bg-crypt");
-  return null;
+// where each background's floor is, in its own pixels from the top (all are 384x216)
+const FLOORS: Record<string, number> = { "bg-cellar": 192, "bg-graveyard": 196, "bg-crypt": 183 };
+
+/** Act 1's three places: the cellar, the graveyard, then the crypt and the Warden.
+ *  floorPad is how far the floor sits above the scene's bottom edge, as a share of the scene's width. */
+export function stageBackground(stage: number): { src: string; floorPad: string } | null {
+  const name = stage <= 3 ? "bg-cellar" : stage <= 8 ? "bg-graveyard" : stage <= 10 ? "bg-crypt" : null;
+  const src = name && artUrl(name);
+  if (!name || !src) return null;
+  // the picture is drawn at 150% of the scene's width (see .scene in styles.css), so scale its pixels to match
+  return { src, floorPad: `${((216 - FLOORS[name]) / 384) * 150}%` };
 }
 
 // the Main Arm picks the weapon and the Soul Core the colour of the eyes and chest.

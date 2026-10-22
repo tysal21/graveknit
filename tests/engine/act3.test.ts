@@ -189,11 +189,12 @@ describe("Act 3", () => {
 });
 
 describe("reagents on old stages", () => {
-  it("Dust and Marrow drop at a quarter more than 3 stages below your best", async () => {
+  it("Dust and Marrow fade 15% per stage past the first 2 below your best, down to a tenth", async () => {
     const { reagentRate } = await import("../../src/engine/combat");
     expect(reagentRate(28, 28)).toBe(1);
-    expect(reagentRate(25, 28)).toBe(1);
-    expect(reagentRate(24, 28)).toBe(TUNE.reagentFar);
-    expect(reagentRate(1, 28)).toBe(TUNE.reagentFar);
+    expect(reagentRate(26, 28)).toBe(1);
+    expect(reagentRate(25, 28)).toBeCloseTo(0.85);
+    expect(reagentRate(21, 28)).toBeCloseTo(0.85 ** 5);
+    expect(reagentRate(1, 28)).toBe(TUNE.reagentFloor);
   });
 });

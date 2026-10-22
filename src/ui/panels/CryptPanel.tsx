@@ -264,7 +264,7 @@ export function CryptPanel() {
               })}
               <p className="faint" style={{ margin: 0 }}>
                 Each kill: {pct(TUNE.partChance)} part, {pct(TUNE.dustChance * reagentRate(s.stage, s.maxStage))} Grave Dust, {pct(TUNE.marrowChance * reagentRate(s.stage, s.maxStage))} Marrow Shard
-                {reagentRate(s.stage, s.maxStage) < 1 && <span className="down"> (a quarter: more than {TUNE.reagentNear} stages below your best)</span>}. Parts drop at item level {s.stage}.{" "}
+                {reagentRate(s.stage, s.maxStage) < 1 && <span className="down"> (×{reagentRate(s.stage, s.maxStage).toFixed(2)}: {s.maxStage - s.stage} below your best)</span>}. Parts drop at item level {s.stage}.{" "}
                 <span data-tip="x-rare" tabIndex={0}>Rare: <b className="tc-rare">{pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))}</b> of parts<Info /></span>
                 {actDef.elitePrefixes && <> <span data-tip="x-elite" tabIndex={0}>Elites: <b className="tc-elite">1 in {Math.round(1 / TUNE.eliteChance)}</b> kills<Info /></span></>}
               </p>

@@ -125,7 +125,7 @@ export function tipContent(g: Game, key: string): ReactNode {
   const kill = essPerKill(st) * (1 + squadEss / 100);
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
   const far = reagentRate(st, s.maxStage);
-  const farRow: Row[] = far < 1 ? [[`More than ${TUNE.reagentNear} stages below your best (${s.maxStage})`, `×${far}`, "mul"]] : [];
+  const farRow: Row[] = far < 1 ? [[`${s.maxStage - st} stages below your best (−15% per stage past ${TUNE.reagentNear})`, `×${far.toFixed(2)}`, "mul"]] : [];
   const raiseRow: Row[] = raise > 1 ? [["Raise the Fallen is active", `×${raise}`, "mul"]] : [];
   const boss = g.act().boss;
   const abom = s.squad[ab];

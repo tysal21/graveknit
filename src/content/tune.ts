@@ -44,9 +44,10 @@ export const TUNE = {
   rarityW: { common: 65, magic: 28, rare: 7 },
   bossRarityW: { common: 15, magic: 50, rare: 35 },
   dustChance: 0.12, marrowChance: 0.03,
-  // Dust and Marrow drop at full rate within reagentNear stages of your best, and at reagentFar of it below that,
-  // so camping an easy early stage (where kills are 5× faster) isn't the best way to farm crafting reagents
-  reagentNear: 3, reagentFar: 0.25,
+  // Dust and Marrow fade on stages more than reagentNear below your best: ×reagentFade per stage, never below reagentFloor.
+  // The first few stages are free because dying knocks you back a stage or two in normal play.
+  // Camping an easy early stage (where kills are 5× faster) isn't the best way to farm crafting reagents
+  reagentNear: 2, reagentFade: 0.85, reagentFloor: 0.1,
   // boss loot. A boss gives a Spectral Thread on its first kill only, so re-farming a boss can't flood you with them
   bossLoot: { parts: 2, marrow: 2, dust: 4, firstThreads: 1 },
 

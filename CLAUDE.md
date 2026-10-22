@@ -50,6 +50,7 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - **Boss victory:** a SLAIN stamp, then a loot pop-up (parts open on the Workbench, Thrall banner) on first kills and new Thralls. Repeat kills get a corner toast unless "Victory pop-up every kill" is on. Every future boss uses this.
 - **Spectral Threads:** each boss gives one on its **first kill only**; repeat kills give none (Tyler's pick, so farming an old boss can't pile them up). Elites have a small chance.
 - **Loot:** 4% of kills drop a part; rarity 65 / 28 / 7 (Common / Magic / Rare), so about 1 part in 14 is Rare. **No Rare luck or pity of any kind** (Tyler's pick, so nothing can be cheesed; tried and removed). A Rare drop gets a gold toast that opens it on the Workbench, plus a chime if sounds are on. Bosses and guardians keep their own odds.
+- **Reagents on old stages:** Grave Dust and Marrow drop at full rate within 3 stages of your best, and at a quarter further down (active and AFK), so camping an easy stage isn't the best way to farm crafting reagents.
 - Drop rates don't get stingier over time.
 
 ## Style

@@ -6,7 +6,7 @@ import { slotName } from "../../content/slots";
 import { IMPLICIT_TEXT, type StatId } from "../../content/stats";
 import { TUNE } from "../../content/tune";
 import { AFFIX } from "../../content/affixes";
-import { essPerKill } from "../../engine/combat";
+import { essPerKill, reagentRate } from "../../engine/combat";
 import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
@@ -124,6 +124,8 @@ export function tipContent(g: Game, key: string): ReactNode {
   const squadEss = g.bonus("ess");
   const kill = essPerKill(st) * (1 + squadEss / 100);
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
+  const far = reagentRate(st, s.maxStage);
+  const farRow: Row[] = far < 1 ? [[`More than ${TUNE.reagentNear} stages below your best (${s.maxStage})`, `×${far}`, "mul"]] : [];
   const raiseRow: Row[] = raise > 1 ? [["Raise the Fallen is active", `×${raise}`, "mul"]] : [];
   const boss = g.act().boss;
   const abom = s.squad[ab];
@@ -149,14 +151,16 @@ export function tipContent(g: Game, key: string): ReactNode {
       ]} />;
     case "r-mar":
       return <Tip h="Marrow Shard" p="Rerolls every unlocked affix on a part: new stats, new tiers." rows={[
-        ["Chance per kill", pct(TUNE.marrowChance * raise)],
+        ["Chance per kill", pct(TUNE.marrowChance * raise * far)],
+        ...farRow,
         [`${boss.name} kill`, String(TUNE.bossLoot.marrow)],
         ["Grafting costs", String(TUNE.graftMarrow)],
         ...raiseRow,
       ]} />;
     case "r-dust":
       return <Tip h="Grave Dust" p="Keeps each affix's tier but rerolls its number inside that tier." rows={[
-        ["Chance per kill", pct(TUNE.dustChance * raise)],
+        ["Chance per kill", pct(TUNE.dustChance * raise * far)],
+        ...farRow,
         [`${boss.name} kill`, String(TUNE.bossLoot.dust)],
         ["Grafting costs", String(TUNE.graftDust)],
         ...raiseRow,

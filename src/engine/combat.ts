@@ -114,6 +114,9 @@ export function spawnTrash(g: Game) {
   g.foe = { kind: "trash", elite, key: k, name, hp, max: hp, dmg: enemyHit(s) * f.dmg * (elite ? TUNE.eliteDmg : 1), int: f.int, atk: 0, t: 0, ev: [], cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
 }
 
+/** Dust and Marrow drop at full rate near your best stage, and at a quarter far below it */
+export const reagentRate = (stage: number, maxStage: number) => (stage >= maxStage - TUNE.reagentNear ? 1 : TUNE.reagentFar);
+
 /** from Act 3 on, about 1 enemy in 150 near your best stage is an Elite */
 function rollElite(g: Game, stage: number) {
   const s = g.s;
@@ -359,8 +362,9 @@ function onTrashKill(g: Game) {
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
   if (!g.inTut() && g.rng() < TUNE.partChance * raise * (1 + g.bonus("drop") / 100)) dropPart(g, foe.drop, stage, TUNE.rarityW);
   if (g.inTut()) tutKill(g);
-  if (g.rng() < TUNE.dustChance * raise) s.dust++;
-  if (g.rng() < TUNE.marrowChance * raise) {
+  const rg = raise * reagentRate(s.stage, s.maxStage);
+  if (g.rng() < TUNE.dustChance * rg) s.dust++;
+  if (g.rng() < TUNE.marrowChance * rg) {
     s.marrow++;
     g.tick("A Marrow Shard!");
   }

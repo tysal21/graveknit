@@ -1,6 +1,6 @@
 import { actForStage, isBossStage } from "../content/acts";
 import { TUNE } from "../content/tune";
-import { essPerKill, trashHp } from "./combat";
+import { essPerKill, reagentRate, trashHp } from "./combat";
 import { cmRate } from "./economy";
 import type { Game } from "./game";
 import { makePart } from "./parts";
@@ -46,8 +46,9 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
   const loot = kills * TUNE.offlineLoot;
   const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(loot * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
-  const dust = Math.round(loot * TUNE.dustChance);
-  const marrow = Math.round(loot * TUNE.marrowChance);
+  const rg = reagentRate(stage, s.maxStage);
+  const dust = Math.round(loot * TUNE.dustChance * rg);
+  const marrow = Math.round(loot * TUNE.marrowChance * rg);
   s.ess += ess;
   s.lifeEss += ess;
   s.cm += cm;

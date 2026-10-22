@@ -187,3 +187,13 @@ describe("Act 3", () => {
     expect(g.s.maxStage).toBe(21);
   });
 });
+
+describe("reagents on old stages", () => {
+  it("Dust and Marrow drop at a quarter more than 3 stages below your best", async () => {
+    const { reagentRate } = await import("../../src/engine/combat");
+    expect(reagentRate(28, 28)).toBe(1);
+    expect(reagentRate(25, 28)).toBe(1);
+    expect(reagentRate(24, 28)).toBe(TUNE.reagentFar);
+    expect(reagentRate(1, 28)).toBe(TUNE.reagentFar);
+  });
+});

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
 import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
-import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Foe } from "../../engine/combat";
+import { cdKey, reagentRate, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
 import { fmt, pct } from "../../engine/format";
 import { hasCounterFor } from "../../engine/stats";
@@ -263,7 +263,8 @@ export function CryptPanel() {
                 );
               })}
               <p className="faint" style={{ margin: 0 }}>
-                Each kill: {pct(TUNE.partChance)} part, {pct(TUNE.dustChance)} Grave Dust, {pct(TUNE.marrowChance)} Marrow Shard. Parts drop at item level {s.stage}.{" "}
+                Each kill: {pct(TUNE.partChance)} part, {pct(TUNE.dustChance * reagentRate(s.stage, s.maxStage))} Grave Dust, {pct(TUNE.marrowChance * reagentRate(s.stage, s.maxStage))} Marrow Shard
+                {reagentRate(s.stage, s.maxStage) < 1 && <span className="down"> (a quarter: more than {TUNE.reagentNear} stages below your best)</span>}. Parts drop at item level {s.stage}.{" "}
                 <span data-tip="x-rare" tabIndex={0}>Rare: <b className="tc-rare">{pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))}</b> of parts<Info /></span>
                 {actDef.elitePrefixes && <> <span data-tip="x-elite" tabIndex={0}>Elites: <b className="tc-elite">1 in {Math.round(1 / TUNE.eliteChance)}</b> kills<Info /></span></>}
               </p>

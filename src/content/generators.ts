@@ -20,6 +20,6 @@ export const GENERATORS: GeneratorDef[] = [
   { id: "harv", name: "Bone Harvesters", cost: 150, rate: 3, bonus: { stat: "flat", value: 0.5 }, bonusText: "+0.5 hit damage each", unlock: 3 },
   { id: "cart", name: "Plague Carts", cost: 2000, rate: 25, bonus: { stat: "poison", value: 0.6 }, bonusText: "+0.6 poison per second each", unlock: 6 },
   { id: "dig", name: "Catacomb Diggers", cost: 30000, rate: 240, bonus: { stat: "as", value: 0.5 }, bonusText: "+0.5% attack speed each", unlock: 11 },
-  { id: "grind", name: "Ossuary Grinders", cost: 0, rate: 0, bonusText: "+crit multiplier", unlock: 999, later: "Act 3 and later" },
+  { id: "grind", name: "Ossuary Grinders", cost: 450000, rate: 2000, bonus: { stat: "cm", value: 1 }, bonusText: "+1% crit multiplier each", unlock: 21 },
   { id: "obel", name: "Soul Siphon Obelisks", cost: 0, rate: 0, bonusText: "+Soul Essence gain", unlock: 999, later: "Act 4 and later" },
 ];

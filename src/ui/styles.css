@@ -4,7 +4,7 @@
   --bg:#0c0b0a; --panel:#15130f; --panel2:#1c1914; --line:#2e2a22; --line2:#3d372c;
   --bone:#ebe3cf; --muted:#9d9482; --faint:#6b6456;
   --lantern:#e0a948; --essence:#8cc3cf; --flesh:#c98b74; --blood:#c2493f; --good:#7fb77e;
-  --common:#a39c8c; --magic:#6f9fdc; --rare:#dcc55c; --trophy:#e08a3c;
+  --common:#a39c8c; --magic:#6f9fdc; --rare:#dcc55c; --trophy:#e08a3c; --unique:#a8d646;
   --t1:#f0c75a; --t2:#d9b25a; --t3:#b9a36e; --t4:#8e8573; --t5:#6d675b;
   --display:"IM Fell English SC",Georgia,serif; --body:"Alegreya Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
@@ -74,8 +74,8 @@ h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mut
 .slot{display:grid;grid-template-columns:5.2rem minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--line);border-left-width:3px;border-radius:4px;padding:5px 8px;background:var(--panel2);text-align:left;width:100%}
 .slot .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}
 .slot .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.r-common{border-left-color:var(--common)} .r-magic{border-left-color:var(--magic)} .r-rare{border-left-color:var(--rare)} .r-trophy{border-left-color:var(--trophy)}
-.tc-common{color:var(--common)} .tc-magic{color:var(--magic)} .tc-rare{color:var(--rare)} .tc-trophy{color:var(--trophy)}
+.r-common{border-left-color:var(--common)} .r-magic{border-left-color:var(--magic)} .r-rare{border-left-color:var(--rare)} .r-trophy{border-left-color:var(--trophy)} .r-unique{border-left-color:var(--unique)}
+.tc-common{color:var(--common)} .tc-magic{color:var(--magic)} .tc-rare{color:var(--rare)} .tc-trophy{color:var(--trophy)} .tc-unique{color:var(--unique)}
 /* crypt */
 .stages{display:flex;flex-wrap:wrap;gap:4px}
 .stg{width:2.1rem;height:2rem;border:1px solid var(--line2);background:var(--panel2);border-radius:4px;font-family:var(--mono);font-size:.85rem}
@@ -286,3 +286,12 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .gcompare .gnow{border-right:1px solid var(--line);padding-right:14px}
 .gcompare .af.goes>span:nth-child(2){text-decoration:line-through;text-decoration-color:var(--blood)}
 @media (max-width:760px){.gcompare{grid-template-columns:1fr;height:auto}.gcompare .gnow{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:10px}}
+
+/* Act 3: summoned adds under the enemy's bar, signature and unique tags */
+.adds{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--elite);padding-left:8px}
+.adds .row{font-size:.8rem}
+.adds .shieldnote{font-size:.78rem;color:var(--elite)}
+.sigtag{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--elite);border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-right:4px}
+.uniqfx{color:var(--unique)}
+.toast.unique{border-left-color:var(--unique);animation:toastIn .25s ease-out,rareGlow 1.6s ease-out}
+.tc-elite{color:var(--elite)}

@@ -3,7 +3,7 @@ import { slotName } from "../../content/slots";
 import { TUNE } from "../../content/tune";
 import { fmt } from "../../engine/format";
 import type { BossWin, Game } from "../../engine/game";
-import { partName, rarityClass } from "../../engine/parts";
+import { isUnique, partName, rarityClass } from "../../engine/parts";
 import { calc } from "../../engine/stats";
 import { Modal } from "../common/Modal";
 import { Delta, selectPart } from "../panels/StitcheryPanel";
@@ -101,8 +101,8 @@ function RareToast({ at, id }: { at: number; id: number }) {
   const p = g.partById(id);
   if (!p) return null;
   return (
-    <button className="toast rare" onClick={() => { setUi({ toasts: ui.toasts.filter((x) => x.at !== at) }); selectPart(id); }}>
-      <b className="tc-rare">Rare drop!</b> {partName(p)} <span className="faint">· item level {p.ilvl} · open it</span>
+    <button className={`toast ${isUnique(p) ? "unique" : "rare"}`} onClick={() => { setUi({ toasts: ui.toasts.filter((x) => x.at !== at) }); selectPart(id); }}>
+      {isUnique(p) ? <b className="tc-unique">Unique drop!</b> : <b className="tc-rare">Rare drop!</b>} {partName(p)} <span className="faint">· item level {p.ilvl} · open it</span>
     </button>
   );
 }

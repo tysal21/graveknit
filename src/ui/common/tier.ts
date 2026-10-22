@@ -21,6 +21,6 @@ const TIERS: Record<Tier["id"], Tier> = {
 
 export function foeTier(f: Foe | null): Tier {
   if (!f) return TIERS.normal;
-  // Elites arrive in Act 3; "elite" is ready for them
+  if (f.kind === "trash") return f.elite ? TIERS.elite : TIERS.normal;
   return TIERS[f.kind as Tier["id"]] ?? TIERS.normal;
 }

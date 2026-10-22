@@ -15,6 +15,19 @@ export const TUNE = {
   blastMult: 3.5, healPct: 0.15, weakBonus: 0.5, stunBonus: 0.5,
   telegraphSecs: 3, weakSecs: 4, bossRetryWin: 5, bossRetryLoss: 120,
 
+  // summoned adds: the boss takes this much less damage while any of them live; they hit every addInt seconds
+  addShield: 0.75, addInt: 2,
+
+  // Elites (Act 3 on): about 1 normal enemy in 150 near your best stage is an Elite.
+  // Tougher, pays more, and always drops a signature part (75% Magic, 25% Rare) with built-in stats ×1.5
+  eliteChance: 1 / 150, eliteFrom: 21, eliteNear: 2, eliteHp: 4, eliteDmg: 1.5, elitePay: 5,
+  eliteRarityW: { common: 0, magic: 75, rare: 25 }, sigMult: 1.5, eliteThread: 0.04,
+
+  // named uniques: the chance one drops from a boss kill (on top of its loot) and from an Elite
+  uniqueBoss: 0.12, uniqueElite: 0.03,
+  // what each unique effect does: Plague Mask poison ×, Last Torch heal share, Hangman's Scythe Reap threshold
+  uniqueFx: { plague: 1.5, leech: 0.015, execute: 0.4 },
+
   // stage guardians: their big hit is this many of their normal hits; they pay this many kills' worth of Essence
   guardianBlastMult: 2.5, guardianEssMult: 10,
 
@@ -30,7 +43,8 @@ export const TUNE = {
   rarityW: { common: 65, magic: 28, rare: 7 },
   bossRarityW: { common: 15, magic: 50, rare: 35 },
   dustChance: 0.12, marrowChance: 0.03,
-  bossLoot: { parts: 2, marrow: 2, dust: 4, threadChance: 0.3 },
+  // boss loot. A boss gives a Spectral Thread on its first kill only, so re-farming a boss can't flood you with them
+  bossLoot: { parts: 2, marrow: 2, dust: 4, firstThreads: 1 },
 
   // affix tiers: roll weights, and the item level each tier unlocks at
   tierW: { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 } as Record<number, number>,
@@ -66,6 +80,6 @@ export const TUNE = {
 } as const;
 
 // Vessel Integrity per item level, by rarity
-export const RARITY_INTEGRITY = { common: 0.5, magic: 1, rare: 1.5, trophy: 1.5 } as const;
+export const RARITY_INTEGRITY = { common: 0.5, magic: 1, rare: 1.5, trophy: 1.5, unique: 1.5 } as const;
 // Corpse Mass from rendering a part = 5 × item level × this
 export const RENDER_CM_PER_ILVL = 5;

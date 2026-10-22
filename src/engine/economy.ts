@@ -37,7 +37,7 @@ export function castRitual(g: Game, id: RitualId, auto: boolean) {
   const s = g.s;
   const r = s.rit[id];
   const def = RITUALS.find((x) => x.id === id)!;
-  if (r.ready > s.clock) return;
+  if (r.ready > s.clock || s.maxStage < (def.unlock ?? 1)) return;
   const pw = auto ? TUNE.autoRitualPower : 1;
   r.ready = s.clock + def.cd;
   if (id === "raise") {
@@ -55,14 +55,20 @@ export function castRitual(g: Game, id: RitualId, auto: boolean) {
     r.power = pw;
     g.log(auto ? "Blood Moon (auto): +30% damage for 20 seconds." : "Blood Moon: +50% damage for 20 seconds.");
   }
+  if (id === "wind") {
+    r.until = s.clock + def.dur!;
+    r.power = pw;
+    g.log(auto ? "Plague Wind (auto): poison ×2.2 for 15 seconds." : "Plague Wind: poison ×3 for 15 seconds.");
+  }
   if (!auto) tutEvent(g, "ritual");
   g.refresh();
 }
 
-/** auto mode casts Raise and Hunger on cooldown, and saves Blood Moon for bosses */
+/** auto mode casts Raise and Hunger on cooldown, and saves Blood Moon and Plague Wind for bosses */
 export function autoRituals(g: Game) {
   for (const id of ["raise", "hunger"] as const) if (g.s.rit[id].ready <= g.s.clock) castRitual(g, id, true);
-  if (g.s.rit.moon.ready <= g.s.clock && g.foe?.kind === "boss") castRitual(g, "moon", true);
+  if (g.foe?.kind !== "boss") return;
+  for (const id of ["moon", "wind"] as const) if (g.s.rit[id].ready <= g.s.clock) castRitual(g, id, true);
 }
 
 export const infuseCost = (level: number) => Math.floor(TUNE.infuseBase * Math.pow(TUNE.infuseGrow, level - 1));

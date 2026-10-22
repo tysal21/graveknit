@@ -8,7 +8,7 @@ import { newGame } from "../helpers";
 
 describe("Act 2", () => {
   it("runs to Stage 20 with the Ossuary Colossus at the end", () => {
-    expect(LAST_STAGE).toBe(20);
+    expect(LAST_STAGE).toBeGreaterThanOrEqual(20);
     expect(bossById("colossus").stage).toBe(20);
     expect(BASES.colossusRib.trophy).toBe(true);
   });

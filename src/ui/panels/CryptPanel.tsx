@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
 import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
-import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, startBoss, useAbility, type Foe } from "../../engine/combat";
+import { cdKey, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
 import { fmt, pct } from "../../engine/format";
 import { hasCounterFor } from "../../engine/stats";
@@ -92,10 +92,30 @@ function Telegraph() {
       </div>
     );
   }
+  if (e && e.type === "summon")
+    return <div className="tele live"><span className="ct">Counter: {COUNTER_TEXT.summon}</span><span>{b.moves[e.move].tele}</span>{left(e.end, TUNE.telegraphSecs)}</div>;
   if (e && e.type === "weak")
     return <div className="tele window"><span className="ct" style={{ color: "var(--good)" }}>Opening: {COUNTER_TEXT.weak}</span><span>{b.moves[e.move].tele}</span>{left(f.weakUntil, TUNE.weakSecs)}</div>;
   if (f.t < f.stunUntil) return <div className="tele window"><span className="ct" style={{ color: "var(--good)" }}>Staggered</span><span>{b.stagger}</span></div>;
   return <div className="tele"><span className="faint">{b.idle}</span></div>;
+}
+
+/** summoned adds under the enemy's bar: each one's HP, and the shield they give their master */
+function Adds() {
+  const f = useGame().foe!;
+  const adds = liveAdds(f);
+  if (!adds.length) return null;
+  return (
+    <div className="adds" id="adds">
+      <span className="shieldnote">Shielded by {adds.length} {adds[0].name}{adds.length > 1 ? "s" : ""}: takes {Math.round(TUNE.addShield * 100)}% less damage, and your hits go to them first.</span>
+      {adds.map((a, i) => (
+        <div key={i}>
+          <div className="row"><span>{a.name}</span><span className="num muted">{fmt(Math.max(0, a.hp))} HP</span></div>
+          <Bar kind="enemy" value={a.hp / a.max} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /** "How to beat" rows for a boss or guardian, built from its moves */
@@ -183,6 +203,8 @@ export function CryptPanel() {
         </div>
         <FoeSprite foeKey={f?.key} />
         <Bar tall kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
+        {f && <Adds />}
+        {f?.elite && <div className="faint" style={{ fontSize: ".78rem" }}>Elite · pays {TUNE.elitePay}× and drops a signature part</div>}
         {special && f && (
           <div className="block">
             {boss && (
@@ -243,6 +265,7 @@ export function CryptPanel() {
               <p className="faint" style={{ margin: 0 }}>
                 Each kill: {pct(TUNE.partChance)} part, {pct(TUNE.dustChance)} Grave Dust, {pct(TUNE.marrowChance)} Marrow Shard. Parts drop at item level {s.stage}.{" "}
                 <span data-tip="x-rare" tabIndex={0}>Rare: <b className="tc-rare">{pct(TUNE.rarityW.rare / (TUNE.rarityW.common + TUNE.rarityW.magic + TUNE.rarityW.rare))}</b> of parts<Info /></span>
+                {actDef.elitePrefixes && <> <span data-tip="x-elite" tabIndex={0}>Elites: <b className="tc-elite">1 in {Math.round(1 / TUNE.eliteChance)}</b> kills<Info /></span></>}
               </p>
             </>
           )}

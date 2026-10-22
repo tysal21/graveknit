@@ -7,10 +7,10 @@ import { IMPLICIT_TEXT } from "../../content/stats";
 import { TUNE } from "../../content/tune";
 import { canCraft, canGraft, canRestitch, dust, equip, marrow, pressMarrow, restitch, restitchCost, toggleLock, type Flash } from "../../engine/crafting";
 import { fmt, pct } from "../../engine/format";
-import { affixRange, affixValue, rollQuality, isKept, isTrophy, partCM, partIntegrity, partName, rarityClass, rarityLabel, tierOdds } from "../../engine/parts";
+import { affixRange, affixValue, implicits, rollQuality, isKept, isTrophy, partCM, partIntegrity, partName, rarityClass, rarityLabel, tierOdds } from "../../engine/parts";
 import { renderPart } from "../../engine/stash";
 import type { Part } from "../../engine/state";
-import { calc } from "../../engine/stats";
+import { bestAllyAffix, calc, wornParts } from "../../engine/stats";
 import { act, useGame } from "../runtime";
 import { openModal, selAbom, setUi, ui } from "../uiStore";
 
@@ -28,6 +28,22 @@ function LockWarning({ onLock, onCancel }: { onLock: () => void; onCancel: () =>
       </p>
       <button className="btn small primary" onClick={onLock}>Lock it</button>{" "}
       <button className="btn small" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
+/** what a Rival's Core copies for the Abomination wearing it (or about to) */
+function MirrorLine({ abom }: { abom: number }) {
+  const g = useGame();
+  const m = bestAllyAffix(g, abom, wornParts(g, abom));
+  return (
+    <div className="uniqfx">
+      <b>Mirror:</b>{" "}
+      {g.s.squad.length < 2
+        ? "copies the best affix another squad member wears. You need a second Abomination first."
+        : m
+          ? <>copies {AFFIX[m.a.k].fmt(affixValue(m.a, m.part.ilvl))} (T{m.a.t} {AFFIX[m.a.k].name}) from {g.s.squad[m.wearer].name}'s {BASES[m.part.base].name}.</>
+          : "copies the best affix another squad member wears. They aren't wearing any affixes yet."}
     </div>
   );
 }
@@ -72,9 +88,17 @@ export function PartDetail({ part: p }: { part: Part }) {
         </div>
       </div>
       <div className="impl">
-        {b.imp.map(([st, f]) => IMPLICIT_TEXT[st](f(p.ilvl))).join(" · ")}
+        {implicits(p).map(([st, v]) => IMPLICIT_TEXT[st](v)).join(" · ")}
         {b.ab && <> · Ability: <b>{ABILITY[b.ab].name}</b> ({ABILITY[b.ab].type})</>}
+        {p.sig && <div className="faint">Signature part from an Elite: built-in stats ×{TUNE.sigMult}.</div>}
       </div>
+      {b.unique && (
+        <div className="uniqfx">
+          <b>Unique effect:</b> {b.unique.text}.
+          <div className="faint">Uniques have no random affixes. They can't be rerolled or Re-stitched, so this one stays at item level {p.ilvl}.</div>
+        </div>
+      )}
+      {b.mirror && <MirrorLine abom={worn ? g.wornBy(p) : ab} />}
       <div className="afx">
         {p.affixes.length ? (
           p.affixes.map((a, i) => (
@@ -90,7 +114,7 @@ export function PartDetail({ part: p }: { part: Part }) {
             </div>
           ))
         ) : (
-          <p className="faint" style={{ margin: 0 }}>Common parts have no affixes to craft on.</p>
+          !b.unique && <p className="faint" style={{ margin: 0 }}>Common parts have no affixes to craft on.</p>
         )}
       </div>
       {askLock !== null && (
@@ -138,7 +162,7 @@ export function PartDetail({ part: p }: { part: Part }) {
         </button>
         <button className="btn" data-act="restitch" disabled={!canRestitch(g, p)} onClick={() => act((g) => restitch(g, p))}>
           Re-stitch{rs ? ` to i${rs.to}` : ""}
-          <span className="sub">{rs ? `${rs.dust} Dust + ${fmt(rs.ess)} Essence, keeps every roll` : "Already at your best item level"}</span>
+          <span className="sub">{rs ? `${rs.dust} Dust + ${fmt(rs.ess)} Essence, keeps every roll` : b.unique ? "Uniques can't be Re-stitched" : "Already at your best item level"}</span>
         </button>
         <button className="btn" data-act="press" disabled={s.dust < TUNE.dustPerMarrow} onClick={() => act((g) => pressMarrow(g))}>
           Press Marrow<span className="sub">{TUNE.dustPerMarrow} Dust → 1 Marrow Shard</span>

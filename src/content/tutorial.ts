@@ -47,7 +47,7 @@ export const PANEL_LOCKED_TEXT: Record<PanelId, string> = {
 };
 
 // One-time tips after the tutorial
-export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2" | "restitch";
+export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2" | "restitch" | "act3" | "grind" | "adds" | "elite" | "unique" | "boss3";
 export const HINTS: Record<HintId, TutStep> = {
   infuse: { id: "infuse", panel: "squad", title: "You can Infuse", text: "Soul Essence buys Infusion levels. Each level gives +12% damage and HP. Your parts limit how many levels you can hold, so better parts raise the cap.", target: "#infBtn" },
   gens: { id: "gens", panel: "yard", title: "New generator", text: "Bone Harvesters are open. They cost more but add hit damage as well as Corpse Mass.", target: "#buy-harv" },
@@ -57,6 +57,12 @@ export const HINTS: Record<HintId, TutStep> = {
   guard: { id: "guard", panel: "squad", title: "Get stronger, then try again", text: "Guardians are built to need an upgrade. Infuse a level or two, or stitch on a better part, and your Abomination will push back up and fight it again.", target: "#infBtn" },
   dig: { id: "dig", panel: "yard", title: "New generator", text: "Catacomb Diggers are open. Each one adds attack speed for the whole squad as well as Corpse Mass.", target: "#buy-dig" },
   restitch: { id: "restitch", panel: "stitch", title: "Re-stitch old parts", text: "A part you like doesn't have to be left behind. Open it on the Workbench and Re-stitch it: Grave Dust and Soul Essence lift it to your best stage's item level, keeping every roll. Spare Dust can also be pressed into Marrow Shards there.", target: "#stash" },
+  act3: { id: "act3", panel: "yard", title: "Plague Wind", text: "Act III opens a fourth Ritual. Plague Wind triples every squad member's poison for 15 seconds. It's best against bosses and their summons, so auto mode only casts it in boss fights.", target: "#rit-wind" },
+  grind: { id: "grind", panel: "yard", title: "New generator", text: "Ossuary Grinders are open. Each one adds +1% crit multiplier for the whole squad as well as a lot of Corpse Mass.", target: "#buy-grind" },
+  adds: { id: "adds", panel: "crypt", title: "Summons shield their master", text: "Some enemies call in adds. While any add lives, its master takes 75% less damage and your hits go to the adds first. Poison hits every add at once, and the Sweeping affix (Off Arms only) splashes each hit onto the others.", target: "#fight" },
+  elite: { id: "elite", panel: "crypt", title: "An Elite", text: "From Act III on, about 1 enemy in 150 near your best stage is an Elite: tougher, with a name and a glow. It pays 5× Essence and Corpse Mass, and always drops a signature part: Magic or Rare, with built-in stats ×1.5. Sometimes it drops a Spectral Thread or a named unique too.", target: "#fight" },
+  unique: { id: "unique", panel: "stitch", title: "A named unique", text: "Uniques have no random affixes. Instead each one has a special effect nothing else gives. They can't be rerolled or Re-stitched, so they stay at the item level they dropped at; later bosses drop higher-level copies.", target: "#stash" },
+  boss3: { id: "boss3", panel: "crypt", title: "The Arch-Necromancer is ready", text: "Stage 30 is Act III's boss. He hides behind summoned corpses, so bring area damage (Sweeping, poison, Plague Wind) as well as Ward or Phase and Bury. You'll get a short lesson first.", target: "#bossBtn" },
   squad2: { id: "squad2", panel: "squad", title: "A second Abomination", text: "Squad slot 2 is open. Your second Abomination starts with no parts: pick it at the top of the Squad panel, then stitch parts onto it from the Stitchery. It fights behind the Vanguard, adds its damage and brings two more abilities.", target: "#squadTabs" },
 };
 

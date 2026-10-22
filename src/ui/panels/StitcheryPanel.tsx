@@ -3,7 +3,7 @@ import { BASES } from "../../content/acts";
 import { SLOTS, slotName, type SlotId } from "../../content/slots";
 import { TUNE } from "../../content/tune";
 import type { Game } from "../../engine/game";
-import { affixValue, isKept, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { affixValue, implicits, isKept, partName, rarityClass, rarityLabel } from "../../engine/parts";
 import { AFFIX } from "../../content/affixes";
 import { ABILITY } from "../../content/abilities";
 import { IMPLICIT_TEXT } from "../../content/stats";
@@ -32,7 +32,9 @@ function searchText(p: Part) {
   const b = BASES[p.base];
   const bits = [partName(p), b.name, slotName(b.slot), rarityLabel(p), `i${p.ilvl}`];
   for (const a of p.affixes) bits.push(AFFIX[a.k].name, AFFIX[a.k].fmt(affixValue(a, p.ilvl)), `T${a.t}`);
-  for (const [st, f] of b.imp) bits.push(IMPLICIT_TEXT[st](f(p.ilvl)));
+  for (const [st, v] of implicits(p)) bits.push(IMPLICIT_TEXT[st](v));
+  if (b.unique) bits.push("unique", b.unique.text);
+  if (p.sig) bits.push("signature elite");
   if (b.ab) bits.push(ABILITY[b.ab].name);
   if (isKept(p)) bits.push("kept");
   return bits.join(" ").toLowerCase();
@@ -168,6 +170,7 @@ function StashList() {
             <span className="delta"><Delta g={g} p={p} base0={base0} /></span>
             <span className="meta">
               {isKept(p) && <span className="kept">Kept</span>}
+              {p.sig && <span className="sigtag">Signature</span>}
               {slotName(BASES[p.base].slot)} · i{p.ilvl}{" "}
               {p.affixes.map((a, i) => <span key={i} className={`tb t${a.t}`}>T{a.t}</span>)}
             </span>

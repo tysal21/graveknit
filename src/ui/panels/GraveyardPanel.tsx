@@ -20,6 +20,8 @@ function Rituals() {
           const st = s.rit[r.id];
           const left = st.ready - s.clock;
           const active = st.until > s.clock;
+          if (s.maxStage < (r.unlock ?? 1))
+            return <button key={r.id} className="btn" id={"rit-" + r.id} disabled><b>{r.name}</b><span className="sub">Opens at Stage {r.unlock}</span></button>;
           return (
             <button key={r.id} className={`btn ${left <= 0 ? "ready" : ""}`} id={"rit-" + r.id} disabled={left > 0} onClick={() => act((g) => castRitual(g, r.id as RitualId, false))}>
               <b>{r.name}</b>

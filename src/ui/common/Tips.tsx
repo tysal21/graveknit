@@ -10,7 +10,7 @@ import { essPerKill } from "../../engine/combat";
 import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
-import { affixValue, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { affixValue, implicits, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { useGame } from "../runtime";
@@ -68,7 +68,7 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
   const p = g.partById(id);
   if (!p) return null;
   const b = BASES[p.base];
-  const imp = b.imp.map(([st, f]) => IMPLICIT_TEXT[st](f(p.ilvl))).join(" · ");
+  const imp = implicits(p).map(([st, v]) => IMPLICIT_TEXT[st](v)).join(" · ");
   let cmp: ReactNode = null;
   if (!g.isWorn(p)) {
     const ab = selAbom(g.s.squad.length);
@@ -96,7 +96,9 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
         {imp}
         {b.ab && <> · <b>{ABILITY[b.ab].name}</b></>}
       </div>
-      {p.affixes.length ? (
+      {b.unique && <div className="uniqfx">{b.unique.text}</div>}
+      {b.mirror && <div className="uniqfx">Copies the best affix another squad member wears</div>}
+      {b.unique ? null : p.affixes.length ? (
         p.affixes.map((a, i) => (
           <div className="afl" key={i}>
             <span className={`tb t${a.t}`}>T{a.t}</span>
@@ -161,8 +163,22 @@ export function tipContent(g: Game, key: string): ReactNode {
       ]} />;
     case "r-thr":
       return <Tip h="Spectral Thread" p="Locks one affix on a part so Marrow Shards and Grave Dust skip it. Unlocking is free; the Thread is used up." rows={[
-        [`${boss.name} kill`, `${pct(TUNE.bossLoot.threadChance)} chance`],
+        ["Each boss's first kill", `+${TUNE.bossLoot.firstThreads}`],
+        ["Repeat boss kills", "none"],
+        [`Elite kill (Act III on)`, `${pct(TUNE.eliteThread)} chance`],
         ["Normal enemies", "never"],
+      ]} />;
+    case "st-splash":
+      return <Tip h="Area damage" p="When an enemy has summoned adds, your hits go to the first add. This share of each hit also lands on every other add, and on their master (who takes 75% less while they live). Poison already hits all of them."
+        rows={sourceRows(m.splash, "%", Math.round(c.splash) + "%")} />;
+    case "x-elite":
+      return <Tip h="Elites" p={`From Act III on, about 1 enemy in ${Math.round(1 / TUNE.eliteChance)} is an Elite, as long as you fight within ${TUNE.eliteNear} stages of your best.`} rows={[
+        ["HP and damage", `×${TUNE.eliteHp} HP, ×${TUNE.eliteDmg} damage`],
+        ["Soul Essence and Corpse Mass", `×${TUNE.elitePay}`],
+        ["Signature part (built-in stats ×1.5)", "always"],
+        ["… Magic / Rare", `${pct(TUNE.eliteRarityW.magic / 100)} / ${pct(TUNE.eliteRarityW.rare / 100)}`],
+        ["Spectral Thread", pct(TUNE.eliteThread)],
+        ["Named unique", pct(TUNE.uniqueElite)],
       ]} />;
     case "st-dps": {
       const crit = 1 + ((c.cc / 100) * c.cm) / 100;

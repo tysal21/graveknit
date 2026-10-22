@@ -80,7 +80,8 @@ export const ACT2: ActDef = {
       { move: "gather", at: 4, jitter: 1 },
       { move: "slam", at: 8.5, jitter: 1 },
       { move: "crack", at: 12.5, jitter: 0.5 },
-      { move: "gather", at: 16.5, jitter: 0.5 },
+      // Bone Swarm previews Act 3's summons: mites shield the Colossus until they die
+      { move: "swarm", at: 16.5, jitter: 0.5 },
       { move: "slam", at: 20, jitter: 0.5 },
       { move: "slam", at: 24, jitter: 0.5 },
       { move: "crack", at: 27, jitter: 0 },
@@ -88,6 +89,7 @@ export const ACT2: ActDef = {
     moves: {
       gather: { type: "heal", short: "Gathers loose bones (heals 15%)", tele: "The Colossus scoops up the bones around it…", hit: "Bones snap into place. The Colossus mends {n} HP.", countered: "Bury! The bones scatter and the Colossus stumbles." },
       slam: { type: "blast", short: "Raises both fists (big slam)", tele: "The Colossus raises both fists…", hit: "The slam lands for {n}." },
+      swarm: { type: "summon", short: "Shakes out a bone swarm (adds shield it)", tele: "Mites pour out of the Colossus's ribs…", hit: "A swarm of bone mites covers the Colossus. It takes 75% less damage until they die.", adds: { n: 2, name: "Bone Mite", hp: 0.9, dmg: 0.2 } },
       crack: { type: "weak", short: "Its ribs crack open (takes +50%)", tele: "Its ribcage cracks open. The Colossus takes +50% damage.", hit: "The ribs crack open. Strike now." },
     },
     lootPool: ["acolyteRib", "miteSkull", "knightArm", "knightArm", "gnawedHand", "wispCore"],
@@ -97,6 +99,7 @@ export const ACT2: ActDef = {
       intro: "Kill it within 30 seconds. The Colossus is slow, but it slams twice near the end of the fight. Each move has a right answer:",
       moves: [
         "**It gathers loose bones:** interrupt with **Bury**, or it heals 15%.",
+        "**Mites pour out of its ribs:** two bone mites shield it. It takes 75% less damage until they die, and your hits go to them first. Poison and **Sweeping** (an Off Arm affix) hit them all.",
         "**It raises both fists:** block with **Ward** (Lantern Core) or dodge with **Phase** (Wraith Core). It does this three times, twice in a row at the end.",
         "**Its ribs crack open:** it takes +50% damage. Fire **Cleave** and **Haste** now.",
       ],

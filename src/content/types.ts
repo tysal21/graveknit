@@ -13,8 +13,15 @@ export interface BaseDef {
   ab?: AbilityId;
   /** boss trophy: always Rare, always kept */
   trophy?: boolean;
+  /** a named unique: no random affixes, one special effect, can't be crafted or Re-stitched */
+  unique?: { effect: UniqueEffect; text: string };
+  /** Rival's Core: copies the best affix another squad member is wearing */
+  mirror?: boolean;
   flavor: string;
 }
+
+/** special effects that only uniques give */
+export type UniqueEffect = "plague" | "leech" | "execute";
 
 export interface FoeDef {
   name: string;
@@ -39,6 +46,16 @@ export interface BossMoveDef {
   hit?: string;
   /** shown when an ability answers it */
   countered?: string;
+  /** summon moves only: the minions that appear and shield the boss until they die */
+  adds?: AddsDef;
+}
+
+/** minions a summon move brings in. HP and damage are multiples of the stage's normal enemy. */
+export interface AddsDef {
+  n: number;
+  name: string;
+  hp: number;
+  dmg: number;
 }
 
 export interface BossDef {
@@ -108,5 +125,7 @@ export interface ActDef {
   story: Record<number, string>;
   /** mini-bosses at the end of some early stages, by stage */
   guardians?: Record<number, GuardianDef>;
+  /** words an Elite wears in front of its name, like "Festering Plague Doctor" (acts with Elites only) */
+  elitePrefixes?: string[];
   boss: BossDef;
 }

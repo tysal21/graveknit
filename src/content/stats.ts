@@ -9,7 +9,8 @@ export type StatId =
   | "hpFlat"   // max HP
   | "hpPct"    // % max HP
   | "ess"      // % Soul Essence
-  | "drop";    // % part drop chance
+  | "drop"     // % part drop chance
+  | "splash";  // % of each hit that also lands on every other enemy (area damage)
 
 // How a built-in (implicit) stat reads on a part
 export const IMPLICIT_TEXT: Record<StatId, (v: number) => string> = {
@@ -23,4 +24,5 @@ export const IMPLICIT_TEXT: Record<StatId, (v: number) => string> = {
   hpPct: (v) => `+${v}% max HP`,
   ess: (v) => `+${v}% Soul Essence`,
   drop: (v) => `+${v}% part drop chance`,
+  splash: (v) => `${v}% of each hit splashes onto other enemies`,
 };

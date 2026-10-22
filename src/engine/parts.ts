@@ -3,6 +3,7 @@ import { BASES } from "../content/acts";
 import { RARITY_INTEGRITY, RENDER_CM_PER_ILVL, TUNE } from "../content/tune";
 import type { Game } from "./game";
 import type { Affix, Part, Rarity } from "./state";
+import type { StatId } from "../content/stats";
 import { pickWeighted, type Rng } from "./rng";
 
 // ---- affix tiers ----
@@ -65,11 +66,17 @@ export function affixRange(a: Affix, ilvl: number): string {
 /** affixes per kind (prefix/suffix) for a rarity */
 const slotsFor = (r: Rarity) => (r === "rare" ? 2 : r === "common" ? 0 : 1);
 
+/** can this affix roll on this part? Some only roll on one slot, or from an item level up */
+export const affixFits = (k: string, part: Part) => {
+  const A = AFFIX[k];
+  return (!A.slot || A.slot === BASES[part.base].slot) && part.ilvl >= (A.minIlvl ?? 1);
+};
+
 function pickAffixType(rng: Rng, part: Part, kind: "pre" | "suf", exclude: string[]): string {
   const lean = BASES[part.base].lean;
   const w: Record<string, number> = {};
   for (const k in AFFIX) {
-    if (AFFIX[k].kind !== kind || exclude.includes(k)) continue;
+    if (AFFIX[k].kind !== kind || exclude.includes(k) || !affixFits(k, part)) continue;
     w[k] = lean.includes(k) ? 30 : 10;
   }
   return pickWeighted(rng, w);
@@ -93,10 +100,14 @@ export function rollAffixes(rng: Rng, p: Part) {
 }
 
 /** make a new part and put it in the stash */
-export function makePart(g: Game, base: string, ilvl: number, rarity: Rarity): Part {
-  if (BASES[base].trophy && rarity !== "common") rarity = "rare";
+export function makePart(g: Game, base: string, ilvl: number, rarity: Rarity, sig = false): Part {
+  const b = BASES[base];
+  if ((b.trophy || b.unique) && rarity !== "common") rarity = "rare";
+  if (b.unique) rarity = "rare";
   const p: Part = { id: g.s.nextId++, base, ilvl, rarity, affixes: [], residue: 0, isNew: true, born: Date.now() };
-  rollAffixes(g.rng, p);
+  if (sig) p.sig = true;
+  // uniques have no random affixes: their power is their built-in stats and their effect
+  if (!b.unique) rollAffixes(g.rng, p);
   g.s.parts.push(p);
   return p;
 }
@@ -115,9 +126,17 @@ export function partName(p: Part): string {
   return `${pre ? AFFIX[pre.k].name + " " : ""}${b.name}${suf ? " " + AFFIX[suf.k].name : ""}`;
 }
 
-export type RarityClass = Rarity | "trophy";
-export const rarityClass = (p: Part): RarityClass => (BASES[p.base].trophy ? "trophy" : p.rarity);
-export const rarityLabel = (p: Part) => (BASES[p.base].trophy ? "Trophy" : p.rarity[0].toUpperCase() + p.rarity.slice(1));
+/** a part's built-in stats at its item level; signature parts get ×1.5 */
+export const implicits = (p: Part): [StatId, number][] =>
+  BASES[p.base].imp.map(([st, f]) => [st, p.sig ? Math.round(f(p.ilvl) * TUNE.sigMult) : f(p.ilvl)]);
+
+export type RarityClass = Rarity | "trophy" | "unique";
+export const rarityClass = (p: Part): RarityClass => (BASES[p.base].trophy ? "trophy" : BASES[p.base].unique ? "unique" : p.rarity);
+export const rarityLabel = (p: Part) => {
+  const c = rarityClass(p);
+  return (p.sig ? "Signature " : "") + c[0].toUpperCase() + c.slice(1);
+};
+export const isUnique = (p: Part) => !!BASES[p.base].unique;
 
 export const partIntegrity = (p: Part) => p.ilvl * RARITY_INTEGRITY[rarityClass(p)];
 /** Corpse Mass you get for rendering it */

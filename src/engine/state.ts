@@ -26,6 +26,8 @@ export interface Part {
   isNew: boolean;
   born: number;
   kept?: boolean;
+  /** an Elite's signature part: built-in stats ×1.5 */
+  sig?: boolean;
 }
 
 export interface Abomination {
@@ -93,4 +95,4 @@ export interface GameState {
 }
 
 /** the newest save version; see save.ts for how older saves are upgraded */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;

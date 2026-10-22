@@ -4,7 +4,7 @@ import { TUNE } from "../content/tune";
 import type { Game } from "./game";
 import { RARITY_INTEGRITY } from "../content/tune";
 import { essPerKill } from "./combat";
-import { affixScore, allowedTiers, isMaxRoll, partScore, rarityClass, rollAffixes, rollRoll } from "./parts";
+import { affixFits, affixScore, allowedTiers, isMaxRoll, partScore, rarityClass, rollAffixes, rollRoll } from "./parts";
 import type { Affix, Part } from "./state";
 import { tutEvent } from "./tutorial";
 
@@ -39,7 +39,8 @@ function bragPerfect(g: Game, p: Part, a: Affix, before: Affix[]) {
   } else if (a.roll >= 0.9 && !(was && was.roll >= 0.9)) g.log(`Exquisite roll: ${name} near the top of its range on a ${BASES[p.base].name}.`, "brag");
 }
 
-export const canCraft = (p: Part) => p.rarity !== "common";
+/** Commons have nothing to roll, and uniques are fixed until a later unlock */
+export const canCraft = (p: Part) => p.rarity !== "common" && !BASES[p.base].unique;
 
 /** Marrow Shard: reroll every unlocked affix. Bad rolls fill Residue; a full bar guarantees a better tier. */
 export function marrow(g: Game, p: Part): Flash | null {
@@ -111,7 +112,8 @@ export const restitchTarget = (g: Game) => g.s.maxStage;
 /** what lifting this part to the target costs, or null if there's nothing to gain */
 export function restitchCost(g: Game, p: Part) {
   const to = restitchTarget(g), lv = to - p.ilvl;
-  if (lv <= 0) return null;
+  // uniques stay at the item level they dropped at; a later boss drops a higher one
+  if (lv <= 0 || BASES[p.base].unique) return null;
   const w = RARITY_INTEGRITY[rarityClass(p)];
   return {
     to,
@@ -157,6 +159,7 @@ export const canGraft = (g: Game, p: Part) =>
 
 /** which of the target's affixes a donor affix may replace: same kind, and the same affix if the target already has it */
 export function graftSlots(t: Part, a: Affix) {
+  if (!affixFits(a.k, t)) return [];
   const kind = AFFIX[a.k].kind;
   const dupe = t.affixes.findIndex((x) => x.k === a.k);
   return t.affixes.map((_, i) => i).filter((i) => AFFIX[t.affixes[i].k].kind === kind && (dupe < 0 || dupe === i));

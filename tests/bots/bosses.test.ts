@@ -1,4 +1,4 @@
-// Test bots: simple players that play Act 1 at full speed and report how long the first Warden kill takes.
+// Test bots: simple players that play Acts 1 to 3 at full speed and report how long each first boss kill takes.
 // Run with: npm run bots
 import { describe, expect, it } from "vitest";
 import { GENERATORS } from "../../src/content/generators";
@@ -31,7 +31,8 @@ function playTurn(g: Game) {
   // reroll worn Magic/Rare parts with spare Marrow
   for (const p of g.s.parts) if (g.isWorn(p) && p.rarity !== "common" && g.s.marrow > 2) marrow(g, p);
   for (let i = 0; i < 20; i++) for (let abom = 0; abom < g.s.squad.length; abom++) infuse(g, abom);
-  for (const r of RITUALS) if (r.id !== "moon" || g.foe?.kind === "boss") castRitual(g, r.id, false);
+  // Blood Moon and Plague Wind are saved for boss fights
+  for (const r of RITUALS) if ((r.id !== "moon" && r.id !== "wind") || g.foe?.kind === "boss") castRitual(g, r.id, false);
   // buy the cheapest open generator
   for (let i = 0; i < 20; i++) {
     const open = GENERATORS.filter((x) => !x.later && g.s.maxStage >= x.unlock);
@@ -61,14 +62,17 @@ const median = (xs: number[]) => {
 };
 
 describe("balance bots", () => {
-  it("beat the Crypt Warden in about 20 minutes and the Ossuary Colossus in about an hour", () => {
-    const runs = [1, 2, 3, 4, 5, 6].map((seed) => minutesToBosses(seed, ["warden", "colossus"], 240));
-    const warden = runs.map((r) => r[0]), colossus = runs.map((r) => r[1]);
+  it("beat the Crypt Warden in about 20 minutes, the Ossuary Colossus in about an hour and the Arch-Necromancer in about 2", () => {
+    const runs = [1, 2, 3, 4, 5, 6].map((seed) => minutesToBosses(seed, ["warden", "colossus", "rival"], 400));
+    const warden = runs.map((r) => r[0]), colossus = runs.map((r) => r[1]), rival = runs.map((r) => r[2]);
     console.log(`First Warden kill (minutes): ${warden.map((t) => t.toFixed(1)).join(", ")} · median ${median(warden).toFixed(1)}`);
     console.log(`First Colossus kill (minutes): ${colossus.map((t) => t.toFixed(1)).join(", ")} · median ${median(colossus).toFixed(1)}`);
+    console.log(`First Arch-Necromancer kill (minutes): ${rival.map((t) => t.toFixed(1)).join(", ")} · median ${median(rival).toFixed(1)}`);
     expect(median(warden)).toBeGreaterThan(8);
     expect(median(warden)).toBeLessThan(45);
     expect(median(colossus)).toBeGreaterThan(median(warden) + 15);
     expect(median(colossus)).toBeLessThan(150);
+    expect(median(rival)).toBeGreaterThan(median(colossus) + 20);
+    expect(median(rival)).toBeLessThan(300);
   }, 600_000);
 });

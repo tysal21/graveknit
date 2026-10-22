@@ -3,7 +3,7 @@ import { BASES } from "../content/acts";
 import { TUNE } from "../content/tune";
 import { fmt } from "./format";
 import type { Game } from "./game";
-import { isKept, makePart, partCM, partName, rarityClass } from "./parts";
+import { isKept, isUnique, makePart, partCM, partName, rarityClass } from "./parts";
 import { pickWeighted } from "./rng";
 import type { Part, Rarity } from "./state";
 
@@ -33,13 +33,20 @@ export function makeRoom(g: Game): boolean {
   return !!oldest;
 }
 
-/** a part drops from a kill; trophies always get in */
-export function dropPart(g: Game, base: string, ilvl: number, weights: Record<Rarity, number>): Part | null {
+/** a part drops from a kill; trophies always get in. `sig` makes it an Elite's signature part */
+export function dropPart(g: Game, base: string, ilvl: number, weights: Record<Rarity, number>, sig = false): Part | null {
   if (!BASES[base].trophy && !makeRoom(g)) return null;
-  const p = makePart(g, base, ilvl, pickWeighted(g.rng, weights));
+  const p = makePart(g, base, ilvl, pickWeighted(g.rng, weights), sig);
   g.tick(`${partName(p)} dropped.`, "tc-" + rarityClass(p));
-  if (p.rarity === "rare") {
-    g.log(`A Rare ${BASES[base].name} dropped (item level ${ilvl}).`, "brag");
+  if (isUnique(p)) {
+    g.log(`A unique dropped: ${BASES[base].name} (item level ${ilvl}). ${BASES[base].unique!.text}.`, "perfect");
+    g.emit({ type: "rareDrop", id: p.id });
+    if (!g.s.seen.hUnique && !g.s.hint) {
+      g.s.seen.hUnique = 1;
+      g.s.hint = "unique";
+    }
+  } else if (p.rarity === "rare") {
+    g.log(`A Rare ${sig ? "signature " : ""}${BASES[base].name} dropped (item level ${ilvl}).`, "brag");
     g.emit({ type: "rareDrop", id: p.id });
   }
   const best = p.affixes.reduce((m, a) => Math.min(m, a.t), 9);

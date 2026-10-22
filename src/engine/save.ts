@@ -1,4 +1,5 @@
-import { BASES, isBossStage } from "../content/acts";
+import { ACTS, BASES, isBossStage, LAST_STAGE } from "../content/acts";
+import { RITUALS } from "../content/rituals";
 import type { Game } from "./game";
 import { rollAffixes } from "./parts";
 import { SAVE_VERSION, type GameState } from "./state";
@@ -16,6 +17,8 @@ const MIGRATIONS: Record<number, (s: any) => any> = {
   2: (s) => ({ ...s, rareDry: 0, v: 3 }),
   // 3 → 4: Rare luck was removed (a flat Rare chance instead), so its counter goes
   3: ({ rareDry: _gone, ...s }) => ({ ...s, v: 4 }),
+  // 4 → 5: Act 3 adds the Plague Wind Ritual
+  4: (s) => ({ ...s, rit: { ...s.rit, wind: { ready: 0, until: 0, power: 1 } }, v: 5 }),
 };
 
 export function migrate(raw: any): GameState | null {
@@ -46,6 +49,12 @@ export function repair(g: Game) {
   for (const k of ["cm", "ess", "marrow", "dust", "thread", "altar"] as const) if (!Number.isFinite(s[k])) s[k] = 0;
   // you can only stand on a stage with normal enemies: never a boss stage, never past your best
   if (!Number.isFinite(s.maxStage) || s.maxStage < 1) s.maxStage = 1;
+  // a boss beaten before the next act existed now opens it (Act 3 arrived after many players had beaten the Colossus)
+  for (const a of ACTS) if (g.bossCleared(a.boss.id) && a.boss.stage + 1 <= LAST_STAGE && s.maxStage <= a.boss.stage) {
+    s.maxStage = a.boss.stage + 1;
+    g.story(s.maxStage);
+  }
+  for (const r of RITUALS) s.rit[r.id] ??= { ready: 0, until: 0, power: 1 };
   if (!Number.isFinite(s.stage) || s.stage < 1) s.stage = 1;
   if (s.stage > s.maxStage) s.stage = s.maxStage;
   while (s.stage > 1 && isBossStage(s.stage)) s.stage--;

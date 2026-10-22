@@ -1,4 +1,4 @@
-import { HINTS, TUT_DONE, TUT_KILLS, TUTORIAL, type TutWait } from "../content/tutorial";
+import { HINTS, TUT_DONE, TUT_KILLS, TUTORIAL, type HintId, type TutWait } from "../content/tutorial";
 import type { Game } from "./game";
 import { makePart, partName } from "./parts";
 import { newPlayer, spawnTrash } from "./combat";
@@ -82,6 +82,12 @@ export function checkHints(g: Game) {
   } else if (!s.seen.hDig && s.maxStage >= 11) {
     s.seen.hDig = 1;
     s.hint = "dig";
+  } else if (!s.seen.hAct3 && s.maxStage >= 21) {
+    s.seen.hAct3 = 1;
+    s.hint = "act3";
+  } else if (!s.seen.hGrind && s.maxStage >= 21) {
+    s.seen.hGrind = 1;
+    s.hint = "grind";
   } else if (!s.seen.hRestitch && wornLagging(g)) {
     s.seen.hRestitch = 1;
     s.hint = "restitch";
@@ -94,10 +100,12 @@ export function checkHints(g: Game) {
     const key = bossHintKey(id);
     if (!s.seen[key]) {
       s.seen[key] = 1;
-      s.hint = id === "warden" ? "boss" : "boss2";
+      s.hint = BOSS_HINT[id] ?? "boss";
     }
   }
 }
+
+const BOSS_HINT: Record<string, HintId> = { warden: "boss", colossus: "boss2", rival: "boss3" };
 
 /** a worn part has fallen a few item levels behind, so Re-stitch is worth a mention */
 const wornLagging = (g: Game) => g.s.parts.some((p) => g.isWorn(p) && p.rarity !== "common" && p.ilvl <= g.s.maxStage - 3);

@@ -1,3 +1,4 @@
+import type { SlotId } from "./slots";
 import type { StatId } from "./stats";
 
 export interface AffixDef {
@@ -11,6 +12,10 @@ export interface AffixDef {
   fmt: (v: number) => string;
   /** value range per tier, Tier 1 first */
   r: [number, number][];
+  /** only rolls on this slot */
+  slot?: SlotId;
+  /** only rolls on parts of at least this item level */
+  minIlvl?: number;
 }
 
 export const AFFIX: Record<string, AffixDef> = {
@@ -22,6 +27,8 @@ export const AFFIX: Record<string, AffixDef> = {
   frenzy: { kind: "suf", name: "of Frenzy", stat: "as", fmt: (v) => `+${v}% attack speed`, r: [[23, 30], [16, 22], [10, 15], [6, 9], [3, 5]] },
   ruin: { kind: "suf", name: "of Ruin", stat: "cm", fmt: (v) => `+${v}% crit multiplier`, r: [[41, 55], [29, 40], [19, 28], [11, 18], [5, 10]] },
   gluttony: { kind: "suf", name: "of Gluttony", stat: "ess", fmt: (v) => `+${v}% Soul Essence`, r: [[27, 36], [19, 26], [12, 18], [7, 11], [3, 6]] },
+  // area damage for fights with adds (Act 3's summons, the Colossus's mites): Off Arms only, from Act 2's item levels
+  sweeping: { kind: "pre", name: "Sweeping", stat: "splash", slot: "off", minIlvl: 11, fmt: (v) => `${v}% of each hit splashes`, r: [[36, 45], [26, 34], [17, 24], [10, 15], [4, 8]] },
   ghoul: { kind: "suf", name: "of the Ghoul", stat: "drop", fmt: (v) => `+${v}% part drop chance`, r: [[20, 28], [14, 19], [9, 13], [5, 8], [2, 4]] },
 };
 

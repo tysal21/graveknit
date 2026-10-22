@@ -3,7 +3,7 @@ import { actForStage, isBossStage, LAST_STAGE } from "../content/acts";
 import { DEATH_LINES } from "../content/act1";
 import { TUNE } from "../content/tune";
 import { TUT_RUNNING_FROM } from "../content/tutorial";
-import type { BossDef, BossMoveDef, GuardianDef } from "../content/types";
+import type { ActDef, AddsDef, BossDef, BossMoveDef, GuardianDef } from "../content/types";
 import type { Stats } from "./stats";
 import { fmt, pct } from "./format";
 import type { Game } from "./game";
@@ -25,8 +25,19 @@ export interface BossEvent {
   countered?: boolean;
 }
 
+/** a summoned minion. While any live, its master takes 75% less damage and soaks no direct hits. */
+export interface Add {
+  name: string;
+  hp: number;
+  max: number;
+  dmg: number;
+  atk: number;
+}
+
 export interface Foe {
   kind: "trash" | "boss" | "guardian";
+  /** a tougher normal enemy that pays more and drops a signature part */
+  elite?: boolean;
   key?: string;
   bossId?: string;
   /** a guardian's stage */
@@ -46,6 +57,8 @@ export interface Foe {
   stunUntil: number;
   healed: number;
   countered: number;
+  /** summoned minions; empty for most fights */
+  adds: Add[];
 }
 
 /** the squad in a fight. HP, shields and dodges belong to the Vanguard, who takes every hit. */
@@ -95,8 +108,22 @@ export function spawnTrash(g: Game) {
   const act = actForStage(s);
   const k = pickWeighted(g.rng, act.stageFoes[s]);
   const f = act.foes[k];
-  const hp = trashHp(s) * f.hp;
-  g.foe = { kind: "trash", key: k, name: f.name, hp, max: hp, dmg: enemyHit(s) * f.dmg, int: f.int, atk: 0, t: 0, ev: [], cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0 };
+  const elite = rollElite(g, s);
+  const hp = trashHp(s) * f.hp * (elite ? TUNE.eliteHp : 1);
+  const name = elite ? `${act.elitePrefixes![Math.floor(g.rng() * act.elitePrefixes!.length)]} ${f.name}` : f.name;
+  g.foe = { kind: "trash", elite, key: k, name, hp, max: hp, dmg: enemyHit(s) * f.dmg * (elite ? TUNE.eliteDmg : 1), int: f.int, atk: 0, t: 0, ev: [], cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
+}
+
+/** from Act 3 on, about 1 enemy in 150 near your best stage is an Elite */
+function rollElite(g: Game, stage: number) {
+  const s = g.s;
+  if (g.inTut() || stage < TUNE.eliteFrom || stage < s.maxStage - TUNE.eliteNear || !actForStage(stage).elitePrefixes) return false;
+  if (g.rng() >= TUNE.eliteChance) return false;
+  if (!s.seen.hElite && !s.hint) {
+    s.seen.hElite = 1;
+    s.hint = "elite";
+  }
+  return true;
 }
 
 /** the guardian that ends a stage the first time you clear it, if there is one */
@@ -122,7 +149,7 @@ export function startGuardian(g: Game, stage: number) {
   // the move repeats on a fixed rhythm so it's learnable
   if (gd.move) for (let at = gd.move.first; at < 120; at += gd.move.every) ev.push({ move: "move", type: gd.move.type, at, end: 0 });
   const hp = trashHp(stage) * gd.hp;
-  g.foe = { kind: "guardian", key: gd.foe, gStage: stage, name: gd.name, hp, max: hp, dmg: enemyHit(stage) * gd.dmg, int: gd.int ?? f.int, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0 };
+  g.foe = { kind: "guardian", key: gd.foe, gStage: stage, name: gd.name, hp, max: hp, dmg: enemyHit(stage) * gd.dmg, int: gd.int ?? f.int, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
   g.log(gd.intro, "story");
   if (!g.s.seen.hGuardMeet && !g.s.hint) {
     g.s.seen.hGuardMeet = 1;
@@ -135,7 +162,7 @@ export function startBoss(g: Game) {
   const jit = () => (g.rng() - 0.5) * 2;
   const ev: BossEvent[] = b.script.map((e) => ({ move: e.move, type: b.moves[e.move].type, at: e.at + jit() * e.jitter, end: 0 }));
   const hp = bossHp(b);
-  g.foe = { kind: "boss", bossId: b.id, name: b.name, hp, max: hp, dmg: enemyHit(b.stage) * TUNE.bossHitMult, int: TUNE.bossAtkInt, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0 };
+  g.foe = { kind: "boss", bossId: b.id, name: b.name, hp, max: hp, dmg: enemyHit(b.stage) * TUNE.bossHitMult, int: TUNE.bossAtkInt, atk: 0, t: 0, ev, cur: null, weakUntil: -1, stunUntil: -1, healed: 0, countered: 0, adds: [] };
   newPlayer(g);
   g.s.kills = 0;
   g.ticker = [];
@@ -152,13 +179,67 @@ function vulnerability(g: Game) {
   return m;
 }
 
-/** one hit from a squad member (the Vanguard unless `c` says otherwise) */
+export const liveAdds = (f: Foe) => f.adds.filter((a) => a.hp > 0);
+
+/** a master hiding behind living adds takes 75% less damage */
+export const shielded = (f: Foe) => (f.adds.some((a) => a.hp > 0) ? 1 - TUNE.addShield : 1);
+
+/** what a direct hit lands on: the first living add, or the enemy itself */
+export const hitTarget = (f: Foe): { hp: number; max: number } => liveAdds(f)[0] ?? f;
+
+/** The Last Torch: the Vanguard heals for a share of the squad's damage */
+function leech(g: Game, d: number) {
+  const share = Math.max(0, ...g.cs.map((c) => c.leech));
+  if (share && g.pl) g.pl.hp = Math.min(g.c.maxHp, g.pl.hp + d * share);
+}
+
+/** one hit from a squad member (the Vanguard unless `c` says otherwise). Adds soak hits first; Sweeping splashes the rest */
 function dealHit(g: Game, mult: number, label?: string, c: Stats = g.c) {
+  const f = g.foe!;
   const crit = g.rng() < c.cc / 100;
-  const d = c.hit * mult * (crit ? 1 + c.cm / 100 : 1) * vulnerability(g);
-  g.foe!.hp -= d;
+  const raw = c.hit * mult * (crit ? 1 + c.cm / 100 : 1);
+  const adds = liveAdds(f);
+  let d: number;
+  if (adds.length) {
+    d = raw;
+    adds[0].hp -= d;
+    const splash = (raw * c.splash) / 100;
+    if (splash > 0) {
+      for (const a of adds.slice(1)) a.hp -= splash;
+      f.hp -= splash * vulnerability(g) * shielded(f);
+    }
+    buryAdds(g);
+  } else {
+    d = raw * vulnerability(g);
+    f.hp -= d;
+  }
+  leech(g, d);
   if (label || crit) g.tick(`${label ? label + " " : ""}${crit ? "Crit " : ""}${fmt(d)}`, crit ? "crit" : undefined);
   return d;
+}
+
+/** clear out dead adds, and say so when the last one falls */
+function buryAdds(g: Game) {
+  const f = g.foe!;
+  if (!f.adds.length) return;
+  const dead = f.adds.filter((a) => a.hp <= 0);
+  if (!dead.length) return;
+  f.adds = liveAdds(f);
+  if (!f.adds.length) g.tick(`The last ${dead[0].name} falls. ${f.name} is exposed.`, "crit");
+}
+
+/** a summon move lands: its minions join the fight */
+function summonAdds(g: Game, def: AddsDef) {
+  const f = g.foe!;
+  const stage = f.kind === "boss" ? bossById(f.bossId!).stage : f.gStage ?? g.s.stage;
+  for (let i = 0; i < def.n; i++) {
+    const hp = trashHp(stage) * def.hp;
+    f.adds.push({ name: def.name, hp, max: hp, dmg: enemyHit(stage) * def.dmg, atk: i * 0.4 });
+  }
+  if (!g.s.seen.hAdds && !g.s.hint) {
+    g.s.seen.hAdds = 1;
+    g.s.hint = "adds";
+  }
 }
 
 function hitPlayer(g: Game, d: number, big: boolean) {
@@ -200,6 +281,12 @@ export function useAbility(g: Game, id: AbilityId, manual: boolean, abom = 0) {
     const weak = boss && f.t < f.weakUntil;
     dealHit(g, A.cleave.mult * (weak ? A.cleave.weakMult : 1), weak ? "Cleave into the opening!" : "Cleave", c);
   }
+  if (id === "reap") {
+    // a finisher: much stronger once the target (an add, or the enemy) is low
+    const t = hitTarget(f);
+    const low = t.hp / t.max < c.reapAt;
+    dealHit(g, A.reap.mult * (low ? A.reap.finishMult : 1), low ? "Reap finishes it!" : "Reap", c);
+  }
   if (id === "haste") {
     p.hasteUntil = s.clock + A.haste.dur;
     g.tick("Haste.");
@@ -240,15 +327,35 @@ function onGuardianKill(g: Game) {
   g.log(`${gd.name} falls. You collect ${fmt(ess)} Soul Essence, a Marrow Shard${p ? ` and a Magic ${BASES[gd.drop].name}` : ""}.`, "brag");
 }
 
+/** an Elite pays 5× and always drops a signature part; sometimes a Thread or a unique too */
+function onEliteKill(g: Game, base: string, stage: number) {
+  const s = g.s, f = g.foe!;
+  const p = dropPart(g, base, stage, TUNE.eliteRarityW, true);
+  const thread = g.rng() < TUNE.eliteThread;
+  if (thread) s.thread++;
+  const extra = [p && `a signature ${p.rarity === "rare" ? "Rare" : "Magic"} ${BASES[base].name}`, thread && "a Spectral Thread"].filter(Boolean).join(" and ");
+  g.log(`The ${f.name} falls${extra ? `, leaving ${extra}` : ""}.`, "brag");
+  if (g.rng() < TUNE.uniqueElite) dropUnique(g, actForStage(stage), stage);
+}
+
+/** a named unique from this act, if it has any */
+function dropUnique(g: Game, act: ActDef, ilvl: number) {
+  const pool = Object.keys(act.bases).filter((k) => BASES[k].unique);
+  if (!pool.length) return null;
+  return dropPart(g, pool[Math.floor(g.rng() * pool.length)], ilvl, { common: 0, magic: 0, rare: 1 });
+}
+
 function onTrashKill(g: Game) {
   const s = g.s, f = g.foe!, stage = s.stage;
   const foe = actForStage(stage).foes[f.key!];
   if (f.kind === "guardian") onGuardianKill(g);
   s.stats.kills++;
-  const ess = essPerKill(stage) * (1 + g.bonus("ess") / 100);
+  const pay = f.elite ? TUNE.elitePay : 1;
+  const ess = essPerKill(stage) * (1 + g.bonus("ess") / 100) * pay;
   s.ess += ess;
   s.lifeEss += ess;
-  s.cm += stage * TUNE.cmPerKill * (foe.cm || 1);
+  s.cm += stage * TUNE.cmPerKill * (foe.cm || 1) * pay;
+  if (f.elite) onEliteKill(g, foe.drop, stage);
   const raise = s.rit.raise.until > s.clock ? 1 + s.rit.raise.power : 1;
   if (!g.inTut() && g.rng() < TUNE.partChance * raise * (1 + g.bonus("drop") / 100)) dropPart(g, foe.drop, stage, TUNE.rarityW);
   if (g.inTut()) tutKill(g);
@@ -293,8 +400,9 @@ function onBossKill(g: Game) {
   const L = TUNE.bossLoot;
   s.marrow += L.marrow;
   s.dust += L.dust;
-  const thread = g.rng() < L.threadChance;
-  if (thread) s.thread++;
+  // Threads come from first kills only, so farming an old boss can't pile them up
+  const thread = first;
+  if (thread) s.thread += L.firstThreads;
   const parts: number[] = [];
   g.log(`${b.name} falls in ${f.t.toFixed(1)} seconds. You collect ${L.marrow} Marrow Shards, ${L.dust} Grave Dust${thread ? " and a Spectral Thread" : ""}.`);
   if (first) {
@@ -314,6 +422,10 @@ function onBossKill(g: Game) {
     if (b.lootBonus && g.rng() < b.lootBonus.chance) for (let k = 0; k < b.lootBonus.copies; k++) pool.push(b.lootBonus.base);
     const p = dropPart(g, pool[Math.floor(g.rng() * pool.length)], b.stage, TUNE.bossRarityW);
     if (p) parts.push(p.id);
+  }
+  if (g.rng() < TUNE.uniqueBoss) {
+    const u = dropUnique(g, actForStage(b.stage), b.stage);
+    if (u) parts.push(u.id);
   }
   let bound = false;
   if (!rec.thrall) {
@@ -387,6 +499,10 @@ function bossEvents(g: Game) {
         g.tick((b.moves[e.move].hit ?? "It heals {n} HP.").replace("{n}", fmt(h)));
       }
       if (e.type === "blast") hitPlayer(g, blast, true);
+      if (e.type === "summon") {
+        summonAdds(g, b.moves[e.move].adds!);
+        g.tick(b.moves[e.move].hit ?? "Minions rise.");
+      }
     }
   }
   if (f.cur && (f.cur.type === "weak" ? f.t >= f.weakUntil : f.cur.done)) f.cur = null;
@@ -419,8 +535,12 @@ export function stepCombat(g: Game, dt: number) {
       p.atk[i] -= iv;
       dealHit(g, 1, undefined, m);
     }
-    f.hp -= m.poisonDps * dt * vulnerability(g);
+    // poison spreads: it hits the enemy (less through a shield of adds) and every add at once
+    f.hp -= m.poisonDps * dt * vulnerability(g) * shielded(f);
+    for (const a of liveAdds(f)) a.hp -= m.poisonDps * dt;
+    leech(g, m.poisonDps * dt);
   });
+  buryAdds(g);
   if (f.hp <= 0) {
     if (f.kind === "boss") onBossKill(g);
     else onTrashKill(g);
@@ -431,6 +551,14 @@ export function stepCombat(g: Game, dt: number) {
     if (f.kind === "boss" && f.t >= TUNE.enrage) {
       onDefeat(g, true);
       return;
+    }
+  }
+  // adds keep clawing at the Vanguard while their master is stunned
+  for (const a of liveAdds(f)) {
+    a.atk += dt;
+    if (a.atk >= TUNE.addInt) {
+      a.atk = 0;
+      hitPlayer(g, a.dmg, false);
     }
   }
   const stunned = boss && f.t < f.stunUntil;

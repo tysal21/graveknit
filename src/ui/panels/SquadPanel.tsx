@@ -21,6 +21,7 @@ const STAT_ROWS: [string, string, (c: ReturnType<typeof useGame>["c"]) => string
   ["hp", "Max HP", (c) => fmt(c.maxHp)],
   ["ess", "Soul Essence bonus", (c) => "+" + Math.round(c.ess) + "%"],
   ["drop", "Part drop bonus", (c) => "+" + Math.round(c.drop) + "%"],
+  ["splash", "Area damage", (c) => Math.round(c.splash) + "%"],
 ];
 
 /** pick which Abomination the panel shows (and the Stitchery compares against) */
@@ -77,7 +78,7 @@ export function SquadPanel() {
         )}
       </div>
       <dl className="stats">
-        {STAT_ROWS.map(([k, label, v]) => (
+        {STAT_ROWS.filter(([k]) => k !== "splash" || c.splash > 0).map(([k, label, v]) => (
           <div key={k} style={{ display: "contents" }}>
             <dt data-tip={"st-" + k} tabIndex={0}>{label}<Info /></dt>
             <dd data-tip={"st-" + k}>{v(c)}</dd>

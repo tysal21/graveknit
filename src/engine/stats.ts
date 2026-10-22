@@ -1,5 +1,5 @@
 import { AFFIX } from "../content/affixes";
-import { ABILITY, type AbilityId } from "../content/abilities";
+import { ABILITY, ABILITY_TUNE, type AbilityId, type BossMoveType } from "../content/abilities";
 import { ACTS, BASES } from "../content/acts";
 import { GENERATORS } from "../content/generators";
 import { RITUAL_TUNE } from "../content/rituals";
@@ -8,8 +8,8 @@ import type { StatId } from "../content/stats";
 import { TUNE } from "../content/tune";
 import type { Game } from "./game";
 import { affixShortName } from "../content/affixes";
-import { affixValue, partIntegrity } from "./parts";
-import type { Part } from "./state";
+import { affixScore, affixValue, implicits, partIntegrity } from "./parts";
+import type { Affix, Part } from "./state";
 
 export interface Stats extends Record<StatId, number> {
   hit: number;
@@ -27,7 +27,36 @@ export interface Stats extends Record<StatId, number> {
   inf: number;
   altar: number;
   moon: number;
+  /** Plague Wind's poison multiplier while it blows */
+  wind: number;
+  /** share of the squad's damage that heals the Vanguard (The Last Torch) */
+  leech: number;
+  /** Reap's finishing threshold, as a share of the target's HP */
+  reapAt: number;
+  /** poison multiplier from The Plague Mask */
+  plague: number;
   abilities: AbilityId[];
+}
+
+export type Mirrored = { a: Affix; part: Part; wearer: number };
+
+/** what a Rival's Core copies for this Abomination (null without one) */
+export function mirroredAffix(g: Game, abom: number, eq: Part[] = wornParts(g, abom)): Mirrored | null {
+  return eq.some((p) => BASES[p.base].mirror) ? bestAllyAffix(g, abom, eq) : null;
+}
+
+/** the best affix any other squad member wears, skipping the parts in `eq` */
+export function bestAllyAffix(g: Game, abom: number, eq: Part[] = []): Mirrored | null {
+  let best: Mirrored | null = null;
+  g.s.squad.forEach((_, i) => {
+    if (i === abom) return;
+    for (const part of wornParts(g, i)) {
+      // never copy a part this Abomination is about to wear (a swap preview), or another mirror
+      if (eq.includes(part) || BASES[part.base].mirror) continue;
+      for (const a of part.affixes) if (!best || affixScore(a) > affixScore(best.a)) best = { a, part, wearer: i };
+    }
+  });
+  return best;
 }
 
 /** the parts an Abomination wears; `swap` previews wearing a different part in its slot */
@@ -65,9 +94,11 @@ export function statSources(g: Game, abom = 0): Partial<Record<StatId, [string, 
   add("hpFlat", "Base", TUNE.baseHp);
   for (const p of wornParts(g, abom)) {
     const b = BASES[p.base];
-    for (const [st, f] of b.imp) add(st, `${b.name} (built in)`, f(p.ilvl));
+    for (const [st, v] of implicits(p)) add(st, `${b.name} (built in${p.sig ? ", signature ×1.5" : ""})`, v);
     for (const a of p.affixes) add(AFFIX[a.k].stat, `${affixShortName(a.k)} T${a.t} on ${b.name}`, affixValue(a, p.ilvl));
   }
+  const mir = mirroredAffix(g, abom);
+  if (mir) add(AFFIX[mir.a.k].stat, `Rival's Core copies ${affixShortName(mir.a.k)} T${mir.a.t}`, affixValue(mir.a, mir.part.ilvl));
   for (const gen of GENERATORS) {
     const n = g.s.gens[gen.id] || 0;
     if (gen.bonus && n) add(gen.bonus.stat, `${gen.name} ×${n}`, +(gen.bonus.value * n).toFixed(1));
@@ -84,11 +115,14 @@ export function calc(g: Game, opts: { abom?: number; swap?: Part; ignoreBuffs?: 
   const abom = opts.abom ?? 0;
   const s = g.s;
   const eq = wornParts(g, abom, opts.swap);
-  const t: Record<StatId, number> = { flat: TUNE.baseHit, dmgPct: 0, cc: TUNE.baseCrit, cm: TUNE.baseCritMulti, as: 0, poison: 0, hpFlat: TUNE.baseHp, hpPct: 0, ess: 0, drop: 0 };
+  const t: Record<StatId, number> = { flat: TUNE.baseHit, dmgPct: 0, cc: TUNE.baseCrit, cm: TUNE.baseCritMulti, as: 0, poison: 0, hpFlat: TUNE.baseHp, hpPct: 0, ess: 0, drop: 0, splash: 0 };
   for (const p of eq) {
-    for (const [st, f] of BASES[p.base].imp) t[st] += f(p.ilvl);
+    for (const [st, v] of implicits(p)) t[st] += v;
     for (const a of p.affixes) t[AFFIX[a.k].stat] += affixValue(a, p.ilvl);
   }
+  const mir = mirroredAffix(g, abom, eq);
+  if (mir) t[AFFIX[mir.a.k].stat] += affixValue(mir.a, mir.part.ilvl);
+  const has = (e: string) => eq.some((p) => BASES[p.base].unique?.effect === e);
   for (const gen of GENERATORS) if (gen.bonus) t[gen.bonus.stat] += gen.bonus.value * (s.gens[gen.id] || 0);
   for (const act of ACTS) if (s.bosses[act.boss.id]?.thrall) t[act.boss.thrall.stat] += act.boss.thrall.value;
 
@@ -96,18 +130,22 @@ export function calc(g: Game, opts: { abom?: number; swap?: Part; ignoreBuffs?: 
   const lvl = Math.min(s.squad[abom].infusion, cap);
   const inf = Math.pow(TUNE.infuseMult, lvl - 1);
   const moon = !opts.ignoreBuffs && s.rit.moon.until > s.clock ? 1 + RITUAL_TUNE.moonPower * s.rit.moon.power : 1;
+  const wind = !opts.ignoreBuffs && s.rit.wind.until > s.clock ? 1 + RITUAL_TUNE.windPower * s.rit.wind.power : 1;
+  const plague = has("plague") ? TUNE.uniqueFx.plague : 1;
   const altar = altarBonus(s.altar);
   const mult = (1 + t.dmgPct / 100) * inf * (1 + altar) * moon;
   const cc = Math.min(100, t.cc);
   const hit = t.flat * mult;
   const aps = TUNE.baseAps * (1 + t.as / 100);
-  const poisonDps = t.poison * inf * (1 + altar) * moon;
+  const poisonDps = t.poison * inf * (1 + altar) * moon * wind * plague;
   const maxHp = t.hpFlat * inf * (1 + t.hpPct / 100);
   const dps = hit * aps * (1 + ((cc / 100) * t.cm) / 100) + poisonDps;
   const main = eq.find((p) => BASES[p.base].slot === "main");
   const core = eq.find((p) => BASES[p.base].slot === "core");
   const abilities = [main && BASES[main.base].ab, core && BASES[core.base].ab].filter(Boolean) as AbilityId[];
-  return { ...t, cc, hit, aps, poisonDps, maxHp, dps, lvl, cap, integrity: total, inf, altar, moon, abilities };
+  const leech = has("leech") ? TUNE.uniqueFx.leech : 0;
+  const reapAt = has("execute") ? TUNE.uniqueFx.execute : ABILITY_TUNE.reap.below;
+  return { ...t, cc, hit, aps, poisonDps, maxHp, dps, lvl, cap, integrity: total, inf, altar, moon, wind, leech, reapAt, plague, abilities };
 }
 
 /** how much better wearing `p` on Abomination `abom` would be: % DPS change plus half the % HP change */
@@ -135,5 +173,5 @@ export function squadBonus(g: Game, st: "ess" | "drop", cs: Stats[] = g.cs) {
 /** the squad's damage adds up */
 export const squadDps = (cs: Stats[]) => cs.reduce((sum, c) => sum + c.dps, 0);
 
-export const hasCounterFor = (abilities: AbilityId[], type: "heal" | "blast" | "weak") =>
+export const hasCounterFor = (abilities: AbilityId[], type: BossMoveType) =>
   abilities.some((a) => ABILITY[a].counters === type);

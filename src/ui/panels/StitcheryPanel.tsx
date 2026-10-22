@@ -15,6 +15,7 @@ import { Info } from "../common/Info";
 import { Panel } from "../common/Panel";
 import { act, useGame } from "../runtime";
 import { isPhone, openModal, selAbom, setUi, showTab, ui } from "../uiStore";
+import { PartIcon } from "../art";
 
 /** open a part in the Stitchery (from the list or the Squad panel) */
 export function selectPart(id: number) {
@@ -162,6 +163,7 @@ function StashList() {
         const picked = !!ui.pick?.includes(p.id);
         return (
           <button key={p.id} data-id={p.id} className={`item r-${rarityClass(p)} ${!ui.pick && ui.sel === p.id ? "sel" : ""} ${picked ? "picked" : ""} ${ui.pick && worn ? "worn-dim" : ""}`} aria-pressed={ui.pick ? picked : undefined} onClick={() => click(p)}>
+            <PartIcon base={p.base} blank />
             <span className={`n tc-${rarityClass(p)}`}>
               {ui.pick && !worn && <i className="ck">{picked ? "✓" : ""}</i>}
               {p.isNew && !worn && <><i className="newdot" /> </>}

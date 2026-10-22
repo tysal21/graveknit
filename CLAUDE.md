@@ -19,6 +19,7 @@ Pushing to `main` publishes the game to GitHub Pages automatically (`.github/wor
 - `src/content/` is the game's data: balance numbers (`tune.ts`), affixes, abilities, generators, Rituals, the tutorial, and one file per act (`act1.ts`, `act2.ts`...). Register new acts in `acts.ts`. **Every balance number lives in exactly one place.**
 - `src/engine/` is the game rules, with no screen code. Everything takes a `Game` (`game.ts`) holding the saved `GameState` (`state.ts`) plus the live fight. Randomness goes through `g.rng` so tests can use a seed, and so the rules can move to a server in Phase 4.
 - `src/ui/` is the screen (React). `runtime.ts` runs the game loop and saves; `uiStore.ts` holds what's selected and open; `panels/` has Squad, Crypt, Stitchery and Graveyard; `common/Tips.tsx` has every info blip.
+- `public/sprites/` has the pixel art (PixelLab, 64x64 characters, 32x32 icons, 384x216 backgrounds). `src/ui/art.tsx` lists which files exist and maps foes, guardians, the Abomination's Main Arm and Soul Core, parts and icons to them. Anything without art keeps the text-only look.
 - `tests/` has engine checks and `tests/bots/` the balance bots.
 
 ## Saves

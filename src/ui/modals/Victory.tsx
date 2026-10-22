@@ -9,6 +9,7 @@ import { Modal } from "../common/Modal";
 import { Delta, selectPart } from "../panels/StitcheryPanel";
 import { useGame } from "../runtime";
 import { closeModal, selAbom, setUi, ui } from "../uiStore";
+import { Icon, PartIcon, THRALL_ART } from "../art";
 
 /** first kills and new Thralls always get the big pop-up; repeat kills only if you ask for it */
 export const wantsPopup = (g: Game, w: BossWin) => w.first || w.thrall || g.s.opt.bossPop;
@@ -32,6 +33,7 @@ function Loot({ win }: { win: BossWin }) {
         if (!p) return <div key={id} className="item gone"><span className="faint">A part you've since rendered</span></div>;
         return (
           <button key={id} className={`item r-${rarityClass(p)}`} onClick={() => selectPart(id)}>
+            <PartIcon base={p.base} blank />
             <span className={`n tc-${rarityClass(p)}`}>{partName(p)}</span>
             <span className="delta"><Delta g={g} p={p} base0={base0} /></span>
             <span className="meta">
@@ -58,6 +60,7 @@ export function VictoryModal() {
       <p className="muted" style={{ margin: 0 }}>Slain in {win.secs.toFixed(1)} seconds.</p>
       {win.thrall && (
         <div className="thrallBanner">
+          <Icon name={"thrall-" + THRALL_ART[b.id]} size={64} className="thrall-art" />
           <b>Bound as Thrall: {b.thrall.name}</b>
           <span>{b.name} rises again and kneels. Aura: {b.thrall.text}.</span>
         </div>

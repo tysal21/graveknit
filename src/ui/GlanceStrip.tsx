@@ -5,6 +5,7 @@ import { TUT_STEPS, type PanelId } from "../content/tutorial";
 import { canInfuse } from "../engine/economy";
 import { fmt } from "../engine/format";
 import { tutFinish } from "../engine/tutorial";
+import { Icon } from "./art";
 import { Info } from "./common/Info";
 import { act, useGame } from "./runtime";
 import { showTab } from "./uiStore";
@@ -13,11 +14,11 @@ export function Resources() {
   const s = useGame().s;
   return (
     <div className="res" id="res">
-      <span className="c-cm" data-tip="r-cm" tabIndex={0}>Corpse Mass <b>{fmt(s.cm)}</b><Info /></span>
-      <span className="c-ess" data-tip="r-ess" tabIndex={0}>Soul Essence <b>{fmt(s.ess)}</b><Info /></span>
-      <span className="c-mar" data-tip="r-mar" tabIndex={0}>Marrow <b>{s.marrow}</b><Info /></span>
-      <span className="c-dust" data-tip="r-dust" tabIndex={0}>Dust <b>{s.dust}</b><Info /></span>
-      <span className="c-thr" data-tip="r-thr" tabIndex={0}>Thread <b>{s.thread}</b><Info /></span>
+      <span className="c-cm" data-tip="r-cm" tabIndex={0}><Icon name="icon-cm" size={16} />Corpse Mass <b>{fmt(s.cm)}</b><Info /></span>
+      <span className="c-ess" data-tip="r-ess" tabIndex={0}><Icon name="icon-ess" size={16} />Soul Essence <b>{fmt(s.ess)}</b><Info /></span>
+      <span className="c-mar" data-tip="r-mar" tabIndex={0}><Icon name="icon-marrow" size={16} />Marrow <b>{s.marrow}</b><Info /></span>
+      <span className="c-dust" data-tip="r-dust" tabIndex={0}><Icon name="icon-dust" size={16} />Dust <b>{s.dust}</b><Info /></span>
+      <span className="c-thr" data-tip="r-thr" tabIndex={0}><Icon name="icon-thread" size={16} />Thread <b>{s.thread}</b><Info /></span>
     </div>
   );
 }

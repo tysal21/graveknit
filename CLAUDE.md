@@ -52,6 +52,7 @@ Saved to localStorage under `graveknit-save` every 5 seconds and when the tab cl
 - **Loot:** 4% of kills drop a part; rarity 65 / 28 / 7 (Common / Magic / Rare), so about 1 part in 14 is Rare. **No Rare luck or pity of any kind** (Tyler's pick, so nothing can be cheesed; tried and removed). A Rare drop gets a gold toast that opens it on the Workbench, plus a chime if sounds are on. Bosses and guardians keep their own odds.
 - **Reagents on old stages:** Grave Dust and Marrow drop at full rate up to 2 stages below your best, then fade by 15% for each further stage (×0.85 per stage, never below a tenth), active and AFK, so camping an easy stage isn't the best way to farm crafting reagents (Tyler's pick).
 - Drop rates don't get stingier over time.
+- **Later, with the art:** a short walk-in (about 0.5 s) between enemies, which also caps kills per second so parking on your best stage can't multiply reagents. Tyler wants it when enemy art is added, not before.
 
 ## Style
 

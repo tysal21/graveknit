@@ -52,6 +52,37 @@ function useArrivals(f: Foe | null) {
 // the Abomination's stacked pictures, back to front (see abomArt): CSS makes the core pulse on its own
 const LAYERS = ["body", "core", "arm", "hand"];
 
+const RED = "grayscale(1) brightness(.6) sepia(1) hue-rotate(-50deg) saturate(8)";
+const calm = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/** each time the Vanguard strikes, it steps in and the enemy flashes red and jerks back.
+ *  Both move with the `translate` property, so they never fight the breathing and walk-in, which use `transform`.
+ *  The whole stacked Abomination moves together, so its layers always line up. */
+function useHitAnimation(swings: number, aps: number) {
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const seen = useRef(swings);
+  useEffect(() => {
+    const prev = seen.current;
+    seen.current = swings;
+    if (swings <= prev || calm()) return;
+    const scene = sceneRef.current;
+    // never longer than the gap between hits, so fast attackers still read as separate hits
+    const ms = Math.min(300, 900 / aps);
+    scene?.querySelector(".me")?.animate({ translate: ["0 0", "10% 0", "0 0"] }, { duration: ms, easing: "ease-out" });
+    scene?.querySelector(".foe-sprite")?.animate(
+      [
+        { translate: "0 0", filter: "none" },
+        // grey, darken, tint brown, then shift that to blood red; held a moment so the red reads
+        { translate: "5% 0", filter: RED, offset: 0.2 },
+        { translate: "3% 0", filter: RED, offset: 0.55 },
+        { translate: "0 0", filter: "none" },
+      ],
+      { duration: ms, delay: ms * 0.35, easing: "ease-out" },
+    );
+  }, [swings, aps]);
+  return sceneRef;
+}
+
 /** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
  *  Each new enemy walks in while the place scrolls past, so you move through it over a stage.
  *  Stages without art (Acts 2 and 3 for now) keep the text-only look. */
@@ -63,11 +94,12 @@ function Scene() {
   const bg = stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage);
   if (!foe && !bg) return null;
   const me = abomArt(g, g.s.squad[0]);
+  const sceneRef = useHitAnimation(g.pl?.swings ?? 0, g.cs[0]?.aps ?? 1);
   // a stage's 10 kills carry you from one side of the picture to the other; guardians and bosses wait at the far end
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
   const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
-    <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
+    <div ref={sceneRef} className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">
         {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
       </div>

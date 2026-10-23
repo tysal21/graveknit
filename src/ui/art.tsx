@@ -8,7 +8,7 @@ import type { Abomination } from "../engine/state";
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  ...["cleaver", "shovel"].flatMap((arm) => ["wisp", "lantern", "wraith"].map((core) => `minion-abom-${arm}-${core}`)),
+  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -47,8 +47,9 @@ export function foeArt(f: Foe | null | undefined): string | null {
   return artUrl("foe-" + f.key);
 }
 
-// where each background's floor is, in its own pixels from the top (all are 384x216)
-const FLOORS: Record<string, number> = { "bg-cellar": 192, "bg-graveyard": 196, "bg-crypt": 183 };
+// where fighters stand, in the background's own pixels from the top (all are 384x216).
+// The cellar and graveyard floors run to the bottom edge, so feet sit there; the crypt has a raised ledge.
+const FLOORS: Record<string, number> = { "bg-cellar": 216, "bg-graveyard": 216, "bg-crypt": 188 };
 
 /** Act 1's three places: the cellar, the graveyard, then the crypt and the Warden.
  *  floorPad is how far the floor sits above the scene's bottom edge, as a share of the scene's width. */
@@ -60,15 +61,19 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
   return { src, floorPad: `${((216 - FLOORS[name]) / 384) * 150}%` };
 }
 
-// the Main Arm picks the weapon and the Soul Core the colour of the eyes and chest.
-// Anything without its own picture (later acts' parts) falls back to the cleaver and the green wisp.
+// The Abomination is Tyler's hand-cleaned picture cut into see-through 64x64 layers,
+// stacked in the same spot, back to front: the body, the Soul Core (the glow in the ribs
+// and the eyes), the Main Arm's weapon, then the fist, drawn over the handle so it looks gripped.
+// Only the Main Arm and the Soul Core change how it looks.
+// Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
 const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
 const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };
 
-export function abomArt(g: Game, a: Abomination) {
+/** the Abomination's pictures, back to front */
+export function abomArt(g: Game, a: Abomination): string[] {
   const arm = ARM_ART[g.partById(a.eq.main)?.base ?? ""] ?? "cleaver";
   const core = CORE_ART[g.partById(a.eq.core)?.base ?? ""] ?? "wisp";
-  return artUrl(`minion-abom-${arm}-${core}`)!;
+  return ["abom-body", `abom-core-${core}`, `abom-arm-${arm}`, "abom-hand"].map((n) => artUrl(n)!);
 }
 
 /** a part's picture. In lists, a part without art gets an empty square so the rows still line up. */

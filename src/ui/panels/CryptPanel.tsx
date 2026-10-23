@@ -66,7 +66,7 @@ function Scene() {
   return (
     <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">
-        <img src={me} alt="" />
+        {me.map((src) => <img key={src} src={src} alt="" />)}
       </div>
       {foe && <img key={arrivals} className="foe-sprite" src={foe} alt="" style={{ "--size": foeScale(foe) } as CSSProperties} />}
     </div>

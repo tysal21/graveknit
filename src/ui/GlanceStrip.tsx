@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { RITUALS } from "../content/rituals";
 import { TUNE } from "../content/tune";
 import { TUT_STEPS, type PanelId } from "../content/tutorial";
-import { canInfuse } from "../engine/economy";
+import { canInfuse, ritualReady } from "../engine/economy";
 import { fmt, mmss } from "../engine/format";
 import { tutFinish } from "../engine/tutorial";
 import { Icon } from "./art";
@@ -37,7 +37,7 @@ export function usePills(): Pill[] {
   const short = boss.name.replace(/^The /, "");
   const knit = g.bossReknitLeft();
   out.push({ on: ready, text: ready ? (g.bossCleared() ? `${short} ready to farm` : "(!) Boss ready") : fighting ? `Fighting the ${short}` : knit > 0 ? `${short} re-knits in ${mmss(knit)}` : `Boss at Stage ${boss.stage}`, tab: "crypt" });
-  const rr = RITUALS.filter((r) => s.rit[r.id].ready <= s.clock).length;
+  const rr = RITUALS.filter((r) => ritualReady(g, r)).length;
   out.push({ on: rr > 0 && !s.opt.rit, text: rr ? `${rr} Ritual${rr > 1 ? "s" : ""} ready` : "Rituals cooling", tab: "yard" });
   const inf = g.s.squad.some((_, i) => canInfuse(g, i));
   out.push({ on: inf, text: inf ? "Can infuse" : "Infusion", tab: "squad" });

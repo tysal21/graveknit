@@ -1,5 +1,5 @@
 import { GENERATORS, type GeneratorDef } from "../content/generators";
-import { RITUAL_TUNE, RITUALS, type RitualId } from "../content/rituals";
+import { RITUAL_TUNE, RITUALS, type RitualDef, type RitualId } from "../content/rituals";
 import { TUNE } from "../content/tune";
 import { fmt } from "./format";
 import type { Game } from "./game";
@@ -34,11 +34,17 @@ export function buyGenerator(g: Game, id: string, max: boolean) {
   }
 }
 
+/** a Ritual is open once you reach its unlock stage */
+export const ritualOpen = (g: Game, def: RitualDef) => g.s.maxStage >= (def.unlock ?? 1);
+
+/** open and off cooldown; the top pill counts these, so a locked Ritual never counts */
+export const ritualReady = (g: Game, def: RitualDef) => ritualOpen(g, def) && g.s.rit[def.id].ready <= g.s.clock;
+
 export function castRitual(g: Game, id: RitualId, auto: boolean) {
   const s = g.s;
   const r = s.rit[id];
   const def = RITUALS.find((x) => x.id === id)!;
-  if (r.ready > s.clock || s.maxStage < (def.unlock ?? 1)) return;
+  if (!ritualReady(g, def)) return;
   const pw = auto ? TUNE.autoRitualPower : 1;
   r.ready = s.clock + def.cd;
   if (id === "raise") {

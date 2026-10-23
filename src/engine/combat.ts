@@ -74,6 +74,8 @@ export interface Player {
   phaseUntil: number;
   /** when each ability is ready again, keyed by cdKey */
   cd: Record<string, number>;
+  /** how many times the Vanguard has struck this fight, so the screen can show each hit */
+  swings: number;
 }
 
 /** cooldowns are per Abomination, so two Cleaves in a squad tick separately */
@@ -87,7 +89,7 @@ export const bossHp = (b: BossDef) => trashHp(b.stage) * (b.hpMult ?? TUNE.bossH
 
 export function newPlayer(g: Game) {
   g.refresh();
-  g.pl = { hp: g.c.maxHp, atk: g.s.squad.map(() => 0), hasteUntil: 0, wardUntil: 0, ward: 0, phaseUntil: 0, cd: {} };
+  g.pl = { hp: g.c.maxHp, atk: g.s.squad.map(() => 0), hasteUntil: 0, wardUntil: 0, ward: 0, phaseUntil: 0, cd: {}, swings: 0 };
 }
 
 /** the stage you fall back to after a loss: one lower, stepping over boss stages (they have no normal enemies) */
@@ -547,6 +549,7 @@ export function stepCombat(g: Game, dt: number) {
     while (p.atk[i] >= iv) {
       p.atk[i] -= iv;
       dealHit(g, 1, undefined, m);
+      if (i === 0) p.swings++;
     }
     // poison spreads: it hits the enemy (less through a shield of adds) and every add at once
     f.hp -= m.poisonDps * dt * vulnerability(g) * shielded(f);

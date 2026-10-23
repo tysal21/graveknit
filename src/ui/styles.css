@@ -317,6 +317,8 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .scene .foe-sprite.idle{aspect-ratio:1;overflow:hidden;animation:enter var(--walk) ease-out}
 .scene .foe-sprite.idle img{display:block;height:100%;width:calc(100% * var(--frames));image-rendering:pixelated;animation:idle calc(var(--frames) * .2s) steps(var(--frames)) infinite}
 @keyframes idle{to{transform:translateX(-100%)}}
+/* an attack clip plays once, a little faster than the idle, then the idle takes over again */
+.scene .foe-sprite.idle img.once{animation:idle calc(var(--frames) * .08s) steps(var(--frames)) 1}
 /* the Abomination: the Soul Core throbs */
 .scene .me .core{animation:corePulse 2.4s ease-in-out infinite}
 @keyframes corePulse{50%{filter:brightness(1.6)}}

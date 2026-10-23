@@ -47,6 +47,16 @@ const IDLE_FRAMES: Record<string, number> = {
   "guard-ratKing": 8, "guard-alpha": 8, "guard-foreman": 8, "boss-warden": 8,
 };
 
+// attack clips (PixelLab, 9 frames, played once each time it hits you). Only guardians and bosses get one (Tyler's pick).
+const ATTACK_FRAMES: Record<string, number> = { "guard-ratKing": 9, "guard-alpha": 9, "guard-foreman": 9, "boss-warden": 9 };
+
+/** the attack clip for an enemy picture, or null if it just keeps idling */
+export function foeAttack(src: string | null): { src: string; frames: number } | null {
+  const name = spriteName(src);
+  const frames = ATTACK_FRAMES[name];
+  return frames ? { src: `sprites/attack-${name}.png?v=${__BUILD__}`, frames } : null;
+}
+
 /** the idle loop for an enemy picture, or null to show the still picture */
 export function foeIdle(src: string | null): { src: string; frames: number } | null {
   const name = spriteName(src);

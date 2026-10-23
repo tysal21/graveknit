@@ -51,6 +51,8 @@ export interface Foe {
   /** seconds between attacks */
   int: number;
   atk: number;
+  /** how many times it has hit the Vanguard, so the screen can play its attack */
+  strikes?: number;
   // boss fights only
   t: number;
   ev: BossEvent[];
@@ -582,6 +584,7 @@ export function stepCombat(g: Game, dt: number) {
     f.atk += dt;
     if (f.atk >= f.int) {
       f.atk = 0;
+      f.strikes = (f.strikes ?? 0) + 1;
       hitPlayer(g, f.dmg, false);
     }
   }

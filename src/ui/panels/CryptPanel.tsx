@@ -10,7 +10,7 @@ import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
 import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
-import { abomArt, foeArt, foeScale, Icon, stageBackground } from "../art";
+import { abomArt, foeArt, foeIdle, foeScale, Icon, stageBackground } from "../art";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
@@ -49,6 +49,12 @@ function useArrivals(f: Foe | null) {
   return n.current;
 }
 
+// the Abomination's stacked pictures, back to front (see abomArt): CSS moves the core and the weapon on their own
+const LAYERS = ["body", "core", "arm", "hand"];
+
+/** one weapon swing per attack, but never a blur: fast attackers just swing at the cap */
+const swingSecs = (aps = 1) => Math.max(0.35, 1 / aps).toFixed(2);
+
 /** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
  *  Each new enemy walks in while the place scrolls past, so you move through it over a stage.
  *  Stages without art (Acts 2 and 3 for now) keep the text-only look. */
@@ -64,11 +70,24 @@ function Scene() {
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
   const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
-    <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
-      <div className="me">
-        {me.map((src) => <img key={src} src={src} alt="" />)}
+    <div className={`scene ${f?.walk ? "walking" : f ? "fighting" : ""}`} style={style}>
+      <div className="me" style={{ "--swing": `${swingSecs(g.cs[0]?.aps)}s` } as CSSProperties}>
+        {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
       </div>
-      {foe && <img key={arrivals} className="foe-sprite" src={foe} alt="" style={{ "--size": foeScale(foe) } as CSSProperties} />}
+      {foe && <FoeSprite key={arrivals} src={foe} />}
+    </div>
+  );
+}
+
+/** the enemy: its idle loop if it has one, else the still picture */
+function FoeSprite({ src }: { src: string }) {
+  const idle = foeIdle(src);
+  const size = { "--size": foeScale(src) } as CSSProperties;
+  if (!idle) return <img className="foe-sprite" src={src} alt="" style={size} />;
+  // a strip of frames slides behind a one-frame window
+  return (
+    <div className="foe-sprite idle" style={{ ...size, "--frames": idle.frames } as CSSProperties}>
+      <img src={idle.src} alt="" />
     </div>
   );
 }

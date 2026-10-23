@@ -313,6 +313,15 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .tier-guardian .scene .foe-sprite{width:calc(min(224px,55%) * var(--size,1));height:auto}
 .tier-boss .scene .foe-sprite{width:calc(min(256px,57%) * var(--size,1));height:auto}
 @keyframes breathe{0%,100%{transform:none}50%{transform:scaleY(1.025)}}
+/* idle loops: a strip of frames slides behind a one-frame window, one frame every 0.2 s */
+.scene .foe-sprite.idle{aspect-ratio:1;overflow:hidden;animation:enter var(--walk) ease-out}
+.scene .foe-sprite.idle img{display:block;height:100%;width:calc(100% * var(--frames));image-rendering:pixelated;animation:idle calc(var(--frames) * .2s) steps(var(--frames)) infinite}
+@keyframes idle{to{transform:translateX(-100%)}}
+/* the Abomination: the Soul Core throbs, and in a fight the weapon chops once per attack, pivoting on the far fist */
+.scene .me .core{animation:corePulse 2.4s ease-in-out infinite}
+@keyframes corePulse{50%{filter:brightness(1.6)}}
+.scene.fighting .me .arm{transform-origin:80.5% 47%;animation:chop var(--swing) ease-in infinite}
+@keyframes chop{0%,100%{transform:none}35%{transform:rotate(-12deg)}55%,65%{transform:rotate(40deg)}}
 .btn.iconed{position:relative;padding-left:46px;text-align:left}
 .btn.iconed .px-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%)}
 .rit .btn .px-icon{display:block;margin:0 auto 3px}

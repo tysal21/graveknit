@@ -34,18 +34,18 @@ export const TUNE = {
   guardianBlastMult: 2.5, guardianEssMult: 10,
 
   // Soul Essence per kill = essBase × essGrow^(stage-1)
-  essBase: 2, essGrow: 1.15, bossEssMult: 15, bossCm: 200,
+  essBase: 1.6, essGrow: 1.15, bossEssMult: 15, bossCm: 200,
 
   // Infusion: each level costs infuseBase × infuseGrow^(level-1), plus infuseKills kills' worth of Essence at your best stage
   // (the second part keeps Infusion from becoming pocket change once kills pay a lot)
-  infuseBase: 20, infuseGrow: 1.28, infuseMult: 1.12, infuseKills: 60,
+  infuseBase: 20, infuseGrow: 1.28, infuseMult: 1.12, infuseKills: 75,
 
-  // drops
-  partChance: 0.04,
-  // a flat 7% of parts are Rare (about 1 in 14 drops), with no streak bonus, so there's nothing to game
+  // drops (cut by about a quarter so every part, Dust and Marrow feels like a choice)
+  partChance: 0.03,
+  // a flat 7% of parts are Rare (about 1 in 14 parts), with no streak bonus, so there's nothing to game
   rarityW: { common: 65, magic: 28, rare: 7 },
   bossRarityW: { common: 15, magic: 50, rare: 35 },
-  dustChance: 0.12, marrowChance: 0.03,
+  dustChance: 0.09, marrowChance: 0.022,
   // Dust and Marrow fade on stages more than reagentNear below your best: ×reagentFade per stage, never below reagentFloor.
   // The first few stages are free because dying knocks you back a stage or two in normal play.
   // Camping an easy early stage (where kills are 5× faster) isn't the best way to farm crafting reagents

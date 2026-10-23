@@ -3,12 +3,12 @@ import type { Foe } from "../engine/combat";
 import type { Abomination } from "../engine/state";
 
 // Pixel art made with PixelLab lives in public/sprites. Anything without a
-// picture yet (Acts 2 and 3) just shows its text, so the game never breaks
+// picture yet (most of Acts 2 and 3) just shows its text, so the game never breaks
 // when a file is missing.
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
+  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-arm-knight", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -92,7 +92,7 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
 // weapon held upright in the far hand, then that hand's fingers, drawn over the handle.
 // Only the Main Arm and the Soul Core change how it looks.
 // Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
-const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
+const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel", knightArm: "knight" };
 const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };
 
 /** the Abomination's pictures, back to front */

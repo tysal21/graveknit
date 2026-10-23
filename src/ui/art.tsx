@@ -8,7 +8,7 @@ import type { Abomination } from "../engine/state";
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  "abom-body", "abom-arm-cleaver", "abom-arm-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
+  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -61,9 +61,9 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
   return { src, floorPad: `${((216 - FLOORS[name]) / 384) * 150}%` };
 }
 
-// The Abomination is three see-through 64x64 pictures stacked in the same spot, back to front:
-// the cloaked body, the Soul Core (glowing in its ribs, plus the matching eye glow),
-// then the Main Arm: the bare arm and fist together with the weapon it grips.
+// The Abomination is Tyler's hand-cleaned picture cut into see-through 64x64 layers,
+// stacked in the same spot, back to front: the body, the Soul Core (the glow in the ribs
+// and the eyes), the Main Arm's weapon, then the fist, drawn over the handle so it looks gripped.
 // Only the Main Arm and the Soul Core change how it looks.
 // Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
 const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
@@ -73,7 +73,7 @@ const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lante
 export function abomArt(g: Game, a: Abomination): string[] {
   const arm = ARM_ART[g.partById(a.eq.main)?.base ?? ""] ?? "cleaver";
   const core = CORE_ART[g.partById(a.eq.core)?.base ?? ""] ?? "wisp";
-  return ["abom-body", `abom-core-${core}`, `abom-arm-${arm}`].map((n) => artUrl(n)!);
+  return ["abom-body", `abom-core-${core}`, `abom-arm-${arm}`, "abom-hand"].map((n) => artUrl(n)!);
 }
 
 /** a part's picture. In lists, a part without art gets an empty square so the rows still line up. */

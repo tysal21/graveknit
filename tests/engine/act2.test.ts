@@ -63,7 +63,7 @@ describe("Act 2", () => {
   it("The Heap adds 10% max HP to the squad", () => {
     const g = newGame();
     const hp = g.c.maxHp;
-    g.s.bosses.colossus = { kills: 1, thrall: true, tries: 0 };
+    g.s.bosses.colossus = { kills: 1, thrall: true, tries: 0, readyAt: 0 };
     g.refresh();
     expect(g.c.maxHp).toBeCloseTo(hp * 1.1, 5);
   });
@@ -72,7 +72,7 @@ describe("Act 2", () => {
     const g = newGame();
     g.s.maxStage = 11;
     g.s.stage = 9;
-    g.s.bosses.warden = { kills: 1, thrall: false, tries: 1 };
+    g.s.bosses.warden = { kills: 1, thrall: false, tries: 1, readyAt: 0 };
     g.s.kills = TUNE.killsPerStage - 1;
     g.foe!.hp = 0;
     arrive(g);

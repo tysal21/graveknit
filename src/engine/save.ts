@@ -19,6 +19,8 @@ const MIGRATIONS: Record<number, (s: any) => any> = {
   3: ({ rareDry: _gone, ...s }) => ({ ...s, v: 4 }),
   // 4 → 5: Act 3 adds the Plague Wind Ritual
   4: (s) => ({ ...s, rit: { ...s.rit, wind: { ready: 0, until: 0, power: 1 } }, v: 5 }),
+  // 5 → 6: beaten bosses re-knit between kills; every boss starts ready
+  5: (s) => ({ ...s, bosses: Object.fromEntries(Object.entries(s.bosses ?? {}).map(([id, r]: [string, any]) => [id, { ...r, readyAt: 0 }])), v: 6 }),
 };
 
 export function migrate(raw: any): GameState | null {
@@ -55,6 +57,7 @@ export function repair(g: Game) {
     g.story(s.maxStage);
   }
   for (const r of RITUALS) s.rit[r.id] ??= { ready: 0, until: 0, power: 1 };
+  for (const id in s.bosses) if (!Number.isFinite(s.bosses[id].readyAt)) s.bosses[id].readyAt = 0;
   if (!Number.isFinite(s.stage) || s.stage < 1) s.stage = 1;
   if (s.stage > s.maxStage) s.stage = s.maxStage;
   while (s.stage > 1 && isBossStage(s.stage)) s.stage--;

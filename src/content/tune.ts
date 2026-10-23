@@ -16,6 +16,9 @@ export const TUNE = {
   bossHpMult: 20, enrage: 30, bossHitMult: 0.5, bossAtkInt: 2,
   blastMult: 3.5, healPct: 0.15, weakBonus: 0.5, stunBonus: 0.5,
   telegraphSecs: 3, weakSecs: 4, bossRetryWin: 5, bossRetryLoss: 120,
+  // after each kill a boss needs this many seconds to re-knit before you can fight it again, so refarming
+  // tops up pushing instead of replacing it (Tyler's pick)
+  bossReknit: 600,
 
   // summoned adds: the boss takes this much less damage while any of them live; they hit every addInt seconds
   addShield: 0.75, addInt: 2,

@@ -128,6 +128,9 @@ export function tipContent(g: Game, key: string): ReactNode {
   const farRow: Row[] = far < 1 ? [[`${s.maxStage - st} stages below your best (−15% per stage past ${TUNE.reagentNear})`, `×${far.toFixed(2)}`, "mul"]] : [];
   const raiseRow: Row[] = raise > 1 ? [["Raise the Fallen is active", `×${raise}`, "mul"]] : [];
   const boss = g.act().boss;
+  // a boss from an earlier act fades its reagents like an old stage; each boss pays once per re-knit
+  const bossFade = reagentRate(boss.stage, s.maxStage);
+  const bossRow = (n: number): Row => [`${boss.name} kill (once per ${Math.round(TUNE.bossReknit / 60)} min)`, bossFade < 1 ? `${(n * bossFade).toFixed(1)} on average (×${bossFade.toFixed(2)}, earlier act)` : String(n)];
   const abom = s.squad[ab];
   const cmFoes = Object.values(g.act().foes).filter((f) => f.cm);
   const statTip = (id: StatId, h: string, p: string, unit: string, total: string) => <Tip h={h} p={p} rows={sourceRows(m[id], unit, total)} />;
@@ -153,7 +156,7 @@ export function tipContent(g: Game, key: string): ReactNode {
       return <Tip h="Marrow Shard" p="Rerolls every unlocked affix on a part: new stats, new tiers." rows={[
         ["Chance per kill", pct(TUNE.marrowChance * raise * far)],
         ...farRow,
-        [`${boss.name} kill`, String(TUNE.bossLoot.marrow)],
+        bossRow(TUNE.bossLoot.marrow),
         ["Grafting costs", String(TUNE.graftMarrow)],
         ...raiseRow,
       ]} />;
@@ -161,7 +164,7 @@ export function tipContent(g: Game, key: string): ReactNode {
       return <Tip h="Grave Dust" p="Keeps each affix's tier but rerolls its number inside that tier." rows={[
         ["Chance per kill", pct(TUNE.dustChance * raise * far)],
         ...farRow,
-        [`${boss.name} kill`, String(TUNE.bossLoot.dust)],
+        bossRow(TUNE.bossLoot.dust),
         ["Grafting costs", String(TUNE.graftDust)],
         ...raiseRow,
       ]} />;

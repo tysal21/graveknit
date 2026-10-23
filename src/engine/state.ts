@@ -43,6 +43,8 @@ export interface BossRecord {
   thrall: boolean;
   /** kills without raising a Thrall, for the pity chance */
   tries: number;
+  /** game clock time when the boss has re-knitted and can be fought again */
+  readyAt: number;
 }
 
 export interface LogEntry {
@@ -95,4 +97,4 @@ export interface GameState {
 }
 
 /** the newest save version; see save.ts for how older saves are upgraded */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;

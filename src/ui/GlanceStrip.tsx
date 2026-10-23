@@ -3,7 +3,7 @@ import { RITUALS } from "../content/rituals";
 import { TUNE } from "../content/tune";
 import { TUT_STEPS, type PanelId } from "../content/tutorial";
 import { canInfuse } from "../engine/economy";
-import { fmt } from "../engine/format";
+import { fmt, mmss } from "../engine/format";
 import { tutFinish } from "../engine/tutorial";
 import { Icon } from "./art";
 import { Info } from "./common/Info";
@@ -35,7 +35,8 @@ export function usePills(): Pill[] {
   const ready = g.bossReady();
   const fighting = g.foe?.kind === "boss";
   const short = boss.name.replace(/^The /, "");
-  out.push({ on: ready, text: ready ? (g.bossCleared() ? `${short} ready to farm` : "(!) Boss ready") : fighting ? `Fighting the ${short}` : `Boss at Stage ${boss.stage}`, tab: "crypt" });
+  const knit = g.bossReknitLeft();
+  out.push({ on: ready, text: ready ? (g.bossCleared() ? `${short} ready to farm` : "(!) Boss ready") : fighting ? `Fighting the ${short}` : knit > 0 ? `${short} re-knits in ${mmss(knit)}` : `Boss at Stage ${boss.stage}`, tab: "crypt" });
   const rr = RITUALS.filter((r) => s.rit[r.id].ready <= s.clock).length;
   out.push({ on: rr > 0 && !s.opt.rit, text: rr ? `${rr} Ritual${rr > 1 ? "s" : ""} ready` : "Rituals cooling", tab: "yard" });
   const inf = g.s.squad.some((_, i) => canInfuse(g, i));

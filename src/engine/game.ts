@@ -143,7 +143,11 @@ export class Game {
   }
   bossReady() {
     const b = this.act().boss;
-    return this.s.maxStage >= b.stage && this.foe?.kind !== "boss";
+    return this.s.maxStage >= b.stage && this.foe?.kind !== "boss" && this.bossReknitLeft(b.id) === 0;
+  }
+  /** seconds until a beaten boss has re-knitted and can be fought again (0 = ready) */
+  bossReknitLeft(id = this.act().boss.id) {
+    return Math.max(0, (this.s.bosses[id]?.readyAt ?? 0) - this.s.clock);
   }
   bossCleared(id = this.act().boss.id) {
     return (this.s.bosses[id]?.kills ?? 0) > 0;

@@ -4,7 +4,7 @@ import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
 import { cdKey, reagentRate, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
-import { fmt, pct } from "../../engine/format";
+import { fmt, mmss, pct } from "../../engine/format";
 import { hasCounterFor } from "../../engine/stats";
 import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
@@ -391,6 +391,12 @@ export function CryptPanel() {
       {g.bossReady() && (
         <button className="btn primary" id="bossBtn" onClick={challengeBoss}>
           {g.bossCleared() ? `Fight ${bdef.name.replace(/^The /, "the ")} again` : `Challenge ${bdef.name.replace(/^The /, "the ")}`}
+        </button>
+      )}
+      {/* a beaten boss needs time to re-knit, so refarming it can't replace pushing */}
+      {g.foe?.kind !== "boss" && g.bossReknitLeft() > 0 && (
+        <button className="btn" id="bossBtn" disabled title={`After each kill a boss takes ${Math.round(TUNE.bossReknit / 60)} minutes to stitch itself back together. Auto-boss waits for it.`}>
+          {`${bdef.name} re-knits in ${mmss(g.bossReknitLeft())}`}
         </button>
       )}
       <div className="block">

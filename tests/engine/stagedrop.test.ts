@@ -16,7 +16,7 @@ describe("falling back a stage", () => {
     const g = newGame();
     g.s.maxStage = 12;
     g.s.stage = 11;
-    g.s.bosses.warden = { kills: 1, thrall: false, tries: 1 };
+    g.s.bosses.warden = { kills: 1, thrall: false, tries: 1, readyAt: 0 };
     spawnTrash(g);
     g.pl!.hp = 0.0001;
     g.foe!.dmg = 1e9;

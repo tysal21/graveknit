@@ -402,7 +402,7 @@ function onTrashKill(g: Game) {
     // a boss you've already beaten doesn't block pushing into the next act
     else if (s.opt.push && isBossStage(next) && s.maxStage > next && actForStage(next).boss.stage === next && g.bossCleared(actForStage(next).boss.id)) s.stage = next + 1;
     const boss = g.act().boss;
-    if (s.opt.boss && s.maxStage >= boss.stage && s.stage === boss.stage - 1 && s.clock >= s.bossRetryAt) {
+    if (s.opt.boss && g.bossReady() && s.stage === boss.stage - 1 && s.clock >= s.bossRetryAt) {
       startBoss(g);
       return;
     }
@@ -410,24 +410,33 @@ function onTrashKill(g: Game) {
   spawnTrash(g);
 }
 
+/** a faded amount like 0.3 Marrow becomes 0 or 1, with the right odds */
+function fadedCount(g: Game, n: number) {
+  return Number.isInteger(n) ? n : Math.floor(n + g.rng());
+}
+
 function onBossKill(g: Game) {
   const s = g.s, f = g.foe!;
   const b = bossById(f.bossId!);
-  const rec = (s.bosses[b.id] ||= { kills: 0, thrall: false, tries: 0 });
+  const rec = (s.bosses[b.id] ||= { kills: 0, thrall: false, tries: 0, readyAt: 0 });
   const first = rec.kills === 0;
   rec.kills++;
+  rec.readyAt = s.clock + TUNE.bossReknit;
   const ess = essPerKill(b.stage) * TUNE.bossEssMult * (1 + g.bonus("ess") / 100);
   s.ess += ess;
   s.lifeEss += ess;
   s.cm += TUNE.bossCm;
   const L = TUNE.bossLoot;
-  s.marrow += L.marrow;
-  s.dust += L.dust;
+  // a boss from an earlier act fades its reagents like an old stage does
+  const fade = reagentRate(b.stage, s.maxStage);
+  const marrow = fadedCount(g, L.marrow * fade), dust = fadedCount(g, L.dust * fade);
+  s.marrow += marrow;
+  s.dust += dust;
   // Threads come from first kills only, so farming an old boss can't pile them up
   const thread = first;
   if (thread) s.thread += L.firstThreads;
   const parts: number[] = [];
-  g.log(`${b.name} falls in ${f.t.toFixed(1)} seconds. You collect ${L.marrow} Marrow Shards, ${L.dust} Grave Dust${thread ? " and a Spectral Thread" : ""}.`);
+  g.log(`${b.name} falls in ${f.t.toFixed(1)} seconds. You collect ${marrow} Marrow Shard${marrow === 1 ? "" : "s"}, ${dust} Grave Dust${thread ? " and a Spectral Thread" : ""}. It re-knits in ${Math.round(TUNE.bossReknit / 60)} minutes.`);
   if (first) {
     parts.push(makePart(g, b.trophy, b.stage, "rare").id);
     g.log(b.firstClear[0], "brag");
@@ -459,7 +468,7 @@ function onBossKill(g: Game) {
     } else rec.tries++;
   }
   // the screen shows this as the victory pop-up (or a toast on repeat kills)
-  g.emit({ type: "bossWin", win: { bossId: b.id, first, secs: f.t, ess, cm: TUNE.bossCm, marrow: L.marrow, dust: L.dust, thread, parts, thrall: bound } });
+  g.emit({ type: "bossWin", win: { bossId: b.id, first, secs: f.t, ess, cm: TUNE.bossCm, marrow, dust, thread, parts, thrall: bound } });
   s.stage = b.stage - 1;
   s.kills = 0;
   s.bossRetryAt = s.clock + TUNE.bossRetryWin;

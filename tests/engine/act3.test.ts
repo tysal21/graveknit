@@ -180,7 +180,7 @@ describe("Act 3", () => {
     s.v = 4;
     delete s.rit.wind;
     s.maxStage = s.stage = 20;
-    s.bosses.colossus = { kills: 3, thrall: false, tries: 3 };
+    s.bosses.colossus = { kills: 3, thrall: false, tries: 3, readyAt: 0 };
     const loaded = deserialize(JSON.stringify(s))!;
     expect(loaded.rit.wind).toEqual({ ready: 0, until: 0, power: 1 });
     const g = new Game(loaded, seeded(3));

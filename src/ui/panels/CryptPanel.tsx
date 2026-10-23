@@ -345,8 +345,8 @@ export function CryptPanel() {
             <b>{f?.name ?? "…"}</b>
             <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
           </div>
-          <Scene />
           <Bar tall chip kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
+          <Scene />
           <Pops />
         </div>
         {f && <Adds />}

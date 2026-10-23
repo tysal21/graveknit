@@ -37,7 +37,22 @@ const GUARDIAN_ART: Record<number, string> = { 2: "guard-ratKing", 3: "guard-for
 
 // small beasts are drawn filling their canvas, so shrink them to sit right beside people
 const FOE_SCALE: Record<string, number> = { "foe-rat": 0.6, "foe-hound": 0.8, "guard-ratKing": 0.8, "guard-alpha": 0.95 };
-export const foeScale = (src: string | null) => FOE_SCALE[src?.replace(/^sprites\/|\.png.*$/g, "") ?? ""] ?? 1;
+const spriteName = (src: string | null) => src?.replace(/^sprites\/|\.png.*$/g, "") ?? "";
+export const foeScale = (src: string | null) => FOE_SCALE[spriteName(src)] ?? 1;
+
+// idle loops (PixelLab, 64x64 frames side by side in idle-<name>.png).
+// Each plays forward then back, so it never jumps; frames that drifted off-model were left out.
+const IDLE_FRAMES: Record<string, number> = {
+  "foe-rat": 8, "foe-hound": 8, "foe-digger": 4, "foe-watch": 6,
+  "guard-ratKing": 8, "guard-alpha": 8, "guard-foreman": 8, "boss-warden": 8,
+};
+
+/** the idle loop for an enemy picture, or null to show the still picture */
+export function foeIdle(src: string | null): { src: string; frames: number } | null {
+  const name = spriteName(src);
+  const frames = IDLE_FRAMES[name];
+  return frames ? { src: `sprites/idle-${name}.png?v=${__BUILD__}`, frames } : null;
+}
 
 /** which picture to show for the enemy in front of you */
 export function foeArt(f: Foe | null | undefined): string | null {

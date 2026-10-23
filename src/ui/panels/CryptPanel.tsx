@@ -92,9 +92,10 @@ function Scene() {
   const arrivals = useArrivals(f);
   const foe = foeArt(f);
   const bg = stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage);
+  // hooks must run on every render, so this one comes before the "no art" early return
+  const sceneRef = useHitAnimation(g.pl?.swings ?? 0, g.cs[0]?.aps ?? 1);
   if (!foe && !bg) return null;
   const me = abomArt(g, g.s.squad[0]);
-  const sceneRef = useHitAnimation(g.pl?.swings ?? 0, g.cs[0]?.aps ?? 1);
   // a stage's 10 kills carry you from one side of the picture to the other; guardians and bosses wait at the far end
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
   const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;

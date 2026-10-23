@@ -78,6 +78,10 @@ export interface Player {
   cd: Record<string, number>;
   /** how many times the Vanguard has struck this fight, so the screen can show each hit */
   swings: number;
+  /** poison damage and leech healing since the last damage number, shown once a second instead of every step */
+  dot: number;
+  mend: number;
+  popT: number;
 }
 
 /** cooldowns are per Abomination, so two Cleaves in a squad tick separately */
@@ -91,7 +95,7 @@ export const bossHp = (b: BossDef) => trashHp(b.stage) * (b.hpMult ?? TUNE.bossH
 
 export function newPlayer(g: Game) {
   g.refresh();
-  g.pl = { hp: g.c.maxHp, atk: g.s.squad.map(() => 0), hasteUntil: 0, wardUntil: 0, ward: 0, phaseUntil: 0, cd: {}, swings: 0 };
+  g.pl = { hp: g.c.maxHp, atk: g.s.squad.map(() => 0), hasteUntil: 0, wardUntil: 0, ward: 0, phaseUntil: 0, cd: {}, swings: 0, dot: 0, mend: 0, popT: 0 };
 }
 
 /** the stage you fall back to after a loss: one lower, stepping over boss stages (they have no normal enemies) */
@@ -200,7 +204,11 @@ export const hitTarget = (f: Foe): { hp: number; max: number } => liveAdds(f)[0]
 /** The Last Torch: the Vanguard heals for a share of the squad's damage */
 function leech(g: Game, d: number) {
   const share = Math.max(0, ...g.cs.map((c) => c.leech));
-  if (share && g.pl) g.pl.hp = Math.min(g.c.maxHp, g.pl.hp + d * share);
+  const p = g.pl;
+  if (!share || !p) return;
+  const before = p.hp;
+  p.hp = Math.min(g.c.maxHp, p.hp + d * share);
+  p.mend += p.hp - before;
 }
 
 /** one hit from a squad member (the Vanguard unless `c` says otherwise). Adds soak hits first; Sweeping splashes the rest */
@@ -224,6 +232,7 @@ function dealHit(g: Game, mult: number, label?: string, c: Stats = g.c) {
     f.hp -= d;
   }
   leech(g, d);
+  g.pop("foe", d, crit ? "crit" : label ? "skill" : "hit");
   if (label || crit) g.tick(`${label ? label + " " : ""}${crit ? "Crit " : ""}${fmt(d)}`, crit ? "crit" : undefined);
   return d;
 }
@@ -256,6 +265,7 @@ function hitPlayer(g: Game, d: number, big: boolean) {
   const p = g.pl!, f = g.foe!, s = g.s;
   if (p.phaseUntil > s.clock) {
     p.phaseUntil = 0;
+    g.pop("me", 0, "dodge");
     g.tick(big ? "Phase! The blast passes through you." : "Phase: the hit passes through.", big ? "crit" : undefined);
     if (big) f.countered++;
     return;
@@ -264,12 +274,14 @@ function hitPlayer(g: Game, d: number, big: boolean) {
     const a = Math.min(p.ward, d);
     p.ward -= a;
     d -= a;
+    if (a > 0) g.pop("me", a, "block");
     if (big && d <= 0) {
       g.tick("Ward holds! The blast breaks on the shield.", "crit");
       f.countered++;
     }
   }
   p.hp -= d;
+  if (d > 0) g.pop("me", d, big ? "blast" : "hurt");
   if (big && d > 0) {
     const mv = f.cur ? foeScript(f).moves[f.cur.move] : null;
     g.tick((mv?.hit ?? "The blast hits for {n}.").replace("{n}", fmt(d)));
@@ -519,6 +531,16 @@ function bossEvents(g: Game) {
   if (f.cur && (f.cur.type === "weak" ? f.t >= f.weakUntil : f.cur.done)) f.cur = null;
 }
 
+/** poison ticks and leech heals add up quietly and float up once a second as one number each */
+function dotPops(g: Game) {
+  const p = g.pl!;
+  if (g.s.clock - p.popT < 1) return;
+  p.popT = g.s.clock;
+  if (p.dot >= 1) g.pop("foe", p.dot, "poison");
+  if (p.mend >= 1) g.pop("me", p.mend, "heal");
+  p.dot = p.mend = 0;
+}
+
 export function stepCombat(g: Game, dt: number) {
   const s = g.s;
   if (g.inTut() && s.tut < TUT_RUNNING_FROM) return;
@@ -554,11 +576,14 @@ export function stepCombat(g: Game, dt: number) {
       if (i === 0) p.swings++;
     }
     // poison spreads: it hits the enemy (less through a shield of adds) and every add at once
-    f.hp -= m.poisonDps * dt * vulnerability(g) * shielded(f);
+    const dot = m.poisonDps * dt * vulnerability(g) * shielded(f);
+    f.hp -= dot;
+    p.dot += dot;
     for (const a of liveAdds(f)) a.hp -= m.poisonDps * dt;
     leech(g, m.poisonDps * dt);
   });
   buryAdds(g);
+  dotPops(g);
   if (f.hp <= 0) {
     if (f.kind === "boss") onBossKill(g);
     else onTrashKill(g);

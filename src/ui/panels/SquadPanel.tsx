@@ -71,7 +71,7 @@ export function SquadPanel() {
         </div>
         {vanguard ? (
           <>
-            <Bar tall value={p ? p.hp / c.maxHp : 1} />
+            <Bar tall chip value={p ? p.hp / c.maxHp : 1} />
             {shield && <Bar kind="shield" value={p!.ward / c.maxHp} />}
           </>
         ) : (

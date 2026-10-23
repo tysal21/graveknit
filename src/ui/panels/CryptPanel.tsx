@@ -14,6 +14,7 @@ import { abomArt, foeArt, foeAttack, foeIdle, foeScale, Icon, stageBackground } 
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
+import type { Game, Pop } from "../../engine/game";
 
 export function challengeBoss() {
   act((g) => {
@@ -83,6 +84,12 @@ function useHitAnimation(swings: number, aps: number) {
   return sceneRef;
 }
 
+/** the enemy's picture and the place's background, if this fight has art */
+function sceneArt(g: Game) {
+  const f = g.foe;
+  return { foe: foeArt(f), bg: stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage) };
+}
+
 /** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
  *  Each new enemy walks in while the place scrolls past, so you move through it over a stage.
  *  Stages without art (Acts 2 and 3 for now) keep the text-only look. */
@@ -90,8 +97,7 @@ function Scene() {
   const g = useGame();
   const f = g.foe;
   const arrivals = useArrivals(f);
-  const foe = foeArt(f);
-  const bg = stageBackground(f?.kind === "boss" ? g.act().boss.stage : g.s.stage);
+  const { foe, bg } = sceneArt(g);
   // hooks must run on every render, so this one comes before the "no art" early return
   const sceneRef = useHitAnimation(g.pl?.swings ?? 0, g.cs[0]?.aps ?? 1);
   if (!foe && !bg) return null;
@@ -103,6 +109,7 @@ function Scene() {
     <div ref={sceneRef} className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="me">
         {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
+        <Bar chip kind="vhp" value={g.pl ? g.pl.hp / g.c.maxHp : 1} />
       </div>
       {foe && <FoeSprite key={arrivals} src={foe} strikes={f?.strikes ?? 0} />}
     </div>
@@ -128,6 +135,53 @@ function FoeSprite({ src, strikes }: { src: string; strikes: number }) {
   return (
     <div className="foe-sprite idle" style={{ ...size, "--frames": strip.frames } as CSSProperties}>
       {swing ? <img key={swing} className="once" src={strip.src} alt="" onAnimationEnd={() => setSwing(0)} /> : <img src={strip.src} alt="" />}
+    </div>
+  );
+}
+
+/** how long a damage number floats, in game seconds (the CSS animation matches) */
+const POP_SECS = 1;
+
+/** what a damage number says: crits shout, your losses read as minus, a dodge is just a word */
+function popText(p: Pop) {
+  const n = fmt(p.n);
+  if (p.kind === "dodge") return "Dodged";
+  if (p.kind === "block") return `Blocked ${n}`;
+  if (p.kind === "heal") return `+${n}`;
+  if (p.kind === "hurt" || p.kind === "blast") return `-${n}`;
+  if (p.kind === "crit") return `${n}!`;
+  return n;
+}
+
+/** damage numbers floating up over the enemy (right) and your Vanguard (left).
+ *  It sits over the whole fight picture, so stages without art still get them. */
+function Pops() {
+  const g = useGame();
+  const now = g.s.clock;
+  const live = g.pops.filter((p) => now - p.at < POP_SECS && now >= p.at);
+  return (
+    <div className="pops" aria-hidden="true">
+      {live.map((p) => (
+        // a little sideways jitter per number, so a fast squad's hits don't stack into one blur
+        <span key={p.id} className={`pop ${p.side} p-${p.kind}`} style={{ "--jx": `${((p.id * 37) % 5) - 2}` } as CSSProperties}>
+          {popText(p)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** stages without art have no picture of your Vanguard, so its HP sits above the enemy's instead */
+function VanguardRow() {
+  const g = useGame();
+  const p = g.pl;
+  return (
+    <div className="vrow">
+      <div className="row">
+        <span className="muted">{g.s.squad[0].name}</span>
+        <span className="num muted">{p ? `${fmt(Math.max(0, p.hp))} / ${fmt(g.c.maxHp)} HP` : ""}</span>
+      </div>
+      <Bar chip value={p ? p.hp / g.c.maxHp : 1} />
     </div>
   );
 }
@@ -243,6 +297,8 @@ export function CryptPanel() {
   const tot = Object.values(w).reduce((a, b) => a + b, 0);
   const setOpt = (k: "push" | "auto" | "boss" | "bossPop", v: boolean) => act((g) => (g.s.opt[k] = v));
   const shortName = bdef.name.replace(/^The /, "");
+  const art = sceneArt(g);
+  const hasArt = !!(art.foe || art.bg);
 
   return (
     <Panel id="crypt" title="Crypt" small={boss ? `Stage ${bdef.stage} · Boss` : `Stage ${s.stage} · kill ${s.kills + 1} of ${TUNE.killsPerStage}`}>
@@ -283,12 +339,16 @@ export function CryptPanel() {
       </div>
       <div className={`fight tier-${tier.id} ${special ? "bossfight" : ""}`} id="fight">
         {tier.label && <div className={`rank r-${tier.id}`}>{tier.label}</div>}
-        <div className="foe">
-          <b>{f?.name ?? "…"}</b>
-          <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
+        <div className={`view ${hasArt ? "" : "flat"}`}>
+          {!hasArt && <VanguardRow />}
+          <div className="foe">
+            <b>{f?.name ?? "…"}</b>
+            <span className="num muted">{f ? `${fmt(Math.max(0, f.hp))} HP` : ""}</span>
+          </div>
+          <Scene />
+          <Bar tall chip kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
+          <Pops />
         </div>
-        <Scene />
-        <Bar tall kind={`enemy ${tier.id}`} value={f ? f.hp / f.max : 1} />
         {f && <Adds />}
         {f?.elite && <div className="faint" style={{ fontSize: ".78rem" }}>Elite · pays {TUNE.elitePay}× and drops a signature part</div>}
         {special && f && (

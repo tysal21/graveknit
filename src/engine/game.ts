@@ -15,6 +15,17 @@ export interface TickerLine {
   cls?: string;
 }
 
+/** a damage number that floats up over someone's head: "foe" is the enemy, "me" the Vanguard */
+export interface Pop {
+  id: number;
+  side: "foe" | "me";
+  /** the amount; 0 for a pop that is only a word (Dodged) */
+  n: number;
+  kind: "hit" | "crit" | "skill" | "poison" | "heal" | "hurt" | "blast" | "block" | "dodge";
+  /** game clock when it happened, so the screen can let it fade */
+  at: number;
+}
+
 /** things the screen may want to react to */
 export type GameEvent =
   | { type: "bossReady" }
@@ -58,6 +69,9 @@ export class Game {
   /** every squad member's stats (cs[0] is the Vanguard, same as c) */
   cs: Stats[] = [];
   ticker: TickerLine[] = [];
+  /** recent damage numbers for the fight picture; never saved */
+  pops: Pop[] = [];
+  private popId = 0;
   /** full-stash clean-up, summarised in the log at most once a minute */
   trim = { n: 0, cm: 0, lost: 0, at: 0 };
   private listeners: ((e: GameEvent) => void)[] = [];
@@ -156,6 +170,11 @@ export class Game {
   tick(text: string, cls?: string) {
     this.ticker.unshift({ text, cls });
     if (this.ticker.length > 3) this.ticker.length = 3;
+  }
+  /** show a damage number over someone's head; only the latest few are kept, so fast squads can't flood the screen */
+  pop(side: Pop["side"], n: number, kind: Pop["kind"]) {
+    this.pops.push({ id: ++this.popId, side, n, kind, at: this.s.clock });
+    if (this.pops.length > 12) this.pops.shift();
   }
 
   /** advance the game by `dt` seconds of play */

@@ -10,7 +10,7 @@ import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
 import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
-import { abomArt, foeArt, foeIdle, foeScale, Icon, stageBackground } from "../art";
+import { abomArt, foeArt, foeAttack, foeIdle, foeScale, Icon, stageBackground } from "../art";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
@@ -103,20 +103,30 @@ function Scene() {
       <div className="me">
         {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
       </div>
-      {foe && <FoeSprite key={arrivals} src={foe} />}
+      {foe && <FoeSprite key={arrivals} src={foe} strikes={f?.strikes ?? 0} />}
     </div>
   );
 }
 
-/** the enemy: its idle loop if it has one, else the still picture */
-function FoeSprite({ src }: { src: string }) {
+/** the enemy: its idle loop if it has one, else the still picture.
+ *  Guardians and bosses also play their attack clip once each time they hit you. */
+function FoeSprite({ src, strikes }: { src: string; strikes: number }) {
   const idle = foeIdle(src);
+  const attack = foeAttack(src);
+  // which strike's clip is playing; 0 means none
+  const [swing, setSwing] = useState(0);
+  const seen = useRef(strikes);
+  useEffect(() => {
+    if (strikes > seen.current && attack && !calm()) setSwing(strikes);
+    seen.current = strikes;
+  }, [strikes, attack]);
   const size = { "--size": foeScale(src) } as CSSProperties;
-  if (!idle) return <img className="foe-sprite" src={src} alt="" style={size} />;
+  const strip = swing && attack ? attack : idle;
+  if (!strip) return <img className="foe-sprite" src={src} alt="" style={size} />;
   // a strip of frames slides behind a one-frame window
   return (
-    <div className="foe-sprite idle" style={{ ...size, "--frames": idle.frames } as CSSProperties}>
-      <img src={idle.src} alt="" />
+    <div className="foe-sprite idle" style={{ ...size, "--frames": strip.frames } as CSSProperties}>
+      {swing ? <img key={swing} className="once" src={strip.src} alt="" onAnimationEnd={() => setSwing(0)} /> : <img src={strip.src} alt="" />}
     </div>
   );
 }

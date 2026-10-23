@@ -8,7 +8,7 @@ import type { Abomination } from "../engine/state";
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  "abom-body", "abom-weapon-cleaver", "abom-weapon-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
+  "abom-body", "abom-hand", "abom-weapon-cleaver", "abom-weapon-shovel", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -61,10 +61,10 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
   return { src, floorPad: `${((216 - FLOORS[name]) / 384) * 150}%` };
 }
 
-// The Abomination is three see-through 64x64 pictures stacked in the same spot, back to front:
-// the weapon (its handle passes behind the fist, so it looks gripped), the Soul Core
-// (the thing in its chest, the dark hollow around it and the matching eye glow),
-// then the cloaked body, whose ribs and eye holes are see-through so the core shows between them.
+// The Abomination is four see-through 64x64 pictures stacked in the same spot, back to front:
+// the Soul Core (the thing in its chest, the dark hollow around it and the matching eye glow),
+// the cloaked body (ribs and eye holes are see-through so the core shows between them),
+// the weapon, then the fist's fingers on top, so the handle looks gripped.
 // Only the Main Arm and the Soul Core change how it looks.
 // Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
 const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
@@ -74,7 +74,7 @@ const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lante
 export function abomArt(g: Game, a: Abomination): string[] {
   const arm = ARM_ART[g.partById(a.eq.main)?.base ?? ""] ?? "cleaver";
   const core = CORE_ART[g.partById(a.eq.core)?.base ?? ""] ?? "wisp";
-  return [`abom-weapon-${arm}`, `abom-core-${core}`, "abom-body"].map((n) => artUrl(n)!);
+  return [`abom-core-${core}`, "abom-body", `abom-weapon-${arm}`, "abom-hand"].map((n) => artUrl(n)!);
 }
 
 /** a part's picture. In lists, a part without art gets an empty square so the rows still line up. */

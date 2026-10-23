@@ -49,11 +49,8 @@ function useArrivals(f: Foe | null) {
   return n.current;
 }
 
-// the Abomination's stacked pictures, back to front (see abomArt): CSS moves the core and the weapon on their own
+// the Abomination's stacked pictures, back to front (see abomArt): CSS makes the core pulse on its own
 const LAYERS = ["body", "core", "arm", "hand"];
-
-/** one weapon swing per attack, but never a blur: fast attackers just swing at the cap */
-const swingSecs = (aps = 1) => Math.max(0.35, 1 / aps).toFixed(2);
 
 /** the fight as a picture: your Vanguard on the left, the enemy on the right, the place behind them.
  *  Each new enemy walks in while the place scrolls past, so you move through it over a stage.
@@ -70,8 +67,8 @@ function Scene() {
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
   const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
-    <div className={`scene ${f?.walk ? "walking" : f ? "fighting" : ""}`} style={style}>
-      <div className="me" style={{ "--swing": `${swingSecs(g.cs[0]?.aps)}s` } as CSSProperties}>
+    <div className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
+      <div className="me">
         {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
       </div>
       {foe && <FoeSprite key={arrivals} src={foe} />}

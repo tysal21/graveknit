@@ -62,9 +62,9 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
 }
 
 // The Abomination is Tyler's hand-cleaned picture cut into see-through 64x64 layers,
-// stacked in the same spot, back to front: the body, the Soul Core (the glow in the ribs
-// and the eyes), the Main Arm's weapon, then the fist, drawn over the handle so it looks gripped.
-// Only the Main Arm and the Soul Core change how it looks.
+// stacked in the same spot, back to front: the robed body, the Soul Core (an orb in the chest
+// opening, plus the eyes), the Main Arm's weapon, then the wrapped fist, drawn over the handle.
+// Only the Main Arm and the Soul Core change how it looks, so everything else stays under the robe.
 // Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
 const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel" };
 const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };

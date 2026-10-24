@@ -336,6 +336,9 @@ export function CryptPanel() {
   const special = !!f && isSpecial(f);
   const tier = foeTier(f);
   const bdef = actDef.boss;
+  // a beaten boss needs time to re-knit before it can be fought again
+  const knitLeft = g.bossReknitLeft(bdef.id);
+  const knitTitle = `After each kill a boss takes ${Math.round(TUNE.bossReknit / 60)} minutes to stitch itself back together. Auto-boss waits for it.`;
   // which act's stages the picker shows; follows the current act unless you browse
   const [viewN, setViewN] = useState<number | null>(null);
   const shown = ACTS.find((a) => a.n === viewN) ?? actDef;
@@ -372,12 +375,14 @@ export function CryptPanel() {
             );
           })}
           {shown === actDef ? (
-            <button className={`stg boss ${boss ? "cur" : ""} ${s.maxStage < bdef.stage ? "lock" : ""}`} disabled={s.maxStage < bdef.stage} onClick={challengeBoss}>
+            <button className={`stg boss ${boss ? "cur" : ""} ${s.maxStage < bdef.stage ? "lock" : ""} ${knitLeft > 0 && !boss ? "knit" : ""}`} disabled={s.maxStage < bdef.stage || (knitLeft > 0 && !boss)} title={knitLeft > 0 && !boss ? knitTitle : undefined} onClick={challengeBoss}>
               <span className="crown" aria-hidden="true">♛</span> {bdef.stage} · {shortName.split(" ").pop()}
+              {knitLeft > 0 && !boss && <span className="knit-time"> · {mmss(knitLeft)}</span>}
             </button>
           ) : (
             <button className="stg boss lock" disabled title="Go to one of this act's stages to fight its boss">
               {shown.boss.stage} · {shown.boss.name.replace(/^The /, "").split(" ").pop()}
+              {g.bossReknitLeft(shown.boss.id) > 0 && <span className="knit-time"> · {mmss(g.bossReknitLeft(shown.boss.id))}</span>}
             </button>
           )}
         </div>
@@ -445,10 +450,13 @@ export function CryptPanel() {
         </button>
       )}
       {/* a beaten boss needs time to re-knit, so refarming it can't replace pushing */}
-      {g.foe?.kind !== "boss" && g.bossReknitLeft() > 0 && (
-        <button className="btn" id="bossBtn" disabled title={`After each kill a boss takes ${Math.round(TUNE.bossReknit / 60)} minutes to stitch itself back together. Auto-boss waits for it.`}>
-          {`${bdef.name} re-knits in ${mmss(g.bossReknitLeft())}`}
-        </button>
+      {!boss && knitLeft > 0 && (
+        <div className="reknit" id="bossBtn" title={knitTitle}>
+          <b>🧵 {bdef.name} is re-knitting</b>
+          <span>Fight it again in <b className="knit-time">{mmss(knitLeft)}</b>{s.opt.boss ? ". Auto-boss will go as soon as it's whole." : "."}</span>
+          {/* fills up as the boss stitches itself back together */}
+          <i className="knit-fill" style={{ width: (1 - knitLeft / TUNE.bossReknit) * 100 + "%" }} />
+        </div>
       )}
       <div className="block">
         <h3>{special ? `How to beat ${f!.name.replace(/^The /, "the ")}` : "Who lives here"}</h3>

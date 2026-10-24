@@ -1,7 +1,7 @@
 import { BASES, bossById, LAST_STAGE, PLAYTEST_CAPPED } from "../../content/acts";
 import { slotName } from "../../content/slots";
 import { TUNE } from "../../content/tune";
-import { fmt } from "../../engine/format";
+import { fmt, mmss } from "../../engine/format";
 import type { BossWin, Game } from "../../engine/game";
 import { isUnique, partName, rarityClass } from "../../engine/parts";
 import { calc } from "../../engine/stats";
@@ -74,10 +74,19 @@ export function VictoryModal() {
           <span>Thanks for playing! You can keep farming and chasing perfect rolls, but the road ends here for now.</span>
         </div>
       )}
+      <ReknitNote bossId={win.bossId} />
       <p className="faint" style={{ margin: 0 }}>Click a part to open it on the Workbench.</p>
       <button className="btn primary" onClick={closeModal}>Back to the crypt</button>
     </Modal>
   );
+}
+
+/** a live countdown to when this boss can be fought again */
+function ReknitNote({ bossId }: { bossId: string }) {
+  const g = useGame();
+  const left = g.bossReknitLeft(bossId);
+  if (left <= 0) return <p className="reknit-note" style={{ margin: 0 }}>🧵 {bossById(bossId).name} has re-knitted. You can fight it again.</p>;
+  return <p className="reknit-note" style={{ margin: 0 }}>🧵 It re-knits in <b>{mmss(left)}</b>. You can fight it again after that.</p>;
 }
 
 /** small corner notes for repeat boss kills; they fade after a few seconds */
@@ -95,7 +104,7 @@ export function Toasts() {
         const b = bossById(win.bossId);
         return (
           <button key={t.at} className="toast" onClick={() => setUi({ modal: { kind: "victory", win }, toasts: ui.toasts.filter((x) => x !== t) })}>
-            <b>{b.name.replace(/^The /, "")} slain</b> in {win.secs.toFixed(1)}s · {lootSummary(g, win)}
+            <b>{b.name.replace(/^The /, "")} slain</b> in {win.secs.toFixed(1)}s · {lootSummary(g, win)} · re-knits in {mmss(g.bossReknitLeft(win.bossId))}
             <span className="faint"> · see loot</span>
           </button>
         );

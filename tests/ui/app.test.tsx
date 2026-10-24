@@ -51,4 +51,22 @@ describe("the screen", () => {
     expect(partTip.container.textContent).toContain("DPS");
     expect(partTip.container.textContent).toContain("Brutal");
   });
+
+  it("shows the re-knit countdown on the boss button and the stage list after a kill", () => {
+    startGame(null);
+    const g = getGame();
+    tutFinish(g, true);
+    g.s.stage = 9;
+    g.s.maxStage = 11;
+    g.s.bosses.warden = { kills: 1, thrall: false, tries: 1, readyAt: g.s.clock + 300 };
+    const view = render(<App />);
+    expect(view.container.querySelector(".reknit")?.textContent).toContain("5:00");
+    const stg = view.container.querySelector<HTMLButtonElement>(".stg.boss");
+    expect(stg?.textContent).toContain("5:00");
+    expect(stg?.disabled).toBe(true);
+    act(() => { g.s.clock += 300; });
+    view.rerender(<App />);
+    expect(view.container.querySelector(".reknit")).toBeNull();
+    expect(view.container.querySelector<HTMLButtonElement>(".stg.boss")?.disabled).toBe(false);
+  });
 });

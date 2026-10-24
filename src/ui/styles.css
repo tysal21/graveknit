@@ -373,3 +373,57 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 /* dozing: an untouched open tab pays AFK rates until someone clicks */
 .doze{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:14;width:max-content;max-width:min(36rem,calc(100vw - 32px));background:var(--panel2);border:1px solid var(--lantern);border-radius:6px;padding:8px 14px;font-size:.9rem;text-align:center;animation:pulse 3s ease-in-out infinite}
 @media (max-width:760px){.doze{bottom:70px}}
+/* part compare: the part you're looking at beside what the chosen Abomination wears */
+#tip.wide{max-width:min(600px,calc(100vw - 24px))}
+.pcmp{display:grid;grid-template-columns:repeat(2,minmax(0,15rem));gap:8px}
+.psum{border:1px solid var(--line2);border-left-width:3px;border-radius:5px;padding:7px 9px;background:var(--panel2);display:flex;flex-direction:column;gap:5px;font-size:.84rem;min-width:0}
+.psum.empty{border-left-color:var(--line2);border-style:dashed}
+.psum .plabel{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
+.psum .title{font-family:var(--display);font-size:1rem;line-height:1.1}
+.psum .sub{font-size:.75rem;color:var(--muted)}
+.psum .pimpl{border-bottom:1px solid var(--line);padding-bottom:4px}
+.psum .pafx{display:flex;flex-direction:column;gap:2px}
+.psum .afl{display:flex;gap:6px;align-items:baseline}
+.psum .afl .tb{flex-shrink:0}
+#tip .psum p{color:var(--faint)}
+.abompick{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:.8rem}
+.abompick .btn.on{border-color:var(--lantern);color:var(--lantern)}
+.filters .cnt{color:var(--faint);font-size:.72rem;margin-left:2px}
+.filters .btn.on .cnt{color:inherit}
+.modal.bench.wide{max-width:64rem}
+.benchgrid{display:grid;grid-template-columns:minmax(0,1fr) 17rem;gap:12px;align-items:start}
+.benchside{display:flex;flex-direction:column;gap:8px;position:sticky;top:0}
+.benchside>summary{cursor:pointer;font-size:.82rem;color:var(--bone);margin-bottom:6px}
+.benchside[open]>*:not(summary){margin-bottom:8px}
+@media (max-width:760px){
+  .pcmp{grid-template-columns:1fr}
+  .benchgrid{display:flex;flex-direction:column}
+  /* phones: the folded compare sits above the part, so it's one tap away without scrolling past the crafting */
+  .benchside{order:-1;position:static;border:1px solid var(--line2);border-radius:5px;padding:6px 8px;background:var(--panel2)}
+  .benchside>summary{margin-bottom:0}
+  .benchside[open]>summary{margin-bottom:6px}
+}
+/* the Worn section: each Abomination's gear, kept apart from the stash above it */
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%;background:none;border:0;border-bottom:1px solid var(--line2);padding:4px 2px;font-family:var(--display);font-size:.95rem;color:var(--bone);text-align:left;position:sticky;top:0;z-index:1;background:var(--panel)}
+.sechead .faint{font-family:var(--body);font-size:.75rem}
+button.sechead{cursor:pointer}
+.stashhead{margin-top:6px}
+.wornsec{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.wornab{border:1px solid var(--line);border-radius:5px;padding:5px 6px;display:flex;flex-direction:column;gap:4px;background:rgba(255,255,255,.015)}
+.wornab.cmp{border-color:var(--lantern)}
+.wornab-h{display:flex;gap:8px;align-items:center;font-size:.85rem}
+.wornab-h .btn{margin-left:auto;padding:0 6px;font-size:.72rem}
+.cmptag{margin-left:auto;font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:var(--lantern)}
+.wornrows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+@media (max-width:360px){.wornrows{grid-template-columns:1fr}}
+.item.worn{padding:3px 6px;grid-template-columns:auto minmax(0,1fr)}
+.item.worn .n{font-size:.85rem}
+.item.worn .meta{font-size:.7rem}
+.item.emptyslot{border-style:dashed;border-left-width:1px;background:none}
+.item.emptyslot:hover{border-color:var(--lantern)}
+.wornrows{grid-auto-rows:min-content}
+.item.worn{align-content:center;row-gap:0}
+.item.worn>.px-icon{width:24px;height:24px}
+.item.emptyslot{grid-template-columns:minmax(0,1fr);padding:4px 8px}
+.item.emptyslot .meta{display:inline}
+.wornab-name{background:none;border:0;padding:0;font:inherit;color:var(--bone);text-align:left;cursor:pointer;min-width:0}

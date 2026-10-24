@@ -33,6 +33,13 @@ export const ui = {
   pick: null as number[] | null,
   /** which Abomination the Squad panel shows, and the one the Stitchery compares and stitches onto */
   abom: 0,
+  /** the Stitchery's Worn section: open or folded */
+  wornOpen: true,
+  /** in the Worn section, Abominations folded open or shut by hand (the compared one starts open, the rest shut) */
+  wornUnfold: [] as number[],
+  wornFold: [] as number[],
+  /** the Workbench's "Equipped" compare card: open or folded (null = open on desktop, folded on phones) */
+  benchCmp: null as boolean | null,
   /** the panel shown on phones */
   tab: "squad" as PanelId,
   modal: null as ModalState,

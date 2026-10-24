@@ -10,10 +10,22 @@ import { fmt, pct } from "../../engine/format";
 import { affixRange, affixValue, implicits, rollQuality, isKept, isTrophy, partCM, partIntegrity, partName, rarityClass, rarityLabel, tierOdds } from "../../engine/parts";
 import { renderPart } from "../../engine/stash";
 import type { Part } from "../../engine/state";
-import { bestAllyAffix, calc, wornParts } from "../../engine/stats";
-import { act, useGame } from "../runtime";
+import { bestAllyAffix, wornParts } from "../../engine/stats";
+import { act, getGame, useGame } from "../runtime";
+import { CompareStrip } from "../common/PartCompare";
+import { selectPart, sortedParts } from "./StitcheryPanel";
 import { openModal, selAbom, setUi, ui } from "../uiStore";
 import { PartIcon } from "../art";
+
+/** render the part, then show the next one in the list so sorting through loot doesn't need a reopen */
+function renderAndStep(p: Part) {
+  const list = sortedParts(getGame());
+  const i = list.findIndex((x) => x.id === p.id);
+  const next = i < 0 ? undefined : list[i + 1] ?? list[i - 1];
+  act((g) => renderPart(g, p));
+  if (next) selectPart(next.id);
+  else setUi({ sel: null, modal: null });
+}
 
 function flashAfter(f: Flash | null, id: number) {
   if (f) setUi({ flash: { id, f, at: Date.now() } });
@@ -66,17 +78,7 @@ export function PartDetail({ part: p }: { part: Part }) {
   const craftable = canCraft(p);
   const odds = tierOdds(p.ilvl);
   const lockedTiers = [1, 2, 3, 4, 5].filter((t) => p.ilvl < TUNE.tierIlvl[t]).map((t) => `T${t} at i${TUNE.tierIlvl[t]}`).join(", ");
-  let cmp = null;
-  if (!worn || onOther) {
-    const a = calc(g, { abom: ab, ignoreBuffs: true }), c2 = calc(g, { abom: ab, swap: p, ignoreBuffs: true });
-    cmp = (
-      <div className="cmp">
-        <span>DPS {fmt(a.dps)} → <b className={c2.dps >= a.dps ? "up" : "down"}>{fmt(c2.dps)}</b></span>
-        <span>HP {fmt(a.maxHp)} → <b className={c2.maxHp >= a.maxHp ? "up" : "down"}>{fmt(c2.maxHp)}</b></span>
-        <span>Infusion cap {a.cap} → <b className={c2.cap >= a.cap ? "up" : "down"}>{c2.cap}</b></span>
-      </div>
-    );
-  }
+  const cmp = !worn || onOther ? <CompareStrip g={g} p={p} abom={ab} /> : null;
   const kept = isKept(p), trophy = isTrophy(p);
   const rs = restitchCost(g, p);
   return (
@@ -179,7 +181,7 @@ export function PartDetail({ part: p }: { part: Part }) {
           <span className="sub">{trophy ? "Trophies are always kept" : kept ? "Safe from rendering. Click to release" : "Protect from all rendering"}</span>
         </button>
         {!worn && (
-          <button className="btn danger" disabled={kept} onClick={() => { act((g) => renderPart(g, p)); setUi({ sel: null, modal: null }); }}>
+          <button className="btn danger" disabled={kept} onClick={() => renderAndStep(p)}>
             Render<span className="sub">{kept ? "Release it first" : `+${partCM(p)} Corpse Mass`}</span>
           </button>
         )}

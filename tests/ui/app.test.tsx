@@ -19,7 +19,7 @@ describe("the screen", () => {
     startGame(null);
     const g = getGame();
     tutFinish(g, true);
-    g.s.stage = g.s.best = 20;
+    g.s.stage = g.s.maxStage = 20;
     const view = render(<App />);
     const adds = () => view.container.querySelectorAll(".scene .add").length;
     act(() => {

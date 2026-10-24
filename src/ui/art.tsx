@@ -8,9 +8,9 @@ import type { Abomination } from "../engine/state";
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
-  "foe-acolyte", "foe-mite", "foe-knight",
+  "foe-acolyte", "foe-mite", "foe-cultist",
   "guard-choirmaster", "guard-miteQueen", "guard-knightCaptain", "boss-colossus", "thrall-heap",
-  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-arm-knight", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
+  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-arm-sickle", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt", "bg-catacombs", "bg-ossuary", "bg-deep",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -51,7 +51,7 @@ export const foeScale = (src: string | null) => FOE_SCALE[spriteName(src)] ?? 1;
 const IDLE_FRAMES: Record<string, number> = {
   "foe-rat": 8, "foe-hound": 8, "foe-digger": 4, "foe-watch": 6,
   "guard-ratKing": 8, "guard-alpha": 8, "guard-foreman": 8, "boss-warden": 8,
-  "foe-acolyte": 8, "foe-mite": 8, "foe-knight": 8,
+  "foe-acolyte": 8, "foe-mite": 8, "foe-cultist": 8,
   "guard-choirmaster": 8, "guard-miteQueen": 8, "guard-knightCaptain": 8, "boss-colossus": 8,
 };
 
@@ -113,7 +113,7 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
 // weapon held upright in the far hand, then that hand's fingers, drawn over the handle.
 // Only the Main Arm and the Soul Core change how it looks.
 // Anything without its own picture (later acts' parts) falls back to the cleaver and the wisp.
-const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel", knightArm: "knight" };
+const ARM_ART: Record<string, string> = { cleaverArm: "cleaver", diggerArm: "shovel", knightArm: "sickle" };
 const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };
 
 /** the Abomination's pictures, back to front */

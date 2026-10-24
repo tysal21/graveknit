@@ -307,6 +307,9 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .scene::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(10,9,8,.45),rgba(10,9,8,.7))}
 /* your squad hangs off the ground on its strings, Vanguard nearest the enemy (row-reverse puts slot 1 on the right) */
 .scene .squad{display:flex;flex-direction:row-reverse;align-items:flex-end;margin-bottom:12%;z-index:3;position:relative}
+/* an invisible post as tall as the biggest boss keeps the scene one height whatever walks in,
+   so the dangling squad never jumps up or down when a small rat follows a tall acolyte */
+.scene .squad .sizer{flex:none;width:0;padding-top:calc(min(256px,57cqw) - 12cqw)}
 .scene .me{position:relative;flex:none;width:min(92px,19cqw);margin-left:-3cqw;animation:dangle 3.2s ease-in-out infinite;transform-origin:50% -60%}
 .scene .me:not(.vanguard){margin-bottom:6%}
 /* a slow swing from the strings above, with a little bob */

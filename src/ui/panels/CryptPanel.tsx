@@ -111,6 +111,7 @@ function Scene() {
   return (
     <div ref={sceneRef} className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
       <div className="squad">
+        <span className="sizer" />
         {squad.map((layers, i) => (
           <div key={i} className={`me ${i === 0 ? "vanguard" : ""}`} style={{ animationDelay: `${-i * 0.9}s` }}>
             {layers.map((src, j) => <img key={src} className={LAYERS[j]} src={src} alt="" />)}

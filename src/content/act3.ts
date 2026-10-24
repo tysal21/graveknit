@@ -10,7 +10,7 @@ export const ACT3: ActDef = {
   bases: {
     beakSkull: { slot: "skull", name: "Beaked Skull", imp: [["cm", () => 15], ["poison", (l) => Math.round(3 + 0.8 * l)]], lean: ["pestilent", "precision"], flavor: "The beak was stuffed with herbs against the plague. The herbs lost." },
     rioterArm: { slot: "off", name: "Rioter's Arm", imp: [["as", (l) => Math.round(6 + 0.3 * l)]], lean: ["sweeping", "frenzy"], flavor: "Still shaking a fist at somebody. You've stopped asking who." },
-    ratCore: { slot: "core", name: "Rat King Core", imp: [["as", () => 10], ["drop", (l) => Math.round(5 + l / 5)]], lean: ["ghoul", "gluttony"], ab: "haste", flavor: "A knot of rat hearts, all beating in different directions. It finds things." },
+    ratCore: { slot: "core", name: "Brood Core", imp: [["as", () => 10], ["drop", (l) => Math.round(5 + l / 5)]], lean: ["ghoul", "gluttony"], ab: "haste", flavor: "The Rat Mother's litter, knotted into one heart. Every piece beats in a different direction. It finds things." },
     boneScythe: { slot: "main", name: "Bone Scythe", imp: [["flat", (l) => Math.round(20 + 3.6 * l)]], lean: ["mutilating", "brutal"], ab: "reap", flavor: "The Corpse Collector's tool of the trade. The trade is going very well." },
     rivalCore: { slot: "core", name: "Rival's Core", trophy: true, mirror: true, imp: [["cc", () => 6], ["ess", () => 10]], lean: ["precision", "gluttony"], ab: "bury", flavor: "He spent his life copying your work. Now it copies your friends'." },
 

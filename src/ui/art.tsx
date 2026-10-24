@@ -3,19 +3,22 @@ import type { Foe } from "../engine/combat";
 import type { Abomination } from "../engine/state";
 
 // Pixel art made with PixelLab lives in public/sprites. Anything without a
-// picture yet (most of Acts 2 and 3) just shows its text, so the game never breaks
+// picture yet (Act 3 on) just shows its text, so the game never breaks
 // when a file is missing.
 const HAVE = new Set([
   "foe-rat", "foe-digger", "foe-hound", "foe-watch",
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
+  "foe-acolyte", "foe-mite", "foe-knight",
+  "guard-choirmaster", "guard-miteQueen", "guard-knightCaptain", "boss-colossus", "thrall-heap",
   "abom-body", "abom-hand", "abom-arm-cleaver", "abom-arm-shovel", "abom-arm-knight", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
   "altar",
-  "bg-cellar", "bg-graveyard", "bg-crypt",
+  "bg-cellar", "bg-graveyard", "bg-crypt", "bg-catacombs", "bg-ossuary", "bg-deep",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
   "ab-cleave", "ab-haste", "ab-bury", "ab-ward", "ab-phase",
-  "gen-scav", "gen-harv", "gen-cart",
+  "gen-scav", "gen-harv", "gen-cart", "gen-dig",
   "rit-raise", "rit-hunger", "rit-moon",
-  ...["pauperSkull", "pauperRib", "cleaverArm", "pauperHand", "wispCore", "gnawedHand", "diggerArm", "houndSkull", "watchRib", "lanternCore", "wraithCore"].map((b) => "part-" + b),
+  ...["pauperSkull", "pauperRib", "cleaverArm", "pauperHand", "wispCore", "gnawedHand", "diggerArm", "houndSkull", "watchRib", "lanternCore", "wraithCore",
+    "acolyteRib", "miteSkull", "knightArm", "colossusRib"].map((b) => "part-" + b),
 ]);
 
 /** the file for a picture, or null if it hasn't been drawn yet. Relative, so it works on GitHub Pages.
@@ -30,13 +33,16 @@ export function Icon({ name, size = 32, className = "" }: { name: string; size?:
 }
 
 // each boss's Thrall: boss id -> thrall-<name>.png
-export const THRALL_ART: Record<string, string> = { warden: "lantern" };
+export const THRALL_ART: Record<string, string> = { warden: "lantern", colossus: "heap" };
 
 // guardians are keyed by the stage they guard
-const GUARDIAN_ART: Record<number, string> = { 2: "guard-ratKing", 3: "guard-foreman", 4: "guard-alpha" };
+const GUARDIAN_ART: Record<number, string> = {
+  2: "guard-ratKing", 3: "guard-foreman", 4: "guard-alpha",
+  12: "guard-choirmaster", 13: "guard-miteQueen", 14: "guard-knightCaptain",
+};
 
 // small beasts are drawn filling their canvas, so shrink them to sit right beside people
-const FOE_SCALE: Record<string, number> = { "foe-rat": 0.6, "foe-hound": 0.8, "guard-ratKing": 0.8, "guard-alpha": 0.95 };
+const FOE_SCALE: Record<string, number> = { "foe-rat": 0.6, "foe-hound": 0.8, "guard-ratKing": 0.8, "guard-alpha": 0.95, "foe-mite": 0.7 };
 const spriteName = (src: string | null) => src?.replace(/^sprites\/|\.png.*$/g, "") ?? "";
 export const foeScale = (src: string | null) => FOE_SCALE[spriteName(src)] ?? 1;
 
@@ -45,10 +51,14 @@ export const foeScale = (src: string | null) => FOE_SCALE[spriteName(src)] ?? 1;
 const IDLE_FRAMES: Record<string, number> = {
   "foe-rat": 8, "foe-hound": 8, "foe-digger": 4, "foe-watch": 6,
   "guard-ratKing": 8, "guard-alpha": 8, "guard-foreman": 8, "boss-warden": 8,
+  "foe-acolyte": 8, "foe-mite": 8, "foe-knight": 8,
+  "guard-choirmaster": 8, "guard-miteQueen": 8, "guard-knightCaptain": 8, "boss-colossus": 8,
 };
 
 // attack clips (PixelLab, 9 frames, played once each time it hits you). Only guardians and bosses get one (Tyler's pick).
-const ATTACK_FRAMES: Record<string, number> = { "guard-ratKing": 9, "guard-alpha": 9, "guard-foreman": 9, "boss-warden": 9 };
+const ATTACK_FRAMES: Record<string, number> = { "guard-ratKing": 9, "guard-alpha": 9, "guard-foreman": 9, "boss-warden": 9,
+  "guard-choirmaster": 9, "guard-miteQueen": 9, "guard-knightCaptain": 9, "boss-colossus": 9,
+};
 
 /** the attack clip for an enemy picture, or null if it just keeps idling */
 export function foeAttack(src: string | null): { src: string; frames: number } | null {
@@ -74,12 +84,23 @@ export function foeArt(f: Foe | null | undefined): string | null {
 
 // where fighters stand, in the background's own pixels from the top (all are 384x216).
 // The cellar and graveyard floors run to the bottom edge, so feet sit there; the crypt has a raised ledge.
-const FLOORS: Record<string, number> = { "bg-cellar": 216, "bg-graveyard": 216, "bg-crypt": 188 };
+// Act 2's floors sit a little above the bottom edge.
+const FLOORS: Record<string, number> = {
+  "bg-cellar": 216, "bg-graveyard": 216, "bg-crypt": 188,
+  "bg-catacombs": 200, "bg-ossuary": 203, "bg-deep": 205,
+};
 
-/** Act 1's three places: the cellar, the graveyard, then the crypt and the Warden.
+/** which background each stage uses, in order: Act 1's cellar, graveyard and crypt (the Warden),
+ *  then Act 2's catacombs, ossuary and the deep end (the Colossus) */
+const PLACES: [lastStage: number, name: string][] = [
+  [3, "bg-cellar"], [8, "bg-graveyard"], [10, "bg-crypt"],
+  [15, "bg-catacombs"], [19, "bg-ossuary"], [20, "bg-deep"],
+];
+
+/** the background for a stage.
  *  floorPad is how far the floor sits above the scene's bottom edge, as a share of the scene's width. */
 export function stageBackground(stage: number): { src: string; floorPad: string } | null {
-  const name = stage <= 3 ? "bg-cellar" : stage <= 8 ? "bg-graveyard" : stage <= 10 ? "bg-crypt" : null;
+  const name = PLACES.find(([last]) => stage <= last)?.[1] ?? null;
   const src = name && artUrl(name);
   if (!name || !src) return null;
   // the picture is drawn at 150% of the scene's width (see .scene in styles.css), so scale its pixels to match

@@ -74,6 +74,13 @@ export function foeIdle(src: string | null): { src: string; frames: number } | n
   return frames ? { src: `sprites/idle-${name}.png?v=${__BUILD__}`, frames } : null;
 }
 
+// summoned adds borrow a trash enemy's picture, keyed by the add's name.
+// An add without one (the Plague Corpse, for now) just keeps its HP bar under its master's.
+const ADD_ART: Record<string, string> = { "Bone Mite": "foe-mite", "Brood Rat": "foe-rat" };
+
+/** the picture for a summoned add, or null if it has none */
+export const addArt = (name: string) => (ADD_ART[name] ? artUrl(ADD_ART[name]) : null);
+
 /** which picture to show for the enemy in front of you */
 export function foeArt(f: Foe | null | undefined): string | null {
   if (!f) return null;

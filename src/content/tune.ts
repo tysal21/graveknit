@@ -75,9 +75,12 @@ export const TUNE = {
   // Thralls: base chance per boss kill, plus this much per kill without one
   thrallBase: 0.03, thrallPity: 0.005,
 
-  // offline: 55% of the active rate, capped at 12 hours. Parts, Grave Dust and Marrow come in at a quarter of that,
+  // offline: 50% of the active rate, capped at 12 hours. Parts, Grave Dust and Marrow come in at a quarter of that,
   // so AFK nights pay Essence and Corpse Mass but crafting still needs play
-  offlineRate: 0.55, offlineCapH: 12, offlineMaxParts: 25, offlineLoot: 0.25,
+  offlineRate: 0.5, offlineCapH: 12, offlineMaxParts: 25, offlineLoot: 0.25,
+  // gaps shorter than this many seconds are played out normally instead of paid as AFK.
+  // A background tab only gets woken about once a minute, and that's still an open game.
+  playOutGap: 300,
 
   // Graveyard
   costGrow: 1.15, altarK: 0.25, altarScale: 500, altarMinCm: 20, cmPerKill: 0.5,

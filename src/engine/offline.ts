@@ -21,8 +21,13 @@ export interface OfflineReport {
   capped: boolean;
 }
 
+/** 2.3 becomes 2 or 3 (3 with 30% odds), so short absences don't always round down to nothing */
+function chanceRound(g: Game, n: number) {
+  return Math.floor(n + g.rng());
+}
+
 /**
- * Progress while the game was closed: 55% of the active rate, capped at 12 hours.
+ * Progress while the game was closed: 50% of the active rate, capped at 12 hours.
  * Kills happen on your current stage at your current power.
  */
 export function offlineProgress(g: Game, seconds: number): OfflineReport {
@@ -45,10 +50,10 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
   const ess = kills * essPerKill(stage) * (1 + squadBonus(g, "ess", cs) / 100);
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
   const loot = kills * TUNE.offlineLoot;
-  const partsRolled = Math.min(TUNE.offlineMaxParts, Math.round(loot * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
+  const partsRolled = Math.min(TUNE.offlineMaxParts, chanceRound(g, loot * TUNE.partChance * (1 + squadBonus(g, "drop", cs) / 100)));
   const rg = reagentRate(stage, s.maxStage);
-  const dust = Math.round(loot * TUNE.dustChance * rg);
-  const marrow = Math.round(loot * TUNE.marrowChance * rg);
+  const dust = chanceRound(g, loot * TUNE.dustChance * rg);
+  const marrow = chanceRound(g, loot * TUNE.marrowChance * rg);
   s.ess += ess;
   s.lifeEss += ess;
   s.cm += cm;

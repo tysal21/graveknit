@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { Game } from "../engine/game";
 import { newPlayer, spawnTrash } from "../engine/combat";
 import { offlineProgress } from "../engine/offline";
+import { TUNE } from "../content/tune";
 import { loadFromBrowser, repair, saveToBrowser } from "../engine/save";
 import type { GameState } from "../engine/state";
 
@@ -68,12 +69,14 @@ export function boot() {
   last = Date.now();
   // handy for testing from the browser console: GK.game().s.marrow = 99
   (window as unknown as { GK: object }).GK = { game: getGame, bump };
-  // the game runs on real elapsed time, so a background tab the browser slows down still progresses
+  // the game runs on real elapsed time, so a background tab the browser slows down still progresses.
+  // Short gaps (a background tab woken once a minute) are played out in full; only long ones
+  // (the computer slept, the tab was frozen) are paid out as AFK time.
   setInterval(() => {
     const now = Date.now();
     const el = (now - last) / 1000;
     last = now;
-    if (el > 60 && !game.inTut()) {
+    if (el > TUNE.playOutGap && !game.inTut()) {
       const report = offlineProgress(game, el);
       newPlayer(game);
       spawnTrash(game);

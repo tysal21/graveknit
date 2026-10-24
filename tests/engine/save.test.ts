@@ -47,4 +47,10 @@ describe("offline progress", () => {
     expect(r.sec).toBe(12 * 3600);
     for (const p of g.s.parts) expect(["common", "magic", "rare"]).toContain(p.rarity);
   });
+
+  it("short absences still pay Grave Dust sometimes instead of always rounding to zero", () => {
+    let dust = 0;
+    for (let seed = 1; seed <= 40; seed++) dust += offlineProgress(newGame(seed), 5 * 60).dust;
+    expect(dust).toBeGreaterThan(0);
+  });
 });

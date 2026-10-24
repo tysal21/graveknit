@@ -10,7 +10,8 @@ export const ACT2: ActDef = {
   bases: {
     acolyteRib: { slot: "rib", name: "Acolyte Ribcage", imp: [["hpFlat", (l) => 20 + 5 * l], ["ess", (l) => Math.round(4 + l / 2)]], lean: ["gluttony", "sinewed"], flavor: "Took a vow of poverty. Kept it, too." },
     miteSkull: { slot: "skull", name: "Mite-Riddled Skull", imp: [["cm", () => 15], ["poison", (l) => Math.round(2 + 0.6 * l)]], lean: ["pestilent", "ruin"], flavor: "Something is still living in it. You've decided that's a feature." },
-    knightArm: { slot: "main", name: "Knight's Arm", imp: [["flat", (l) => Math.round(18 + 3.4 * l)]], lean: ["brutal", "mutilating"], ab: "cleave", flavor: "Sworn to defend the cathedral. Technically, it still is." },
+    // still "knightArm" inside the save, so parts already in players' stashes keep working; it's the Cultist's Arm now
+    knightArm: { slot: "main", name: "Cultist's Arm", imp: [["flat", (l) => Math.round(18 + 3.4 * l)]], lean: ["brutal", "mutilating"], ab: "cleave", flavor: "Still holding the bone sickle. It was mid-prayer. The prayer was about you." },
     colossusRib: { slot: "rib", name: "Colossus Ribcage", trophy: true, imp: [["hpFlat", (l) => 60 + 12 * l], ["hpPct", () => 10]], lean: ["sinewed", "brutal"], flavor: "Built from four hundred ribcages. You can hear some of them arguing." },
   },
 
@@ -19,6 +20,8 @@ export const ACT2: ActDef = {
     rat: { name: "Catacomb Rat", hp: 1.1, dmg: 1.1, int: 1.2, drop: "gnawedHand" },
     acolyte: { name: "Tomb Acolyte", hp: 1.6, dmg: 1.4, int: 1.6, drop: "acolyteRib" },
     mite: { name: "Bone Mites", hp: 1, dmg: 0.8, int: 0.6, drop: "miteSkull" },
+    cultist: { name: "Bone Cultist", hp: 2.4, dmg: 1.9, int: 2.2, drop: "knightArm", cm: 3 },
+    // only the Knight-Captain uses this now: the last knight down here, kept by the cult as a champion
     knight: { name: "Crypt Knight", hp: 2.4, dmg: 1.9, int: 2.2, drop: "knightArm", cm: 3 },
   },
 
@@ -27,18 +30,18 @@ export const ACT2: ActDef = {
     12: { acolyte: 50, mite: 30, rat: 20 },
     13: { mite: 60, acolyte: 40 },
     14: { mite: 40, acolyte: 30, rat: 30 },
-    15: { knight: 40, acolyte: 40, mite: 20 },
-    16: { knight: 50, mite: 50 },
-    17: { knight: 40, acolyte: 30, rat: 30 },
-    18: { knight: 60, mite: 40 },
-    19: { knight: 40, acolyte: 30, mite: 30 },
+    15: { cultist: 40, acolyte: 40, mite: 20 },
+    16: { cultist: 50, mite: 50 },
+    17: { cultist: 40, acolyte: 30, rat: 30 },
+    18: { cultist: 60, mite: 40 },
+    19: { cultist: 40, acolyte: 30, mite: 30 },
   },
 
   story: {
     11: "Chapter II. The cathedral bell led you up the hill and down again. Under the nave, the dead are stacked to the ceiling, and somebody is still praying over them.",
     12: "The acolytes chant to keep the dead asleep. You find this rude.",
     13: "The walls move. On closer inspection, the walls are mites. On even closer inspection, so is the floor.",
-    15: "Crypt Knights stand guard in full plate. They swore an oath to the dead and intend to keep it, at length.",
+    15: "Bone Cultists carry sickles carved from their own congregation. The congregation did not object, being dead.",
     17: "Every skull in the ossuary is turned the same way. Toward the deep end. Toward something large.",
     19: "Something below is breathing. It has four hundred ribcages and no reason to stop.",
     20: "The Ossuary Colossus rises. The acolytes didn't build it to keep the dead asleep. They built it to keep you out.",
@@ -63,7 +66,7 @@ export const ACT2: ActDef = {
     14: {
       name: "The Knight-Captain", foe: "knight", hp: 8, dmg: 1.8, int: 2.2, drop: "knightArm",
       move: { type: "blast", short: "Heavy overhead swing (big hit)", tele: "The Knight-Captain lifts his greatsword overhead…", hit: "The greatsword comes down for {n}. Ward or Phase would have saved that.", first: 6, every: 9 },
-      intro: "A Crypt Knight in a captain's plume salutes the dead, then you. Only one of those was respectful.",
+      intro: "The cult's last knight, in a captain's plume, salutes the dead, then you. Only one of those was respectful.",
       defeat: "The Knight-Captain cleaves your Abomination neatly in two and salutes the halves.",
       idle: "The Knight-Captain waits in guard. Block or dodge the overhead swing.",
     },

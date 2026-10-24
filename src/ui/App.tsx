@@ -11,7 +11,8 @@ import { CryptPanel } from "./panels/CryptPanel";
 import { GraveyardPanel } from "./panels/GraveyardPanel";
 import { SquadPanel } from "./panels/SquadPanel";
 import { StitcheryPanel } from "./panels/StitcheryPanel";
-import { onGameCreated, useGame } from "./runtime";
+import { isDozing, onGameCreated, useGame } from "./runtime";
+import { TUNE } from "../content/tune";
 import { bossReadyCue, rareDropCue } from "./sound";
 import { isPhone, openModal, setUi, showTab, SLAIN_MS, ui } from "./uiStore";
 
@@ -77,6 +78,11 @@ export function App() {
           ) : null,
         )}
       </nav>
+      {isDozing() && (
+        <div className="doze" role="status">
+          Your Abominations doze. Nobody has touched the crypt in {Math.round(TUNE.dozeAfter / 60)} minutes, so it earns AFK rates. Click anywhere to wake them.
+        </div>
+      )}
       <ModalLayer />
       <Toasts />
       <TipLayer />

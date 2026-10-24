@@ -63,8 +63,9 @@ export function OfflineModal() {
   const h = Math.floor(r.sec / 3600), min = Math.floor((r.sec % 3600) / 60);
   return (
     <Modal>
-      <h2>While you were away</h2>
+      <h2>{r.dozed ? "While you dozed" : "While you were away"}</h2>
       <p className="muted" style={{ margin: 0 }}>
+        {r.dozed ? `Nobody touched the crypt for ${Math.round(TUNE.dozeAfter / 60)} minutes, so it dozed. ` : ""}
         {h ? h + "h " : ""}{min}m on Stage {r.stage}, at {Math.round(TUNE.offlineRate * 100)}% of your active pace{r.capped ? " (capped at 12 hours)" : ""}. Parts and reagents come in at a quarter of that, so crafting still rewards playing.
       </p>
       <ul>

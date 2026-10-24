@@ -81,6 +81,9 @@ export const TUNE = {
   // gaps shorter than this many seconds are played out normally instead of paid as AFK.
   // A background tab only gets woken about once a minute, and that's still an open game.
   playOutGap: 300,
+  // an open tab nobody has clicked, tapped, scrolled or typed in for this many seconds dozes: it pays AFK rates
+  // until someone touches it, so leaving the tab open overnight isn't better than closing it (Tyler's pick)
+  dozeAfter: 1800,
 
   // Graveyard
   costGrow: 1.15, altarK: 0.25, altarScale: 500, altarMinCm: 20, cmPerKill: 0.5,

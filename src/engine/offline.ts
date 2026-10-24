@@ -19,6 +19,17 @@ export interface OfflineReport {
   marrow: number;
   stage: number;
   capped: boolean;
+  /** true when this was an open tab dozing, not a closed game */
+  dozed?: boolean;
+}
+
+/** add up two payouts, for the dozing tab that is paid a minute at a time */
+export function mergeReports(a: OfflineReport | null, b: OfflineReport): OfflineReport {
+  if (!a) return b;
+  return {
+    sec: a.sec + b.sec, kills: a.kills + b.kills, ess: a.ess + b.ess, cm: a.cm + b.cm, parts: a.parts + b.parts,
+    rare: a.rare + b.rare, dust: a.dust + b.dust, marrow: a.marrow + b.marrow, stage: b.stage, capped: a.capped || b.capped,
+  };
 }
 
 /** 2.3 becomes 2 or 3 (3 with 30% odds), so short absences don't always round down to nothing */
@@ -46,7 +57,7 @@ export function offlineProgress(g: Game, seconds: number): OfflineReport {
     tot += w[k];
   }
   avgHp /= tot;
-  const kills = Math.floor((sec / (avgHp / dps + TUNE.walkIn)) * rate);
+  const kills = chanceRound(g, (sec / (avgHp / dps + TUNE.walkIn)) * rate);
   const ess = kills * essPerKill(stage) * (1 + squadBonus(g, "ess", cs) / 100);
   const cm = cmRate(g) * sec * rate + kills * stage * 1.5;
   const loot = kills * TUNE.offlineLoot;

@@ -1,5 +1,5 @@
 import { ABILITY, ABILITY_TUNE, type AbilityId, type BossMoveType } from "../content/abilities";
-import { actForStage, isBossStage, LAST_STAGE } from "../content/acts";
+import { actForStage, isBossStage, LAST_STAGE, PLAYTEST_CAPPED } from "../content/acts";
 import { DEATH_LINES } from "../content/act1";
 import { TUNE } from "../content/tune";
 import { TUT_RUNNING_FROM } from "../content/tutorial";
@@ -445,6 +445,8 @@ function onBossKill(g: Game) {
       s.maxStage = Math.max(s.maxStage, b.stage + 1);
       g.story(b.stage + 1);
       openSquadSlots(g);
+    } else if (PLAYTEST_CAPPED) {
+      g.log("That's the end of the playtest. Thanks for playing! You can keep farming and chasing rolls, but the road ends here for now.", "story");
     } else {
       g.log("The next act isn't built yet. Keep farming, and check back after the next update.", "story");
     }

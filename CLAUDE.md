@@ -11,6 +11,7 @@ Design sources (in the Graveknit Claude project): *Graveknit Design Doc v2*, *Gr
 - `npm test` runs every automatic check (engine rules, saves, balance bots). Run it before every commit.
 - `npm run bots` runs only the balance bots and prints how long the first boss kill takes.
 - `npm run build` type-checks and builds the site into `dist/`.
+- **Playtest end:** for Tyler's friends' playtest the game stops after the Ossuary Colossus (Stage 20): beating it shows an end-of-playtest note instead of opening Act 3. `?dev` links, tests and bots still reach every act. To open Act 3 for everyone, set `PLAYTEST_END` in `src/content/acts.ts` to `null`; anyone who already beat the Colossus is let in on their next load.
 - Tester tools (game speed, free reagents) only show in Settings when the link ends in `?dev`, e.g. https://tysal21.github.io/graveknit/?dev, so playtesters don't see them.
 
 Pushing to `main` publishes the game to GitHub Pages automatically (`.github/workflows/deploy.yml`). Every push and pull request runs the checks (`.github/workflows/ci.yml`).

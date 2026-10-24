@@ -84,10 +84,10 @@ export function foeArt(f: Foe | null | undefined): string | null {
 
 // where fighters stand, in the background's own pixels from the top (all are 384x216).
 // The cellar and graveyard floors run to the bottom edge, so feet sit there; the crypt has a raised ledge.
-// Act 2's floors sit a little above the bottom edge.
+// Act 2's floors sit above the bottom edge; the catacombs walkway is a raised slab.
 const FLOORS: Record<string, number> = {
   "bg-cellar": 216, "bg-graveyard": 216, "bg-crypt": 188,
-  "bg-catacombs": 200, "bg-ossuary": 203, "bg-deep": 205,
+  "bg-catacombs": 174, "bg-ossuary": 203, "bg-deep": 205,
 };
 
 /** which background each stage uses, in order: Act 1's cellar, graveyard and crypt (the Warden),

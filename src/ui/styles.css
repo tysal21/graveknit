@@ -357,3 +357,7 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .pop.p-heal{color:var(--good);font-size:.85rem}
 .pop.p-block,.pop.p-dodge{color:var(--essence);font-family:var(--display);font-weight:400}
 @media (prefers-reduced-motion:reduce){@keyframes popUp{0%,70%{opacity:1}100%{opacity:0}}}
+
+/* dozing: an untouched open tab pays AFK rates until someone clicks */
+.doze{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:14;width:max-content;max-width:min(36rem,calc(100vw - 32px));background:var(--panel2);border:1px solid var(--lantern);border-radius:6px;padding:8px 14px;font-size:.9rem;text-align:center;animation:pulse 3s ease-in-out infinite}
+@media (max-width:760px){.doze{bottom:70px}}

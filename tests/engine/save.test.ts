@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Game } from "../../src/engine/game";
-import { offlineProgress } from "../../src/engine/offline";
+import { mergeReports, offlineProgress } from "../../src/engine/offline";
 import { deserialize, exportSave, importSave, repair, serialize } from "../../src/engine/save";
 import { seeded } from "../../src/engine/rng";
 import { newGame } from "../helpers";
@@ -46,5 +46,21 @@ describe("offline progress", () => {
     expect(r.capped).toBe(true);
     expect(r.sec).toBe(12 * 3600);
     for (const p of g.s.parts) expect(["common", "magic", "rare"]).toContain(p.rarity);
+  });
+
+  it("short absences still pay Grave Dust sometimes instead of always rounding to zero", () => {
+    let dust = 0;
+    for (let seed = 1; seed <= 40; seed++) dust += offlineProgress(newGame(seed), 5 * 60).dust;
+    expect(dust).toBeGreaterThan(0);
+  });
+
+  it("a dozing tab paid a minute at a time adds up like one long absence", () => {
+    const g = newGame();
+    let total = null;
+    for (let i = 0; i < 30; i++) total = mergeReports(total, offlineProgress(g, 60));
+    expect(total!.sec).toBe(1800);
+    const one = offlineProgress(newGame(), 1800);
+    // chance rounding makes them differ a little, never a lot
+    expect(Math.abs(total!.kills - one.kills)).toBeLessThan(one.kills * 0.1 + 5);
   });
 });

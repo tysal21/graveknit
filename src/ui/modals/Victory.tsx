@@ -1,4 +1,4 @@
-import { BASES, bossById } from "../../content/acts";
+import { BASES, bossById, LAST_STAGE, PLAYTEST_CAPPED } from "../../content/acts";
 import { slotName } from "../../content/slots";
 import { TUNE } from "../../content/tune";
 import { fmt } from "../../engine/format";
@@ -68,6 +68,12 @@ export function VictoryModal() {
       <h3>Loot</h3>
       <Loot win={win} />
       {win.first && <p className="flavor" style={{ margin: 0 }}>{b.firstClear[b.firstClear.length - 1]}</p>}
+      {win.first && PLAYTEST_CAPPED && b.stage === LAST_STAGE && (
+        <div className="thrallBanner">
+          <b>That's the end of the playtest</b>
+          <span>Thanks for playing! You can keep farming and chasing perfect rolls, but the road ends here for now.</span>
+        </div>
+      )}
       <p className="faint" style={{ margin: 0 }}>Click a part to open it on the Workbench.</p>
       <button className="btn primary" onClick={closeModal}>Back to the crypt</button>
     </Modal>

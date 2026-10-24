@@ -2,6 +2,7 @@ import { HINTS, TUT_DONE, TUT_KILLS, TUTORIAL, type HintId, type TutWait } from 
 import type { Game } from "./game";
 import { makePart, partName } from "./parts";
 import { newPlayer, spawnTrash } from "./combat";
+import { canGraft } from "./crafting";
 import { canInfuse } from "./economy";
 
 export const currentStep = (g: Game) => TUTORIAL[g.s.tut];
@@ -91,6 +92,9 @@ export function checkHints(g: Game) {
   } else if (!s.seen.hRestitch && wornLagging(g)) {
     s.seen.hRestitch = 1;
     s.hint = "restitch";
+  } else if (!s.seen.hGraft && wornCanGraft(g)) {
+    s.seen.hGraft = 1;
+    s.hint = "graft";
   } else if (!s.seen.hSquad2 && s.squad.length >= 2) {
     s.seen.hSquad2 = 1;
     s.hint = "squad2";
@@ -109,6 +113,9 @@ const BOSS_HINT: Record<string, HintId> = { warden: "boss", colossus: "boss2", r
 
 /** a worn part has fallen a few item levels behind, so Re-stitch is worth a mention */
 const wornLagging = (g: Game) => g.s.parts.some((p) => g.isWorn(p) && p.rarity !== "common" && p.ilvl <= g.s.maxStage - 3);
+
+/** a worn part could take a graft right now: a spare part fits it and the reagents are there */
+const wornCanGraft = (g: Game) => g.s.parts.some((p) => g.isWorn(p) && canGraft(g, p));
 
 export const currentHint = (g: Game) => (g.s.hint ? HINTS[g.s.hint] : null);
 

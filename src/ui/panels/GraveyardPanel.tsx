@@ -116,11 +116,14 @@ function Log() {
   );
 }
 
+/** game speed and free reagents only show when the link ends in ?dev, so playtesters can't skip the grind by accident */
+const DEV = new URLSearchParams(location.search).has("dev");
+
 function Settings() {
   const g = useGame();
   return (
     <details className="tools">
-      <summary>Settings, saves and tester tools</summary>
+      <summary>{DEV ? "Settings, saves and tester tools" : "Settings and saves"}</summary>
       <div className="row">
         <label className="toggles"><input type="checkbox" checked={g.s.opt.sound} onChange={(e) => act((g) => (g.s.opt.sound = e.target.checked))} /> Sounds: a bell when a boss is ready, a chime for a Rare drop, a call when a guardian or boss arrives</label>
       </div>
@@ -128,6 +131,7 @@ function Settings() {
         <button className="btn small" onClick={() => openModal({ kind: "saves" })}>Export or import save</button>
         {g.inTut() && <button className="btn small" onClick={() => act((g) => tutFinish(g, true))}>Skip the tutorial</button>}
       </div>
+      {DEV && (
       <div className="row">
         <span className="muted">Game speed</span>
         {[1, 3, 10].map((v) => (
@@ -135,11 +139,12 @@ function Settings() {
         ))}
         <span className="num">{speed.value}×</span>
       </div>
+      )}
       <div className="row">
-        <button className="btn small" onClick={() => act((g) => { g.s.marrow += 10; g.s.dust += 10; g.s.thread += 10; g.log("Tester gift: 10 of each reagent."); })}>Give 10 of each reagent</button>
+        {DEV && <button className="btn small" onClick={() => act((g) => { g.s.marrow += 10; g.s.dust += 10; g.s.thread += 10; g.log("Tester gift: 10 of each reagent."); })}>Give 10 of each reagent</button>}
         <button className="btn small danger" onClick={() => openModal({ kind: "reset" })}>Start over</button>
       </div>
-      <p className="faint" style={{ margin: "6px 0 0" }}>Progress saves in this browser every few seconds. Export your save to keep a backup. Speed and gifts are for testing only.</p>
+      <p className="faint" style={{ margin: "6px 0 0" }}>Progress saves in this browser every few seconds. Export your save to keep a backup.{DEV && " Speed and gifts are for testing only."}</p>
     </details>
   );
 }

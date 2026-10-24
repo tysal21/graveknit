@@ -11,7 +11,7 @@ export const ACT2: ActDef = {
     acolyteRib: { slot: "rib", name: "Acolyte Ribcage", imp: [["hpFlat", (l) => 20 + 5 * l], ["ess", (l) => Math.round(4 + l / 2)]], lean: ["gluttony", "sinewed"], flavor: "Took a vow of poverty. Kept it, too." },
     miteSkull: { slot: "skull", name: "Mite-Riddled Skull", imp: [["cm", () => 15], ["poison", (l) => Math.round(2 + 0.6 * l)]], lean: ["pestilent", "ruin"], flavor: "Something is still living in it. You've decided that's a feature." },
     // still "knightArm" inside the save, so parts already in players' stashes keep working; it's the Cultist's Arm now
-    knightArm: { slot: "main", name: "Cultist's Arm", imp: [["flat", (l) => Math.round(18 + 3.4 * l)]], lean: ["brutal", "mutilating"], ab: "cleave", flavor: "Still holding the bone sickle. It was mid-prayer. The prayer was about you." },
+    knightArm: { slot: "main", name: "Cultist's Arm", imp: [["flat", (l) => Math.round(18 + 3.4 * l)]], lean: ["brutal", "mutilating"], ab: "cleave", flavor: "Still holding the bone scythe. It was mid-prayer. The prayer was about you." },
     colossusRib: { slot: "rib", name: "Colossus Ribcage", trophy: true, imp: [["hpFlat", (l) => 60 + 12 * l], ["hpPct", () => 10]], lean: ["sinewed", "brutal"], flavor: "Built from four hundred ribcages. You can hear some of them arguing." },
   },
 
@@ -41,7 +41,7 @@ export const ACT2: ActDef = {
     11: "Chapter II. The cathedral bell led you up the hill and down again. Under the nave, the dead are stacked to the ceiling, and somebody is still praying over them.",
     12: "The acolytes chant to keep the dead asleep. You find this rude.",
     13: "The walls move. On closer inspection, the walls are mites. On even closer inspection, so is the floor.",
-    15: "Bone Cultists carry sickles carved from their own congregation. The congregation did not object, being dead.",
+    15: "Bone Cultists carry scythes carved from their own congregation. The congregation did not object, being dead.",
     17: "Every skull in the ossuary is turned the same way. Toward the deep end. Toward something large.",
     19: "Something below is breathing. It has four hundred ribcages and no reason to stop.",
     20: "The Ossuary Colossus rises. The acolytes didn't build it to keep the dead asleep. They built it to keep you out.",

@@ -1,3 +1,5 @@
+import { TUNE } from "./tune";
+
 // The guided start. The game stays paused until step 3 and teaches one panel at a time.
 // `target` is the element that glows. `wait` is what the player must do; `next` is a button instead.
 export type PanelId = "squad" | "crypt" | "stitch" | "yard";
@@ -47,7 +49,7 @@ export const PANEL_LOCKED_TEXT: Record<PanelId, string> = {
 };
 
 // One-time tips after the tutorial
-export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2" | "restitch" | "act3" | "grind" | "adds" | "elite" | "unique" | "boss3";
+export type HintId = "infuse" | "gens" | "boss" | "boss2" | "guardMeet" | "guard" | "dig" | "squad2" | "restitch" | "act3" | "grind" | "adds" | "elite" | "unique" | "boss3" | "graft";
 export const HINTS: Record<HintId, TutStep> = {
   infuse: { id: "infuse", panel: "squad", title: "You can Infuse", text: "Soul Essence buys Infusion levels. Each level gives +12% damage and HP. Your parts limit how many levels you can hold, so better parts raise the cap.", target: "#infBtn" },
   gens: { id: "gens", panel: "yard", title: "New generator", text: "Bone Harvesters are open. They cost more but add hit damage as well as Corpse Mass.", target: "#buy-harv" },
@@ -63,6 +65,7 @@ export const HINTS: Record<HintId, TutStep> = {
   elite: { id: "elite", panel: "crypt", title: "An Elite", text: "From Act III on, about 1 enemy in 150 near your best stage is an Elite: tougher, with a name and a glow. It pays 5× Essence and Corpse Mass, and always drops a signature part: Magic or Rare, with built-in stats ×1.5. Sometimes it drops a Spectral Thread or a named unique too.", target: "#fight" },
   unique: { id: "unique", panel: "stitch", title: "A named unique", text: "Uniques have no random affixes. Instead each one has a special effect nothing else gives. They can't be rerolled or Re-stitched, so they stay at the item level they dropped at; later bosses drop higher-level copies.", target: "#stash" },
   boss3: { id: "boss3", panel: "crypt", title: "The Arch-Necromancer is ready", text: "Stage 30 is Act III's boss. He hides behind summoned corpses, so bring area damage (Sweeping, poison, Plague Wind) as well as Ward or Phase and Bury. You'll get a short lesson first.", target: "#bossBtn" },
+  graft: { id: "graft", panel: "stitch", title: "You can Graft", text: `Grafting moves one affix from a spare part onto a part you wear. Both must fit the same slot (a skull onto a skull). The spare part is eaten, and it costs ${TUNE.graftMarrow} Marrow and ${TUNE.graftDust} Grave Dust. Click a worn Magic or Rare part, press Graft, and the preview shows how your damage and HP change before you commit.`, target: "#stash" },
   squad2: { id: "squad2", panel: "squad", title: "A second Abomination", text: "Squad slot 2 is open. Your second Abomination starts with no parts: pick it at the top of the Squad panel, then stitch parts onto it from the Stitchery. It fights behind the Vanguard, adds its damage and brings two more abilities.", target: "#squadTabs" },
 };
 

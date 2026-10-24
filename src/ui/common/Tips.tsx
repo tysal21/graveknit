@@ -1,20 +1,18 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ABILITY } from "../../content/abilities";
 import { BASES } from "../../content/acts";
 import { RITUAL_TUNE } from "../../content/rituals";
-import { slotName } from "../../content/slots";
-import { IMPLICIT_TEXT, type StatId } from "../../content/stats";
+import { type StatId } from "../../content/stats";
 import { TUNE } from "../../content/tune";
-import { AFFIX } from "../../content/affixes";
 import { essPerKill, reagentRate } from "../../engine/combat";
 import { altarOffer, cmRate, infuseCost } from "../../engine/economy";
 import { fmt, pct } from "../../engine/format";
 import type { Game } from "../../engine/game";
-import { affixValue, implicits, rollQuality, isKept, partIntegrity, partName, rarityClass, rarityLabel } from "../../engine/parts";
+import { isKept, partIntegrity, rarityClass } from "../../engine/parts";
 import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engine/stats";
 import { RARITY_INTEGRITY } from "../../content/tune";
-import { useGame } from "../runtime";
-import { selAbom, ui } from "../uiStore";
+import { getGame, useGame } from "../runtime";
+import { selAbom, setUi, ui } from "../uiStore";
+import { CompareStrip, EquippedCard, PartSummary, needsCompare, nextAbom } from "./PartCompare";
 
 // Info blips: hover (desktop) or tap (phone) anything with data-tip="key" to see where its number comes from.
 
@@ -64,51 +62,21 @@ function multRows(c: Stats): Row[] {
   return r;
 }
 
+/** hovering a part: its card beside what the chosen Abomination wears in that slot */
 export function PartTip({ g, id }: { g: Game; id: number }) {
   const p = g.partById(id);
   if (!p) return null;
-  const b = BASES[p.base];
-  const imp = implicits(p).map(([st, v]) => IMPLICIT_TEXT[st](v)).join(" · ");
-  let cmp: ReactNode = null;
-  if (!g.isWorn(p)) {
-    const ab = selAbom(g.s.squad.length);
-    const a = calc(g, { abom: ab, ignoreBuffs: true }), c2 = calc(g, { abom: ab, swap: p, ignoreBuffs: true });
-    const w = g.partById(g.s.squad[ab].eq[b.slot]);
-    cmp = (
-      <Table
-        rows={[
-          [`vs ${w ? partName(w) : "empty slot"}`, ""],
-          ["DPS", <>{fmt(a.dps)} → <b className={c2.dps >= a.dps ? "up" : "down"}>{fmt(c2.dps)}</b></>],
-          ["Max HP", <>{fmt(a.maxHp)} → <b className={c2.maxHp >= a.maxHp ? "up" : "down"}>{fmt(c2.maxHp)}</b></>],
-        ]}
-      />
-    );
-  }
+  const ab = selAbom(g.s.squad.length);
+  const many = g.s.squad.length > 1;
+  const side = needsCompare(g, p, ab);
   return (
     <>
-      <b className={`h tc-${rarityClass(p)}`}>{partName(p)}</b>
-      <p>
-        {rarityLabel(p)} {slotName(b.slot)} · item level {p.ilvl}
-        {g.isWorn(p) ? (g.s.squad.length > 1 ? ` · worn by ${g.s.squad[g.wornBy(p)].name}` : " · worn") : ""}
-        {isKept(p) ? " · kept" : ""}
-      </p>
-      <div>
-        {imp}
-        {b.ab && <> · <b>{ABILITY[b.ab].name}</b></>}
+      <div className={side ? "pcmp" : ""}>
+        <PartSummary g={g} p={p} label={side ? "This part" : many ? `Worn by ${g.s.squad[ab].name}` : "Worn"} />
+        {side && <EquippedCard g={g} p={p} abom={ab} />}
       </div>
-      {b.unique && <div className="uniqfx">{b.unique.text}</div>}
-      {b.mirror && <div className="uniqfx">Copies the best affix another squad member wears</div>}
-      {b.unique ? null : p.affixes.length ? (
-        p.affixes.map((a, i) => (
-          <div className="afl" key={i}>
-            <span className={`tb t${a.t}`}>T{a.t}</span>
-            <span>{AFFIX[a.k].fmt(affixValue(a, p.ilvl))} <span className={`q ${rollQuality(a, p.ilvl).cls}`}>{rollQuality(a, p.ilvl).label}</span></span>
-          </div>
-        ))
-      ) : (
-        <p>No affixes (Common).</p>
-      )}
-      {cmp}
+      {side && <CompareStrip g={g} p={p} abom={ab} />}
+      {many && <p className="faint">Press Tab to compare with {g.s.squad[nextAbom(g)].name}. Click to open the Workbench.</p>}
     </>
   );
 }
@@ -284,17 +252,22 @@ export function TipLayer() {
   const box = useRef<HTMLDivElement>(null);
   const pinned = useRef(false);
   pinned.current = !!tip?.pinned;
+  const tipNow = useRef(tip);
+  tipNow.current = tip;
 
   useEffect(() => {
     const isPartTip = (el: HTMLElement) => el.dataset.tip!.startsWith("part-");
     const canHover = () => matchMedia("(hover:hover)").matches;
+    // switching Abomination can fold the Worn section and move rows under a still mouse; the card should stay put
+    let holdUntil = 0;
+    const held = () => Date.now() < holdUntil;
     const over = (e: MouseEvent) => {
-      if (pinned.current) return;
+      if (pinned.current || held()) return;
       const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
       if (el && !(isPartTip(el) && (ui.pick || !canHover()))) setTip({ key: el.dataset.tip!, el, pinned: false });
     };
     const out = (e: MouseEvent) => {
-      if (pinned.current) return;
+      if (pinned.current || held()) return;
       const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
       if (el && !el.contains(e.relatedTarget as Node)) setTip(null);
     };
@@ -311,12 +284,24 @@ export function TipLayer() {
       if (el) setTip((t) => (t?.pinned && t.key === el.dataset.tip ? null : { key: el.dataset.tip!, el, pinned: true }));
       else setTip(null);
     };
+    // Tab on a part's hover card switches which Abomination it compares against
+    const key = (e: KeyboardEvent) => {
+      const t = tipNow.current;
+      if (e.key !== "Tab" || !t?.key.startsWith("part-")) return;
+      const g = getGame();
+      if (g.s.squad.length < 2) return;
+      e.preventDefault();
+      holdUntil = Date.now() + 400;
+      setUi({ abom: nextAbom(g) });
+    };
+    document.addEventListener("keydown", key);
     document.addEventListener("mouseover", over);
     document.addEventListener("mouseout", out);
     document.addEventListener("focusin", focus);
     document.addEventListener("focusout", blur);
     document.addEventListener("click", click, true);
     return () => {
+      document.removeEventListener("keydown", key);
       document.removeEventListener("mouseover", over);
       document.removeEventListener("mouseout", out);
       document.removeEventListener("focusin", focus);
@@ -338,9 +323,18 @@ export function TipLayer() {
     document.querySelectorAll(".tipon").forEach((e) => e !== el && e.classList.remove("tipon"));
     el.classList.add("tipon");
     const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
-    const x = Math.min(Math.max(12, r.left), window.innerWidth - w - 12);
+    let x = Math.min(Math.max(12, r.left), window.innerWidth - w - 12);
     let y = r.bottom + 6;
     if (y + h > window.innerHeight - 12) y = Math.max(12, r.top - h - 6);
+    // a part's compare card sits beside the list instead of covering the rows below it
+    if (tip.key.startsWith("part-")) {
+      const left = r.left - w - 8, right = r.right + 8;
+      const side = left >= 12 ? left : right + w <= window.innerWidth - 12 ? right : null;
+      if (side !== null) {
+        x = side;
+        y = Math.min(Math.max(12, r.top - 40), window.innerHeight - h - 12);
+      }
+    }
     t.style.left = x + "px";
     t.style.top = y + "px";
   });
@@ -353,7 +347,7 @@ export function TipLayer() {
   const content = tipContent(g, tip.key);
   if (!content) return null;
   return (
-    <div id="tip" role="tooltip" ref={box}>
+    <div id="tip" className={tip.key.startsWith("part-") ? "wide" : ""} role="tooltip" ref={box}>
       {content}
     </div>
   );

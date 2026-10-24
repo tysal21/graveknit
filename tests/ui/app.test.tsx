@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { App } from "../../src/ui/App";
 import { getGame, startGame } from "../../src/ui/runtime";
 import { tutFinish } from "../../src/engine/tutorial";
+import { spawnTrash, startBoss } from "../../src/engine/combat";
 
 describe("the screen", () => {
   it("shows the intro on a new game, then all four panels", () => {
@@ -12,5 +13,23 @@ describe("the screen", () => {
     act(() => tutFinish(getGame(), true));
     view.rerender(<App />);
     for (const name of ["Squad", "Crypt", "Stitchery", "Graveyard"]) expect(view.container.querySelector(`#h-${{ Squad: "squad", Crypt: "crypt", Stitchery: "stitch", Graveyard: "yard" }[name]}`)?.textContent).toContain(name);
+  });
+
+  it("draws a boss's summoned adds in the fight, and clears them when the next enemy arrives", () => {
+    startGame(null);
+    const g = getGame();
+    tutFinish(g, true);
+    g.s.stage = g.s.best = 20;
+    const view = render(<App />);
+    const adds = () => view.container.querySelectorAll(".scene .add").length;
+    act(() => {
+      startBoss(g);
+      for (let i = 0; i < 2; i++) g.foe!.adds.push({ name: "Bone Mite", hp: 10, max: 10, dmg: 0, atk: 0 });
+    });
+    view.rerender(<App />);
+    expect(adds()).toBe(2);
+    act(() => spawnTrash(g));
+    view.rerender(<App />);
+    expect(adds()).toBe(0);
   });
 });

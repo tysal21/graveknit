@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ABILITY, COUNTER_TEXT, type AbilityId } from "../../content/abilities";
 import { ACTS, BASES } from "../../content/acts";
 import { TUNE } from "../../content/tune";
-import { cdKey, reagentRate, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Foe } from "../../engine/combat";
+import { cdKey, reagentRate, chooseStage, foeScript, guardianFor, isSpecial, liveAdds, startBoss, useAbility, type Add, type Foe } from "../../engine/combat";
 import { lessonKey } from "../../engine/tutorial";
 import { fmt, mmss, pct } from "../../engine/format";
 import { hasCounterFor } from "../../engine/stats";
@@ -10,7 +10,7 @@ import { Bar } from "../common/Bar";
 import { foeTier } from "../common/tier";
 import { arrivalCue } from "../sound";
 import { Info } from "../common/Info";
-import { abomArt, foeArt, foeAttack, foeIdle, foeScale, Icon, stageBackground } from "../art";
+import { abomArt, addArt, foeArt, foeAttack, foeIdle, foeScale, Icon, stageBackground } from "../art";
 import { Panel } from "../common/Panel";
 import { act, getGame, useGame } from "../runtime";
 import { openModal, SLAIN_MS, ui } from "../uiStore";
@@ -70,7 +70,9 @@ function useHitAnimation(swings: number, aps: number) {
     // never longer than the gap between hits, so fast attackers still read as separate hits
     const ms = Math.min(300, 900 / aps);
     scene?.querySelector(".me")?.animate({ translate: ["0 0", "10% 0", "0 0"] }, { duration: ms, easing: "ease-out" });
-    scene?.querySelector(".foe-sprite")?.animate(
+    // a living add takes the hit for its master, so the front one flinches instead
+    const struck = scene?.querySelector(".add:not(.dying) .add-art") ?? scene?.querySelector(".foe-sprite");
+    struck?.animate(
       [
         { translate: "0 0", filter: "none" },
         // grey, darken, tint brown, then shift that to blood red; held a moment so the red reads
@@ -111,7 +113,56 @@ function Scene() {
         {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
         <Bar chip kind="vhp" value={g.pl ? g.pl.hp / g.c.maxHp : 1} />
       </div>
+      {f && <AddSprites key={`adds-${arrivals}`} adds={liveAdds(f)} />}
       {foe && <FoeSprite key={arrivals} src={foe} strikes={f?.strikes ?? 0} />}
+    </div>
+  );
+}
+
+/** how long a slain add takes to sink away, in ms (the CSS animation matches) */
+const ADD_FADE_MS = 500;
+
+/** the adds a boss or guardian has summoned, standing in front of it with their own little HP bars.
+ *  The front one (closest to you) is the one your hits land on. A slain add lingers a moment to sink away.
+ *  Adds without a picture are left out here; their HP bars under the boss's still show them. */
+function AddSprites({ adds }: { adds: Add[] }) {
+  // every add seen this fight, in the order they arrived, and when each one died
+  const seen = useRef<Add[]>([]);
+  const died = useRef(new Map<Add, number>());
+  const now = performance.now();
+  for (const a of adds) if (!seen.current.includes(a)) seen.current.push(a);
+  for (const a of seen.current) if (!adds.includes(a) && !died.current.has(a)) died.current.set(a, now);
+  // forget the ones that have finished sinking
+  seen.current = seen.current.filter((a) => !(now - (died.current.get(a) ?? now) > ADD_FADE_MS));
+  const shown = seen.current.filter((a) => addArt(a.name));
+  if (!shown.length) return null;
+  return (
+    <div className="adds-row">
+      {shown.map((a) => (
+        <AddSprite key={addId(a)} add={a} dying={died.current.has(a)} />
+      ))}
+    </div>
+  );
+}
+
+// a lasting number for each add, so React keeps the right sprite as others die around it
+const addIds = new WeakMap<Add, number>();
+let nextAddId = 0;
+function addId(a: Add) {
+  if (!addIds.has(a)) addIds.set(a, ++nextAddId);
+  return addIds.get(a)!;
+}
+
+/** one summoned add: its idle loop (or still picture) and a small HP bar */
+function AddSprite({ add, dying }: { add: Add; dying: boolean }) {
+  const src = addArt(add.name)!;
+  const idle = foeIdle(src);
+  return (
+    <div className={`add ${dying ? "dying" : ""}`} style={{ "--size": foeScale(src) } as CSSProperties} title={add.name}>
+      <div className={`add-art ${idle ? "idle" : ""}`} style={{ "--frames": idle?.frames ?? 1 } as CSSProperties}>
+        <img src={idle?.src ?? src} alt="" />
+      </div>
+      <Bar kind="enemy" value={add.hp / add.max} />
     </div>
   );
 }

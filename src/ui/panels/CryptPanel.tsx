@@ -69,7 +69,7 @@ function useHitAnimation(swings: number, aps: number) {
     const scene = sceneRef.current;
     // never longer than the gap between hits, so fast attackers still read as separate hits
     const ms = Math.min(300, 900 / aps);
-    scene?.querySelector(".me")?.animate({ translate: ["0 0", "10% 0", "0 0"] }, { duration: ms, easing: "ease-out" });
+    scene?.querySelector(".me.vanguard")?.animate({ translate: ["0 0", "10% 0", "0 0"] }, { duration: ms, easing: "ease-out" });
     // a living add takes the hit for its master, so the front one flinches instead
     const struck = scene?.querySelector(".add:not(.dying) .add-art") ?? scene?.querySelector(".foe-sprite");
     struck?.animate(
@@ -103,15 +103,20 @@ function Scene() {
   // hooks must run on every render, so this one comes before the "no art" early return
   const sceneRef = useHitAnimation(g.pl?.swings ?? 0, g.cs[0]?.aps ?? 1);
   if (!foe && !bg) return null;
-  const me = abomArt(g, g.s.squad[0]);
+  // every squad member dangles on screen; the Vanguard (slot 1) stands nearest the enemy
+  const squad = g.s.squad.map((a) => abomArt(g, a));
   // a stage's 10 kills carry you from one side of the picture to the other; guardians and bosses wait at the far end
   const pan = f?.kind === "trash" ? g.s.kills / TUNE.killsPerStage : 1;
   const style = { "--walk": `${TUNE.walkIn}s`, backgroundImage: bg ? `url(${bg.src})` : undefined, paddingBottom: bg?.floorPad, backgroundPosition: `${pan * 100}% 100%` } as CSSProperties;
   return (
     <div ref={sceneRef} className={`scene ${f?.walk ? "walking" : ""}`} style={style}>
-      <div className="me">
-        {me.map((src, i) => <img key={src} className={LAYERS[i]} src={src} alt="" />)}
-        <Bar chip kind="vhp" value={g.pl ? g.pl.hp / g.c.maxHp : 1} />
+      <div className="squad">
+        {squad.map((layers, i) => (
+          <div key={i} className={`me ${i === 0 ? "vanguard" : ""}`} style={{ animationDelay: `${-i * 0.9}s` }}>
+            {layers.map((src, j) => <img key={src} className={LAYERS[j]} src={src} alt="" />)}
+            {i === 0 && <Bar chip kind="vhp" value={g.pl ? g.pl.hp / g.c.maxHp : 1} />}
+          </div>
+        ))}
       </div>
       {f && <AddSprites key={`adds-${arrivals}`} adds={liveAdds(f)} />}
       {foe && <FoeSprite key={arrivals} src={foe} strikes={f?.strikes ?? 0} />}

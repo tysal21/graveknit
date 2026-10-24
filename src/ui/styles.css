@@ -305,17 +305,21 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .scene{position:relative;container-type:inline-size;display:flex;justify-content:space-between;align-items:flex-end;gap:4px;min-height:200px;padding:10px 8px 6px;border-radius:4px;background:#0d0c0b 0 100%/150% auto no-repeat;image-rendering:pixelated;overflow:hidden;transition:background-position var(--walk) ease-out}
 /* darken the place so the fighters stand out */
 .scene::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(10,9,8,.45),rgba(10,9,8,.7))}
-.scene .me{position:relative;width:min(176px,46%);z-index:3;animation:breathe 2.6s ease-in-out infinite;transform-origin:50% 100%}
+/* your squad hangs off the ground on its strings, Vanguard nearest the enemy (row-reverse puts slot 1 on the right) */
+.scene .squad{display:flex;flex-direction:row-reverse;align-items:flex-end;margin-bottom:12%;z-index:3;position:relative}
+.scene .me{position:relative;flex:none;width:min(92px,19cqw);margin-left:-3cqw;animation:dangle 3.2s ease-in-out infinite;transform-origin:50% -60%}
+.scene .me:not(.vanguard){margin-bottom:6%}
+/* a slow swing from the strings above, with a little bob */
+@keyframes dangle{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-4%)}}
 .scene .me img{display:block;width:100%;image-rendering:pixelated}
 /* the Abomination's layers sit exactly on top of each other */
 .scene .me img+img{position:absolute;inset:0}
-/* the puppet threads are a 64x128 picture standing on the body's feet, so they rise out of the scene behind it */
+/* the puppet threads are a 64x256 picture standing on the body's feet, so they rise out of the scene behind it */
 .scene .me img.threads{inset:auto 0 0 0;z-index:-1}
 .scene .foe-sprite{width:calc(min(176px,50%) * var(--size,1));height:auto;margin:0;z-index:1;animation:enter var(--walk) ease-out,breathe 2.2s ease-in-out var(--walk) infinite;transform-origin:50% 100%}
-/* each enemy walks in from the right; your Abomination trudges on meanwhile */
+/* each enemy walks in from the right; your squad swings faster meanwhile, carried along on its strings */
 @keyframes enter{from{transform:translateX(80%);opacity:0}to{transform:none;opacity:1}}
-.scene.walking .me{animation:trudge calc(var(--walk) / 2) ease-in-out infinite}
-@keyframes trudge{0%,100%{transform:none}50%{transform:translateY(-3px) rotate(1.5deg)}}
+.scene.walking .me{animation-duration:1.6s}
 .tier-guardian .scene .foe-sprite{width:calc(min(224px,55%) * var(--size,1));height:auto}
 .tier-boss .scene .foe-sprite{width:calc(min(256px,57%) * var(--size,1));height:auto}
 @keyframes breathe{0%,100%{transform:none}50%{transform:scaleY(1.025)}}

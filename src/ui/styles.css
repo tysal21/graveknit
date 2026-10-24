@@ -120,6 +120,8 @@ h3{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mut
 .pickbar .cnt{margin-right:auto;color:var(--lantern)}
 #tip .afl{display:flex;gap:6px;align-items:baseline}
 #tip .afl .tb{flex-shrink:0}
+/* "Who lives here" previews: a picture beside the name */
+#tip .tiphead{display:flex;gap:10px;align-items:center}
 .item .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item .meta{font-size:.75rem;color:var(--faint);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .item .delta{font-family:var(--mono);font-size:.78rem;text-align:right}

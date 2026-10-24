@@ -461,8 +461,8 @@ export function CryptPanel() {
                 const foe = actDef.foes[k];
                 return (
                   <div className="row" key={k}>
-                    <span>{foe.name} <span className="faint">{Math.round((w[k] / tot) * 100)}%</span></span>
-                    <span>{BASES[foe.drop].name}{foe.cm ? ", Corpse Mass" : ""}</span>
+                    <span data-tip={`foe-${s.stage}-${k}`} tabIndex={0}>{foe.name} <span className="faint">{Math.round((w[k] / tot) * 100)}%</span></span>
+                    <span><span data-tip={`base-${foe.drop}`} tabIndex={0}>{BASES[foe.drop].name}</span>{foe.cm ? <>, <span data-tip="r-cm" tabIndex={0}>Corpse Mass</span></> : ""}</span>
                   </div>
                 );
               })}

@@ -4,6 +4,7 @@ import { App } from "../../src/ui/App";
 import { getGame, startGame } from "../../src/ui/runtime";
 import { tutFinish } from "../../src/engine/tutorial";
 import { spawnTrash, startBoss } from "../../src/engine/combat";
+import { tipContent } from "../../src/ui/common/Tips";
 
 describe("the screen", () => {
   it("shows the intro on a new game, then all four panels", () => {
@@ -31,5 +32,23 @@ describe("the screen", () => {
     act(() => spawnTrash(g));
     view.rerender(<App />);
     expect(adds()).toBe(0);
+  });
+
+  it("previews an enemy and the part it drops from the Who lives here list", () => {
+    startGame(null);
+    const g = getGame();
+    tutFinish(g, true);
+    g.s.stage = g.s.maxStage = 15;
+    const view = render(<App />);
+    const foe = view.container.querySelector<HTMLElement>('[data-tip="foe-15-cultist"]');
+    const part = view.container.querySelector<HTMLElement>('[data-tip="base-knightArm"]');
+    expect(foe && part).toBeTruthy();
+    const foeTip = render(<>{tipContent(g, foe!.dataset.tip!)}</>);
+    expect(foeTip.container.textContent).toContain("Bone Cultist");
+    expect(foeTip.container.textContent).toContain("Drops Cultist's Arm");
+    const partTip = render(<>{tipContent(g, part!.dataset.tip!)}</>);
+    expect(partTip.container.textContent).toContain("Drops here at item level 15");
+    expect(partTip.container.textContent).toContain("DPS");
+    expect(partTip.container.textContent).toContain("Brutal");
   });
 });

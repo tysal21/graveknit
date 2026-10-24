@@ -12,6 +12,7 @@ import { altarBonus, calc, statSources, wornParts, type Stats } from "../../engi
 import { RARITY_INTEGRITY } from "../../content/tune";
 import { getGame, useGame } from "../runtime";
 import { selAbom, setUi, ui } from "../uiStore";
+import { stageTip } from "./StageTips";
 import { CompareStrip, EquippedCard, PartSummary, needsCompare, nextAbom } from "./PartCompare";
 
 // Info blips: hover (desktop) or tap (phone) anything with data-tip="key" to see where its number comes from.
@@ -83,6 +84,7 @@ export function PartTip({ g, id }: { g: Game; id: number }) {
 
 export function tipContent(g: Game, key: string): ReactNode {
   if (key.startsWith("part-")) return <PartTip g={g} id={+key.slice(5)} />;
+  if (key.startsWith("foe-") || key.startsWith("base-")) return stageTip(g, key);
   const s = g.s;
   const ab = selAbom(s.squad.length);
   const c = calc(g, { abom: ab });
@@ -347,7 +349,7 @@ export function TipLayer() {
   const content = tipContent(g, tip.key);
   if (!content) return null;
   return (
-    <div id="tip" className={tip.key.startsWith("part-") ? "wide" : ""} role="tooltip" ref={box}>
+    <div id="tip" className={tip.key.startsWith("part-") || tip.key.startsWith("base-") ? "wide" : ""} role="tooltip" ref={box}>
       {content}
     </div>
   );

@@ -10,7 +10,8 @@ const HAVE = new Set([
   "guard-ratKing", "guard-foreman", "guard-alpha", "boss-warden", "thrall-lantern",
   "foe-acolyte", "foe-mite", "foe-cultist",
   "guard-choirmaster", "guard-miteQueen", "guard-knightCaptain", "boss-colossus", "thrall-heap",
-  "abom-body", "abom-hand", "abom-arm-cleaver", "abom-core-wisp", "abom-core-lantern", "abom-core-wraith",
+  "abom-body", "abom-body-crimson", "abom-body-bone",
+  ...["wisp", "lantern", "wraith"].flatMap((c) => [`abom-core-${c}`, `abom-threads-${c}`]),
   "altar",
   "bg-cellar", "bg-graveyard", "bg-crypt", "bg-catacombs", "bg-ossuary", "bg-deep",
   "icon-cm", "icon-ess", "icon-marrow", "icon-dust", "icon-thread",
@@ -114,19 +115,21 @@ export function stageBackground(stage: number): { src: string; floorPad: string 
   return { src, floorPad: `${((216 - FLOORS[name]) / 384) * 150}%` };
 }
 
-// The Abomination is Tyler's hand-cleaned picture cut into see-through 64x64 layers,
-// stacked in the same spot, back to front: the body (the near hand is always an empty fist),
-// the Soul Core (the glow in the ribs and the eyes), the cleaver held upright in the far hand,
-// then that hand's fingers, drawn over the handle.
-// He always holds the cleaver, whatever Main Arm he wears (Tyler's pick: matching every new
-// weapon to its enemy was too fiddly). Only the Soul Core changes how he looks;
+// The Abomination is a sack-head puppet, cut into see-through 64x64 layers stacked in the
+// same spot: the body (sackcloth, bone, empty hands), the glowing puppet threads (twice as tall,
+// so they reach up out of the scene; CSS tucks them behind the body), then the Soul Core glow in its ribs. He holds no weapon, so a new Main Arm never
+// needs new body art (Tyler's pick). The Soul Core colours both the core and the threads;
 // a core without its own picture (later acts) falls back to the wisp.
+// Each squad slot wears its own cloth dye so several Abominations can be told apart.
+// Hats and other add-ons can later slot in as extra layers on top.
 const CORE_ART: Record<string, string> = { wispCore: "wisp", lanternCore: "lantern", wraithCore: "wraith" };
+const SLOT_DYE = ["abom-body", "abom-body-crimson", "abom-body-bone"];
 
-/** the Abomination's pictures, back to front */
+/** the Abomination's pictures: body, threads, core */
 export function abomArt(g: Game, a: Abomination): string[] {
   const core = CORE_ART[g.partById(a.eq.core)?.base ?? ""] ?? "wisp";
-  return ["abom-body", `abom-core-${core}`, "abom-arm-cleaver", "abom-hand"].map((n) => artUrl(n)!);
+  const body = SLOT_DYE[Math.max(0, g.s.squad.indexOf(a))] ?? "abom-body";
+  return [body, `abom-threads-${core}`, `abom-core-${core}`].map((n) => artUrl(n)!);
 }
 
 /** a part's picture. In lists, a part without art gets an empty square so the rows still line up. */

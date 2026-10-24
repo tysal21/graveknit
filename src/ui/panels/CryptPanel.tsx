@@ -51,7 +51,7 @@ function useArrivals(f: Foe | null) {
 }
 
 // the Abomination's stacked pictures, back to front (see abomArt): CSS makes the core pulse on its own
-const LAYERS = ["body", "core", "arm", "hand"];
+const LAYERS = ["body", "threads", "core"];
 
 const RED = "grayscale(1) brightness(.6) sepia(1) hue-rotate(-50deg) saturate(8)";
 const calm = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;

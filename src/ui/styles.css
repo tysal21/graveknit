@@ -309,6 +309,8 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 .scene .me img{display:block;width:100%;image-rendering:pixelated}
 /* the Abomination's layers sit exactly on top of each other */
 .scene .me img+img{position:absolute;inset:0}
+/* the puppet threads are a 64x128 picture standing on the body's feet, so they rise out of the scene behind it */
+.scene .me img.threads{inset:auto 0 0 0;z-index:-1}
 .scene .foe-sprite{width:calc(min(176px,50%) * var(--size,1));height:auto;margin:0;z-index:1;animation:enter var(--walk) ease-out,breathe 2.2s ease-in-out var(--walk) infinite;transform-origin:50% 100%}
 /* each enemy walks in from the right; your Abomination trudges on meanwhile */
 @keyframes enter{from{transform:translateX(80%);opacity:0}to{transform:none;opacity:1}}
@@ -336,7 +338,7 @@ details.tools .row{margin-top:8px;flex-wrap:wrap;justify-content:flex-start}
 @keyframes addRise{from{transform:translateY(35%);opacity:0}to{transform:none;opacity:1}}
 @keyframes addSink{to{transform:translateY(25%);opacity:0}}
 /* the Abomination: the Soul Core throbs */
-.scene .me .core{animation:corePulse 2.4s ease-in-out infinite}
+.scene .me .core,.scene .me .threads{animation:corePulse 2.4s ease-in-out infinite}
 @keyframes corePulse{50%{filter:brightness(1.6)}}
 .btn.iconed{position:relative;padding-left:46px;text-align:left}
 .btn.iconed .px-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%)}
